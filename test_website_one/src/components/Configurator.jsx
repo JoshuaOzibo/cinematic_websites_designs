@@ -12,7 +12,7 @@ const COLORS = [
     hex: '#f97316',
     bgClass: 'bg-orange-500',
     price: 0,
-    image: '/car_images/revuelto_orange.png',
+    image: '/images/ezgif-frame-001.jpg',
   },
   {
     name: 'Giallo Auge',
