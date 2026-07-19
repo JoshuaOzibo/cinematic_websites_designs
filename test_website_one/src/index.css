@@ -1,18 +1,30 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Jost:wght@300;400;500;600;700&display=swap');
 
 @theme {
-  --font-sans: "Work Sans", sans-serif;
-  --font-heading: "Outfit", sans-serif;
-  
+  --font-sans: "Jost", sans-serif;
+  --font-heading: "Bodoni Moda", serif;
+
+  /* Cinematic Dark Palette */
   --color-brand-orange: #f97316;
-  --color-brand-dark: #0f172a;
-  --color-studio-bg: #e2e2e2;
+  --color-brand-dark: #0a0a0f;
+  --color-brand-slate: #1e293b;
+  --color-brand-mid: #334155;
+  --color-studio-bg: #0d0d14;
+  --color-surface: #13131e;
+  --color-surface-2: #1a1a2e;
+  --color-text-primary: #f0ece4;
+  --color-text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--color-studio-bg);
-  color: var(--color-brand-dark);
+  color: var(--color-text-primary);
   margin: 0;
   overflow-x: hidden;
 }
@@ -23,15 +35,50 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Premium Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #e2e2e2;
+  background: #0a0a0f;
 }
 ::-webkit-scrollbar-thumb {
-  background: #bcbcbc;
-  border-radius: 5px;
+  background: #f97316;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: #fb923c;
+}
+
+/* Cinematic grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px;
+}
+
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-light {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
