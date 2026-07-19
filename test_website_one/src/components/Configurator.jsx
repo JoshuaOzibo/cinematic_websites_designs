@@ -260,14 +260,14 @@ export default function Configurator() {
             {/* Price */}
             <div className="relative z-10 border-t border-white/8 pt-6 flex justify-between items-end">
               <div>
-                <p className="font-sans text-xs text-text-muted/60 font-medium uppercase tracking-widest">
+                <p className="font-sans text-xs text-text-muted font-medium uppercase tracking-widest">
                   Estimated Price
                 </p>
                 <h4 ref={priceRef} className="font-heading font-black text-4xl text-text-primary mt-1">
                   ${totalPrice.toLocaleString()}
                 </h4>
               </div>
-              <span className="font-sans text-[10px] text-text-muted/40 font-light italic">
+              <span className="font-sans text-[10px] text-text-muted/80 font-light italic">
                 Excl. local taxes
               </span>
             </div>
@@ -276,7 +276,7 @@ export default function Configurator() {
           {/* ── RIGHT: Options ─────────────────────────────────────── */}
           <div className="flex flex-col justify-between">
             <div>
-              <p className="font-sans text-sm text-text-muted/60 mt-2 leading-relaxed font-light">
+              <p className="font-sans text-sm text-text-muted mt-2 leading-relaxed font-light">
                 Tailor the performance aesthetics of your Revuelto from official factory configurations.
               </p>
               <div className="w-10 h-px bg-brand-orange mt-6 mb-10 shadow-[0_0_12px_rgba(249,115,22,0.7)]" />
@@ -323,7 +323,7 @@ export default function Configurator() {
                         {/* Tooltip on hover */}
                         <span
                           className={`text-[9px] tracking-wider font-medium transition-all duration-200 ${
-                            isActive ? 'text-white' : 'text-text-muted/50 group-hover:text-text-muted'
+                            isActive ? 'text-white' : 'text-text-muted group-hover:text-text-muted'
                           }`}
                           style={{ maxWidth: 52, textAlign: 'center', lineHeight: 1.2 }}
                         >
@@ -422,7 +422,7 @@ export default function Configurator() {
                 <h3 className="font-heading font-black text-2xl text-text-primary uppercase mb-2">
                   Processing Order...
                 </h3>
-                <p className="font-sans text-sm text-text-muted/60 font-light">
+                <p className="font-sans text-sm text-text-muted font-light">
                   Securing your production slot.
                 </p>
               </div>
@@ -431,7 +431,7 @@ export default function Configurator() {
                 <h3 className="font-heading font-black text-2xl text-text-primary uppercase tracking-tight mb-2 italic">
                   Reserve Revuelto
                 </h3>
-                <p className="font-sans text-xs text-text-muted/60 leading-relaxed mb-8 font-light">
+                <p className="font-sans text-xs text-text-muted leading-relaxed mb-8 font-light">
                   Submit your details to reserve your custom allocation. Our specialist team will reach out within 24 hours.
                 </p>
 
@@ -446,7 +446,7 @@ export default function Configurator() {
                       value={reserveName}
                       onChange={(e) => setReserveName(e.target.value)}
                       placeholder="e.g. Jean Bugatti"
-                      className="w-full bg-white/5 border border-white/10 focus:border-brand-orange rounded-xl px-4 py-3 text-sm outline-none transition-all text-text-primary placeholder:text-text-muted/30 font-light"
+                      className="w-full bg-white/5 border border-white/10 focus:border-brand-orange rounded-xl px-4 py-3 text-sm outline-none transition-all text-text-primary placeholder:text-text-muted/50 font-light"
                     />
                   </div>
                   <div>
@@ -459,7 +459,7 @@ export default function Configurator() {
                       value={reserveEmail}
                       onChange={(e) => setReserveEmail(e.target.value)}
                       placeholder="e.g. jean@bugatti.com"
-                      className="w-full bg-white/5 border border-white/10 focus:border-brand-orange rounded-xl px-4 py-3 text-sm outline-none transition-all text-text-primary placeholder:text-text-muted/30 font-light"
+                      className="w-full bg-white/5 border border-white/10 focus:border-brand-orange rounded-xl px-4 py-3 text-sm outline-none transition-all text-text-primary placeholder:text-text-muted/50 font-light"
                     />
                   </div>
 
@@ -474,12 +474,12 @@ export default function Configurator() {
                       />
                       <div>
                         <p className="font-sans text-xs text-text-primary font-semibold">{selectedColor.name}</p>
-                        <p className="font-sans text-[10px] text-text-muted/50 font-light">
+                        <p className="font-sans text-[10px] text-text-muted/80 font-light">
                           {selectedWheels.name.split(' ').slice(0, 2).join(' ')} Rims
                         </p>
                       </div>
                     </div>
-                    <p className="font-sans text-xs text-text-muted/70 flex justify-between border-t border-white/6 pt-3">
+                    <p className="font-sans text-xs text-text-muted flex justify-between border-t border-white/6 pt-3">
                       <span>Build Total:</span>
                       <span className="text-text-primary font-semibold">${totalPrice.toLocaleString()}</span>
                     </p>

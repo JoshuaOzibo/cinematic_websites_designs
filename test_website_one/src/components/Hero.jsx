@@ -96,7 +96,7 @@ export default function Hero() {
 
         <p
           ref={detailsRef}
-          className="font-sans text-sm md:text-base text-text-muted/70 max-w-xl mx-auto mt-5 leading-relaxed font-light"
+          className="font-sans text-sm md:text-base text-text-muted max-w-xl mx-auto mt-5 leading-relaxed font-light"
         >
           1,015 CV of combined power. A naturally aspirated V12 and three electric motors.
           Engineering perfection for a new era of performance.

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Shield, Zap, Wind } from 'lucide-react';
+import { Shield, Zap, Wind, X, ArrowUpRight, Cpu } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,6 +17,42 @@ const getFramePath = (index) => {
   return `/images/ezgif-frame-${pad(index + 1, 3)}.jpg`;
 };
 
+const POPUP_DETAILS = {
+  aero: {
+    title: 'Active Aerodynamics',
+    icon: <Wind size={28} />,
+    description: 'The active aerodynamic system on the Revuelto is fully integrated with the vehicle dynamics control systems. Depending on the driving mode and dynamic conditions, the active rear wing changes its position to manage aerodynamic load and resistance.',
+    extended: 'This yields a 66% increase in front aerodynamic load and a 74% increase in rear load compared to the Aventador Ultimae under high-downforce configurations.',
+    specs: [
+      { label: 'Rear Wing Positions', value: '3 Modes' },
+      { label: 'Downforce Increase', value: '+74%' },
+      { label: 'Front Splitter', value: 'Active Carbon' }
+    ]
+  },
+  hybrid: {
+    title: '1,015 CV Hybrid',
+    icon: <Zap size={28} />,
+    description: "The hybrid powertrain integrates Lamborghini's iconic 6.5-liter naturally aspirated V12 engine with three electric motors (two on the front axle and one integrated into the double-clutch gearbox).",
+    extended: 'Power is delivered to all four wheels, featuring active torque vectoring on the front axle to maximize cornering agility and traction.',
+    specs: [
+      { label: 'Engine Power', value: '825 CV @ 9250 RPM' },
+      { label: 'Front Axle Motors', value: '2x 110 kW (Vectoring)' },
+      { label: 'Rear Axle Motor', value: '110 kW (DCT Integrated)' }
+    ]
+  },
+  chassis: {
+    title: 'Monofuselage Chassis',
+    icon: <Shield size={28} />,
+    description: 'The Monofuselage represents a monumental leap forward in chassis engineering. Constructed entirely of carbon fiber, it consists of a monocoque passenger cell made of forged composite.',
+    extended: 'This achieves a 10% weight reduction and a 25% torsional stiffness increase over the Aventador chassis.',
+    specs: [
+      { label: 'Torsional Stiffness', value: '40,000 Nm/deg' },
+      { label: 'Material', value: 'Forged Carbon Fiber' },
+      { label: 'Front Frame', value: 'Carbon Crumple Zone' }
+    ]
+  }
+};
+
 export default function CanvasSequence() {
   const sectionRef = useRef(null);
   const canvasRef = useRef(null);
@@ -24,6 +60,7 @@ export default function CanvasSequence() {
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [activePopup, setActivePopup] = useState(null);
 
   // Preload Images
   useEffect(() => {
@@ -64,7 +101,6 @@ export default function CanvasSequence() {
     const ctx = canvas.getContext('2d');
     const images = imagesRef.current;
 
-    // Cover-style drawing: fills canvas edge-to-edge, crops to maintain aspect ratio
     const drawFrame = (img) => {
       if (!img) return;
 
@@ -83,7 +119,6 @@ export default function CanvasSequence() {
 
       let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
 
-      // Cover behavior: fill entire canvas, crop excess
       if (canvasRatio > imgRatio) {
         drawWidth = canvas.width;
         drawHeight = canvas.width / imgRatio;
@@ -224,74 +259,152 @@ export default function CanvasSequence() {
 
       {/* 3. Top cinematic gradient vignette */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Top vignette */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-brand-dark/60 to-transparent" />
-        {/* Bottom vignette */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-brand-dark/80 to-transparent" />
-        {/* Left vignette */}
         <div className="absolute top-0 left-0 bottom-0 w-24 bg-gradient-to-r from-brand-dark/40 to-transparent" />
-        {/* Right vignette */}
         <div className="absolute top-0 right-0 bottom-0 w-24 bg-gradient-to-l from-brand-dark/40 to-transparent" />
       </div>
 
-      {/* 4. Section label — fades in at start, out early */}
+      {/* 4. Section label */}
       <div className="seq-label absolute top-8 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none z-10">
         <span className="font-sans text-[10px] font-semibold tracking-[0.3em] uppercase text-white/50 border border-white/10 px-4 py-2 rounded-full glass-card">
           Cinematic Experience
         </span>
       </div>
 
-      {/* 5. Floating Info Cards */}
+      {/* 5. Floating Info Cards (Interactive) */}
       {/* Card 1 — Bottom Left */}
       <div className="card-1 absolute left-6 md:left-12 bottom-16 md:bottom-20 max-w-[300px] md:max-w-[340px] opacity-0 pointer-events-none z-20">
-        <div className="glass-card-light rounded-2xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex items-start gap-4">
-          <div className="p-2.5 bg-brand-orange/15 text-brand-orange rounded-xl flex-shrink-0">
+        <div 
+          onClick={() => setActivePopup('aero')}
+          className="bg-slate-950/75 backdrop-blur-md border border-white/10 pointer-events-auto cursor-pointer rounded-2xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-start gap-4 transition-all duration-300 hover:scale-[1.03] hover:border-brand-orange/40 group"
+        >
+          <div className="p-2.5 bg-brand-orange/20 text-brand-orange rounded-xl flex-shrink-0 group-hover:bg-brand-orange/30 transition-colors">
             <Wind size={22} />
           </div>
           <div>
-            <h3 className="font-heading font-bold text-base text-text-primary tracking-tight uppercase mb-1">
+            <h3 className="font-heading font-bold text-base text-white tracking-tight uppercase mb-1 flex items-center gap-1.5">
               Active Aerodynamics
+              <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
             </h3>
-            <p className="font-sans text-xs text-text-muted leading-relaxed font-light">
+            <p className="font-sans text-xs text-slate-200 leading-relaxed font-light mb-2">
               Adaptive front splitters and active rear wing optimize drag and downforce at every speed.
             </p>
+            <span className="text-[10px] text-brand-orange font-semibold tracking-wider uppercase group-hover:underline">
+              Tap to Expand Spec
+            </span>
           </div>
         </div>
       </div>
 
       {/* Card 2 — Top Right */}
-      <div className="card-2 absolute right-6 md:right-12 top-1/2 -translate-y-1/2 max-w-[300px] md:max-w-[340px] opacity-0 pointer-events-none z-20">
-        <div className="glass-card-light rounded-2xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex items-start gap-4">
-          <div className="p-2.5 bg-brand-orange/15 text-brand-orange rounded-xl flex-shrink-0">
+      <div className="card-2 absolute right-6 md:right-12 top-1/3 -translate-y-1/2 max-w-[300px] md:max-w-[340px] opacity-0 pointer-events-none z-20">
+        <div 
+          onClick={() => setActivePopup('hybrid')}
+          className="bg-slate-950/75 backdrop-blur-md border border-white/10 pointer-events-auto cursor-pointer rounded-2xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-start gap-4 transition-all duration-300 hover:scale-[1.03] hover:border-brand-orange/40 group"
+        >
+          <div className="p-2.5 bg-brand-orange/20 text-brand-orange rounded-xl flex-shrink-0 group-hover:bg-brand-orange/30 transition-colors">
             <Zap size={22} />
           </div>
           <div>
-            <h3 className="font-heading font-bold text-base text-text-primary tracking-tight uppercase mb-1">
+            <h3 className="font-heading font-bold text-base text-white tracking-tight uppercase mb-1 flex items-center gap-1.5">
               1,015 CV Hybrid
+              <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
             </h3>
-            <p className="font-sans text-xs text-text-muted leading-relaxed font-light">
+            <p className="font-sans text-xs text-slate-200 leading-relaxed font-light mb-2">
               A naturally aspirated V12 with three electric motors delivering unparalleled instantaneous response.
             </p>
+            <span className="text-[10px] text-brand-orange font-semibold tracking-wider uppercase group-hover:underline">
+              Tap to Expand Spec
+            </span>
           </div>
         </div>
       </div>
 
       {/* Card 3 — Bottom Right */}
       <div className="card-3 absolute right-6 md:right-12 bottom-16 md:bottom-20 max-w-[300px] md:max-w-[340px] opacity-0 pointer-events-none z-20">
-        <div className="glass-card-light rounded-2xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex items-start gap-4">
-          <div className="p-2.5 bg-brand-orange/15 text-brand-orange rounded-xl flex-shrink-0">
+        <div 
+          onClick={() => setActivePopup('chassis')}
+          className="bg-slate-950/75 backdrop-blur-md border border-white/10 pointer-events-auto cursor-pointer rounded-2xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-start gap-4 transition-all duration-300 hover:scale-[1.03] hover:border-brand-orange/40 group"
+        >
+          <div className="p-2.5 bg-brand-orange/20 text-brand-orange rounded-xl flex-shrink-0 group-hover:bg-brand-orange/30 transition-colors">
             <Shield size={22} />
           </div>
           <div>
-            <h3 className="font-heading font-bold text-base text-text-primary tracking-tight uppercase mb-1">
+            <h3 className="font-heading font-bold text-base text-white tracking-tight uppercase mb-1 flex items-center gap-1.5">
               Monofuselage Chassis
+              <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
             </h3>
-            <p className="font-sans text-xs text-text-muted leading-relaxed font-light">
+            <p className="font-sans text-xs text-slate-200 leading-relaxed font-light mb-2">
               Carbon fiber monocoque delivers maximum structural rigidity with radical weight savings.
             </p>
+            <span className="text-[10px] text-brand-orange font-semibold tracking-wider uppercase group-hover:underline">
+              Tap to Expand Spec
+            </span>
           </div>
         </div>
       </div>
+
+      {/* 6. Detail PopUp Modal */}
+      {activePopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300">
+          <div className="relative w-full max-w-lg bg-slate-900/95 border border-white/15 rounded-3xl p-8 shadow-[0_30px_90px_rgba(0,0,0,0.9)] overflow-hidden">
+            {/* Abstract light aura behind popup */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 rounded-full bg-brand-orange/10 blur-[60px]" />
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setActivePopup(null)}
+              className="absolute top-5 right-5 p-2 rounded-full bg-white/5 border border-white/10 cursor-pointer text-slate-300 hover:text-white transition-colors"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Icon & Title */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3.5 bg-brand-orange/20 text-brand-orange rounded-2xl">
+                {POPUP_DETAILS[activePopup].icon}
+              </div>
+              <div>
+                <span className="font-sans text-[10px] tracking-[0.2em] font-semibold text-brand-orange uppercase">
+                  Technical Spec Sheet
+                </span>
+                <h3 className="font-heading font-black text-2xl md:text-3xl text-white tracking-tight uppercase mt-1 italic">
+                  {POPUP_DETAILS[activePopup].title}
+                </h3>
+              </div>
+            </div>
+
+            {/* Description & Extended Content */}
+            <div className="space-y-4 mb-8">
+              <p className="font-sans text-sm text-slate-100 leading-relaxed font-normal">
+                {POPUP_DETAILS[activePopup].description}
+              </p>
+              <p className="font-sans text-xs text-slate-300 leading-relaxed font-light">
+                {POPUP_DETAILS[activePopup].extended}
+              </p>
+            </div>
+
+            {/* Specs Grid */}
+            <div className="border-t border-white/10 pt-6">
+              <div className="grid grid-cols-1 gap-3">
+                {POPUP_DETAILS[activePopup].specs.map((spec, i) => (
+                  <div 
+                    key={i} 
+                    className="flex justify-between items-center py-2 px-3 rounded-lg bg-white/5 border border-white/5"
+                  >
+                    <span className="font-sans text-xs text-slate-300 font-light">{spec.label}</span>
+                    <span className="font-sans text-xs text-white font-semibold">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Accent */}
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent" />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

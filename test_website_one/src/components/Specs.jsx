@@ -108,7 +108,7 @@ export default function Specs() {
                 </span>
               </div>
 
-              <p className="font-sans text-xs text-text-muted/60 mt-3 font-light leading-relaxed relative z-10">
+              <p className="font-sans text-xs text-text-muted mt-3 font-light leading-relaxed relative z-10">
                 {spec.detail}
               </p>
 
