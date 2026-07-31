@@ -221,7 +221,7 @@ export default function CanvasSequence() {
             {/* Spinning ring */}
             <div className="relative w-20 h-20">
               <div className="absolute inset-0 rounded-full border border-white/5" />
-              <div className="absolute inset-0 rounded-full border-t-2 border-brand-orange animate-spin" />
+              <div className="absolute inset-0 rounded-full border-t border-r border-brand-orange animate-spin" />
               <div className="absolute inset-[6px] rounded-full flex items-center justify-center">
                 <span className="font-heading font-black text-xl text-brand-orange">Ω</span>
               </div>

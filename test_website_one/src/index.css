@@ -45,12 +45,9 @@ body::before {
   background-size: 128px;
 }
 
-/* Gradient text utility */
+/* Accent text utility */
 .text-gradient {
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f97316;
 }
 
 /* Glass card utility */
