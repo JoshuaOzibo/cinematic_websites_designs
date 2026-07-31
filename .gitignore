@@ -1,3 +1,7 @@
 .agent/
+.agent
+.agent/*
+impeccable
+ui-ux-pro-max
 .DS_Store
 Thumbs.db
