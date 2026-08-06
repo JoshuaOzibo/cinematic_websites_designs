@@ -14,7 +14,7 @@ const pad = (num, size = 3) => {
 };
 
 const getFramePath = (index) => {
-  return `/burger_frame_images/ezgif-frame-${pad(index + 1)}.jpg`;
+  return `/background-remover/ezgif-frame-${pad(index + 1)}.png`;
 };
 
 const INGREDIENT_STAGES = [
@@ -52,94 +52,11 @@ const INGREDIENT_STAGES = [
   }
 ];
 
-// Precision Keying: Removes studio background box while keeping burger crisp & untouched
-const createKeyedCanvas = (img) => {
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = img.width;   // 1280
-  tempCanvas.height = img.height; // 720
-  const tCtx = tempCanvas.getContext('2d');
-  tCtx.drawImage(img, 0, 0);
-
-  try {
-    const imgData = tCtx.getImageData(0, 0, img.width, img.height);
-    const data = imgData.data;
-    const w = img.width;
-    const h = img.height;
-
-    // Corner studio background color sample
-    const cornerIdx = (30 + 30 * w) * 4;
-    const bgR = data[cornerIdx];
-    const bgG = data[cornerIdx + 1];
-    const bgB = data[cornerIdx + 2];
-
-    const centerX = w * 0.5;
-    const centerY = h * 0.51;
-
-    // Outer ellipse bounds to contain burger assembly
-    const rxOuter = 350;
-    const ryOuter = 310;
-
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = (x + y * w) * 4;
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        const dx = (x - centerX) / rxOuter;
-        const dy = (y - centerY) / ryOuter;
-        const distSq = dx * dx + dy * dy;
-
-        // 1. Hard cutoff outside outer ellipse -> removes all outer rectangular box & ambient side shadows
-        if (distSq >= 1.0) {
-          data[i + 3] = 0;
-          continue;
-        }
-
-        // Color distance to studio background sample
-        const dr = r - bgR;
-        const dg = g - bgG;
-        const db = b - bgB;
-        const colorDist = Math.sqrt(dr * dr + dg * dg + db * db);
-
-        // Saturation
-        const maxC = Math.max(r, g, b);
-        const minC = Math.min(r, g, b);
-        const sat = maxC - minC;
-
-        // Studio background check: close color match to corner OR low-saturation gray background
-        const isStudioBg = (colorDist < 36) || (sat < 22 && r > 120 && g > 120 && b > 120);
-
-        if (isStudioBg) {
-          // Studio background -> 100% transparent
-          data[i + 3] = 0;
-        } else {
-          // Food pixel (bun, lettuce, cheese, meat, tomato) -> 100% OPAQUE & Sharp!
-          if (distSq > 0.85) {
-            // Smooth edge transition at outer ellipse boundary
-            const edgeAlpha = (1.0 - distSq) / 0.15;
-            data[i + 3] = Math.round(Math.max(0, Math.min(255, edgeAlpha * 255)));
-          } else {
-            data[i + 3] = 255;
-          }
-        }
-      }
-    }
-
-    tCtx.putImageData(imgData, 0, 0);
-  } catch (e) {
-    console.error('Error keying frame image', e);
-  }
-
-  return tempCanvas;
-};
-
 export default function BurgerHeroCanvas({ onAddToCart }) {
   const sectionRef = useRef(null);
   const canvasRef = useRef(null);
   const bgImageRef = useRef(null);
   const burgerFramesRef = useRef([]);
-  const keyedFramesRef = useRef([]);
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -150,7 +67,7 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
   const audioContextRef = useRef(null);
   const audioNodeRef = useRef(null);
 
-  // Preload Plate BG & Burger Frames
+  // Preload Plate BG & Background-Removed Burger Frames
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     let loadedCount = 0;
@@ -161,15 +78,6 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
       const percent = Math.round((loadedCount / totalToLoad) * 100);
       setLoadingProgress(percent);
       if (loadedCount === totalToLoad) {
-        // Key out light gray background for all frames
-        const keyed = [];
-        for (let i = 0; i < TOTAL_FRAMES; i++) {
-          if (burgerFramesRef.current[i]) {
-            keyed.push(createKeyedCanvas(burgerFramesRef.current[i]));
-          }
-        }
-        keyedFramesRef.current = keyed;
-
         setIsLoaded(true);
         document.body.style.overflow = '';
       }
@@ -182,7 +90,7 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
     bgImg.onerror = checkAllLoaded;
     bgImageRef.current = bgImg;
 
-    // Preload Burger Animation Frames
+    // Preload Burger Animation Frames (Clean PNGs with zero background)
     const frames = [];
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
@@ -256,7 +164,7 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const bgImg = bgImageRef.current;
-    const burgerCanvas = keyedFramesRef.current[frameIndex] || burgerFramesRef.current[frameIndex];
+    const burgerImg = burgerFramesRef.current[frameIndex];
 
     const dpr = window.devicePixelRatio || 1;
     const width = canvas.clientWidth;
@@ -292,9 +200,9 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
       ctx.fillRect(0, 0, width, height);
     }
 
-    // 2. Draw Realistic Ground Shadow & Keyed Burger on Ceramic Plate
-    if (burgerCanvas) {
-      const burgerRatio = 1280 / 720;
+    // 2. Draw Realistic Ground Shadow & Clean Transparent Burger PNG
+    if (burgerImg && burgerImg.complete && burgerImg.width > 0) {
+      const burgerRatio = burgerImg.width / burgerImg.height;
       
       let bH = height * 0.72;
       let bW = bH * burgerRatio;
@@ -328,9 +236,9 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
       ctx.fill();
       ctx.restore();
 
-      // Draw Keyed Burger crisp & clear
+      // Draw 100% clean transparent PNG burger directly on top of plate
       ctx.globalCompositeOperation = 'source-over';
-      ctx.drawImage(burgerCanvas, bX, bY, bW, bH);
+      ctx.drawImage(burgerImg, bX, bY, bW, bH);
     }
 
     ctx.restore();
@@ -430,7 +338,7 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
                 AURA <span className="text-amber-500">ROYALE</span>
               </h2>
               <p className="font-sans text-xs tracking-[0.25em] text-slate-400 mt-1 uppercase font-medium">
-                KEYING CANVAS & PREPARING BURGER
+                LOADING TRANSPARENT BURGER FRAMES
               </p>
             </div>
 
@@ -442,7 +350,7 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
             </div>
 
             <span className="font-mono font-bold text-xs text-amber-500 tracking-wider">
-              {loadingProgress}% PROCESSED
+              {loadingProgress}% LOADED
             </span>
           </div>
         </div>
@@ -572,7 +480,7 @@ export default function BurgerHeroCanvas({ onAddToCart }) {
               name: 'The Wagyu Royale Smash',
               price: 24.50,
               desc: 'Triple A5 Wagyu, 24mo Cheddar, Bourbon Bacon Jam',
-              image: '/burger_frame_images/ezgif-frame-096.jpg'
+              image: '/background-remover/ezgif-frame-096.png'
             })}
             className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400 hover:from-amber-400 hover:to-orange-400 text-black px-6 py-3 rounded-full font-sans text-xs font-extrabold uppercase tracking-widest transition-all duration-300 shadow-[0_8px_30px_rgba(245,158,11,0.4)] hover:shadow-[0_8px_40px_rgba(255,107,0,0.6)] hover:scale-105 cursor-pointer flex items-center gap-2"
           >
