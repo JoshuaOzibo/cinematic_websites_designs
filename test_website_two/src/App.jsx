@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import BurgerHeroCanvas from './components/BurgerHeroCanvas';
+import BurgerFeatureSection from './components/BurgerFeatureSection';
 import GourmetMenu from './components/GourmetMenu';
 import CraftsmanshipBento from './components/CraftsmanshipBento';
 import ReservationDrawer from './components/ReservationDrawer';
@@ -72,10 +73,11 @@ export default function App() {
         onOpenReserve={openReserve}
       />
 
-      {/* Hero Canvas Component (Burger frames drawn over plate_bg.png) */}
-      <BurgerHeroCanvas 
-        onAddToCart={handleAddToCart}
-      />
+      {/* Hero Canvas Component (Clean burger frame assembly in center) */}
+      <BurgerHeroCanvas />
+
+      {/* Static Feature Section Directly After Hero (Reference Layout) */}
+      <BurgerFeatureSection />
 
       {/* Gourmet Menu */}
       <GourmetMenu 
