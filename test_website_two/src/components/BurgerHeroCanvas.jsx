@@ -57,7 +57,7 @@ export default function BurgerHeroCanvas() {
     };
   }, []);
 
-  // Canvas Drawing Routine: Draw Burger in Exact Center on White Background
+  // Canvas Drawing Routine: Draw Burger Frame in Exact Center
   const drawScene = (frameIndex) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -81,27 +81,28 @@ export default function BurgerHeroCanvas() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
-    // 2. Render Burger Frame in Exact Center
+    // 2. Render Burger Frame in Exact Center with Full Margins (No Clipping)
     if (burgerImg && burgerImg.complete && burgerImg.width > 0) {
       const burgerRatio = burgerImg.width / burgerImg.height;
       
       const isDesktop = width > 768;
-      let bH = height * (isDesktop ? 0.68 : 0.48);
+      // Slightly conservative height ratio (0.52 desktop / 0.40 mobile) to guarantee top/bottom assembly frames never cut out
+      let bH = height * (isDesktop ? 0.52 : 0.40);
       let bW = bH * burgerRatio;
       
-      if (bW > width * 0.90) {
-        bW = width * 0.90;
+      if (bW > width * 0.82) {
+        bW = width * 0.82;
         bH = bW / burgerRatio;
       }
 
-      // Centered Position
+      // Exact Centered Position inside Canvas Viewport
       const bX = (width - bW) / 2;
-      const bY = (height - bH) / 2 + (height * 0.02);
+      const bY = (height - bH) / 2;
 
       // Contact Shadow
       ctx.save();
       const shadowX = width / 2;
-      const shadowY = bY + bH * 0.83;
+      const shadowY = bY + bH * 0.84;
       const shadowRx = bW * 0.28;
       const shadowRy = bH * 0.07;
 

@@ -76,7 +76,7 @@ export default function App() {
       {/* Hero Canvas Component (Clean burger frame assembly in center) */}
       <BurgerHeroCanvas />
 
-      {/* Static Feature Section Directly After Hero (Reference Layout) */}
+      {/* Static Feature Section Directly After Hero (Matching Reference Layout) */}
       <BurgerFeatureSection />
 
       {/* Gourmet Menu */}
