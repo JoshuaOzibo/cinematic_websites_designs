@@ -24,7 +24,7 @@ export default function App() {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === dish.id);
       if (existing) {
-        return prev.map(item => 
+        return prev.map(item =>
           item.id === dish.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
@@ -58,7 +58,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#06060a] text-slate-100 font-sans overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
-      
+
       {/* Background Atmosphere Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[55%] h-[55%] rounded-full bg-amber-600/10 blur-[180px]" />
@@ -67,7 +67,7 @@ export default function App() {
       </div>
 
       {/* Floating Glassmorphic Navbar */}
-      <Navbar 
+      <Navbar
         cartCount={totalCartCount}
         onOpenCart={openCart}
         onOpenReserve={openReserve}
@@ -80,7 +80,7 @@ export default function App() {
       <BurgerFeatureSection />
 
       {/* Gourmet Menu */}
-      <GourmetMenu 
+      <GourmetMenu
         onAddToCart={handleAddToCart}
       />
 
@@ -88,7 +88,7 @@ export default function App() {
       <CraftsmanshipBento />
 
       {/* Reservation & Order Summary Drawer */}
-      <ReservationDrawer 
+      <ReservationDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         cartItems={cartItems}
