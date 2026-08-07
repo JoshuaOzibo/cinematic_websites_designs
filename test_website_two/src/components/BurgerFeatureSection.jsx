@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { LANDING_SLOT_ID, FEATURE_SECTION_ID } from './BurgerHeroCanvas';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,12 +26,12 @@ const features = [
 
 export default function BurgerFeatureSection() {
   const sectionRef = useRef(null);
-  const imageWrapRef = useRef(null);
   const eyebrowRef = useRef(null);
   const headlineRef = useRef(null);
   const dividerRef = useRef(null);
   const featuresRef = useRef(null);
   const ctaRef = useRef(null);
+  const trimmingsRef = useRef(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -38,50 +39,37 @@ export default function BurgerFeatureSection() {
 
     const ctx = gsap.context(() => {
 
-      // ── Master scrub timeline ──────────────────────────────────────────
+      // ── Right-hand copy, scrubbed in as the section rises ──────────────────
+      // Deliberately matches the burger's flight window so text and burger
+      // arrive together.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          start: 'top 85%',
-          end: 'top 10%',
+          start: 'top bottom',
+          end: 'top top',
           scrub: 1.1,
           invalidateOnRefresh: true,
         }
       });
 
-      // Burger image: starts at centre (x:0) and slides LEFT into its column
-      // Also rises UP slightly (it "landed" from the hero's downward fall)
-      tl.fromTo(imageWrapRef.current,
-        { x: '30%', y: 60, opacity: 0, scale: 1.06 },
-        {
-          x: '0%', y: 0, opacity: 1, scale: 1.0,
-          ease: 'power3.out', duration: 1
-        },
-        0
-      );
-
-      // Eyebrow tag
       tl.fromTo(eyebrowRef.current,
         { x: 40, opacity: 0 },
         { x: 0, opacity: 1, ease: 'power2.out', duration: 0.6 },
         0.15
       );
 
-      // Headline
       tl.fromTo(headlineRef.current,
         { x: 50, opacity: 0 },
         { x: 0, opacity: 1, ease: 'power3.out', duration: 0.8 },
         0.25
       );
 
-      // Divider line
       tl.fromTo(dividerRef.current,
         { scaleX: 0, opacity: 0 },
         { scaleX: 1, opacity: 1, ease: 'power2.out', duration: 0.5 },
         0.6
       );
 
-      // Feature items stagger
       if (featuresRef.current) {
         tl.fromTo(
           featuresRef.current.querySelectorAll('.feature-item'),
@@ -91,12 +79,29 @@ export default function BurgerFeatureSection() {
         );
       }
 
-      // CTA button
       tl.fromTo(ctaRef.current,
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, ease: 'power2.out', duration: 0.5 },
         1.2
       );
+
+      // ── Badge + stat strip: pop in only once the burger has actually landed ──
+      if (trimmingsRef.current) {
+        gsap.fromTo(
+          trimmingsRef.current.children,
+          { y: 14, opacity: 0, scale: 0.96 },
+          {
+            y: 0, opacity: 1, scale: 1,
+            duration: 0.5, stagger: 0.1, ease: 'back.out(1.6)',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top top+=15%',
+              toggleActions: 'play none none reverse',
+              invalidateOnRefresh: true,
+            }
+          }
+        );
+      }
 
     }, section);
 
@@ -106,7 +111,7 @@ export default function BurgerFeatureSection() {
   return (
     <section
       ref={sectionRef}
-      id="features"
+      id={FEATURE_SECTION_ID}
       className="relative w-full min-h-screen bg-white overflow-hidden select-none"
     >
       {/* ── Subtle warm tint strip behind burger side ─────────────────── */}
@@ -118,49 +123,73 @@ export default function BurgerFeatureSection() {
       {/* ── Main 50/50 grid ───────────────────────────────────────────── */}
       <div className="relative z-10 w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
 
-        {/* ── LEFT: Burger Image ──────────────────────────────────────── */}
-        <div className="flex items-center justify-center px-10 py-20 lg:py-0">
-          <div
-            ref={imageWrapRef}
-            className="relative w-full max-w-[520px]"
-          >
-            {/* Glow behind burger */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[70%] h-[70%] rounded-full bg-amber-400/15 blur-[80px]" />
-            </div>
+        {/* ── LEFT: Landing bay for the hero burger ───────────────────── */}
+        <div className="flex items-center justify-center px-8 sm:px-10 py-24 lg:py-0">
+          <div className="relative w-full max-w-[560px]">
 
-            <img
-              id="feature-burger-img"
-              src="/background-remover/ezgif-frame-096.png"
-              alt="Aura Royale Assembled Burger"
-              className="relative w-full h-auto object-contain
-                         drop-shadow-[0_32px_48px_rgba(0,0,0,0.14)]"
-            />
+            {/*
+              The landing slot. Its bounding rect IS the flight target — the hero
+              canvas reads it every frame and lands the burger exactly on it, then
+              hands off to the static image below. Keep it 16:9 to match the
+              source frames, or the handoff will visibly jump.
+            */}
+            <div id={LANDING_SLOT_ID} className="relative w-full aspect-[16/9]">
 
-            {/* Floating badge */}
-            <div className="absolute top-6 right-6 bg-white border border-amber-200
-                            rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="font-heading font-bold text-[11px] tracking-widest
-                               text-slate-700 uppercase">Chef's Signature</span>
-            </div>
-
-            {/* Bottom stat strip */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[85%]
-                            bg-white border border-slate-100 rounded-2xl
-                            shadow-[0_8px_30px_rgba(0,0,0,0.08)]
-                            flex divide-x divide-slate-100">
-              {[
-                { val: '475°F', label: 'Cast Iron' },
-                { val: 'A5', label: 'Wagyu Grade' },
-                { val: '96', label: 'Craft Layers' },
-              ].map(({ val, label }) => (
-                <div key={label} className="flex-1 text-center py-3 px-2">
-                  <p className="font-heading font-black text-base text-slate-900">{val}</p>
-                  <p className="font-sans text-[10px] text-slate-400 tracking-wider uppercase mt-0.5">{label}</p>
+              {/* Empty frame — fades out as the burger comes in to fill it */}
+              <div className="burger-slot-placeholder absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 rounded-[32px] border border-dashed border-slate-200/90" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[38%] aspect-square rounded-full bg-amber-400/10 blur-[60px]" />
                 </div>
-              ))}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[30%] aspect-square rounded-full border border-slate-200/80" />
+                </div>
+                <p className="absolute bottom-5 left-0 right-0 text-center font-sans
+                              text-[10px] tracking-[0.28em] text-slate-300 uppercase">
+                  Plating
+                </p>
+              </div>
+
+              {/* Warm glow that grounds the burger once it settles */}
+              <div className="burger-slot-image absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[52%] h-[52%] rounded-full bg-amber-400/15 blur-[80px]" />
+              </div>
+
+              {/* Static burger — cross-fades in exactly where the canvas leaves off */}
+              <img
+                id="feature-burger-img"
+                src="/background-remover/ezgif-frame-096.png"
+                alt="Aura Royale assembled burger"
+                className="burger-slot-image absolute inset-0 w-full h-full object-contain"
+              />
             </div>
+
+            {/* Badge + stat strip */}
+            <div ref={trimmingsRef}>
+              <div className="absolute top-4 right-2 bg-white border border-amber-200
+                              rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="font-heading font-bold text-[11px] tracking-widest
+                                 text-slate-700 uppercase">Chef's Signature</span>
+              </div>
+
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[85%]
+                              bg-white border border-slate-100 rounded-2xl
+                              shadow-[0_8px_30px_rgba(0,0,0,0.08)]
+                              flex divide-x divide-slate-100">
+                {[
+                  { val: '475°F', label: 'Cast Iron' },
+                  { val: 'A5', label: 'Wagyu Grade' },
+                  { val: '96', label: 'Craft Layers' },
+                ].map(({ val, label }) => (
+                  <div key={label} className="flex-1 text-center py-3 px-2">
+                    <p className="font-heading font-black text-base text-slate-900">{val}</p>
+                    <p className="font-sans text-[10px] text-slate-400 tracking-wider uppercase mt-0.5">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
 

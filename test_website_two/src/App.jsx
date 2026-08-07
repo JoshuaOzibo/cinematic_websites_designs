@@ -56,8 +56,11 @@ export default function App() {
 
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
+  // NOTE: no `overflow-x-hidden` on the root — it computes overflow-y:auto,
+  // turning this div into a scroll container and breaking the hero's sticky
+  // panel. Horizontal clipping is handled by `body` in index.css instead.
   return (
-    <div className="min-h-screen bg-[#06060a] text-slate-100 font-sans overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="min-h-screen bg-[#06060a] text-slate-100 font-sans selection:bg-amber-500/30 selection:text-amber-200">
 
       {/* Background Atmosphere Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -73,10 +76,11 @@ export default function App() {
         onOpenReserve={openReserve}
       />
 
-      {/* Hero Canvas Component (Centered Burger Frame Assembly) */}
+      {/* Hero (burger frame assembly) — also owns the fixed canvas that flies
+          the finished burger into BurgerFeatureSection's landing slot. */}
       <BurgerHeroCanvas />
 
-      {/* Feature Section (Burger slides down into left column as Hero scrolls off) */}
+      {/* Feature Section — empty frame on the left is filled by the arriving burger */}
       <BurgerFeatureSection />
 
       {/* Gourmet Menu */}

@@ -23,6 +23,22 @@ body {
   overflow-x: hidden;
 }
 
+/* ── Hero → Feature burger handoff ─────────────────────────────────────────
+   BurgerHeroCanvas writes the burger's flight progress (0 → 1) onto this
+   variable as you scroll. The empty frame fades out early; the static burger
+   fades in over the last stretch, meeting the canvas exactly on the slot. */
+:root {
+  --burger-travel: 0;
+}
+
+.burger-slot-placeholder {
+  opacity: clamp(0, calc((0.4 - var(--burger-travel)) / 0.4), 1);
+}
+
+.burger-slot-image {
+  opacity: clamp(0, calc((var(--burger-travel) - 0.88) / 0.12), 1);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
