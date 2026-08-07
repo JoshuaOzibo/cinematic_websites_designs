@@ -20,6 +20,7 @@ const getFramePath = (index) => {
 export default function BurgerHeroCanvas() {
   const sectionRef = useRef(null);
   const canvasRef = useRef(null);
+  const bgRef = useRef(null);
   const burgerFramesRef = useRef([]);
   const frameRef = useRef(0);
   const rafRef = useRef(null);
@@ -78,10 +79,7 @@ export default function BurgerHeroCanvas() {
     ctx.save();
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
-
-    // 1. Pure White Clean Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
+    // Background is now a separate div (bgRef) so canvas is transparent — burger only
 
     // 2. Render Burger Frame in Exact Center
     if (burgerImg && burgerImg.complete && burgerImg.width > 0) {
@@ -159,11 +157,19 @@ export default function BurgerHeroCanvas() {
     // Phase 1 (0 → 10): Scrub through all 96 burger frames
     tl.to(animObj, { frame: TOTAL_FRAMES - 1, ease: 'none', duration: 10 });
 
-    // Phase 2 (10 → 12.5): Entire hero panel slides UP off viewport → reveals next section
-    // We move sectionRef (the whole pinned section — canvas + white bg) so nothing is left behind.
-    gsap.set(sectionRef.current, { willChange: 'transform' });
-    tl.to(sectionRef.current, {
+    // Phase 2 (10 → 12.5): Split-door exit —
+    //   White background layer slides UP (hero exits upward)
+    //   Burger canvas slides DOWN (burger falls into the next section)
+    gsap.set([bgRef.current, canvasRef.current], { willChange: 'transform' });
+
+    tl.to(bgRef.current, {
       y: '-100vh',
+      ease: 'power2.inOut',
+      duration: 2.5,
+    }, 10);
+
+    tl.to(canvasRef.current, {
+      y: '100vh',
       ease: 'power2.inOut',
       duration: 2.5,
     }, 10);
@@ -176,11 +182,24 @@ export default function BurgerHeroCanvas() {
   }, [isLoaded]);
 
   return (
-    <section 
-      ref={sectionRef} 
-      id="hero" 
-      className="relative w-full h-screen bg-white select-none border-b border-slate-100"
+    <section
+      ref={sectionRef}
+      id="hero"
+      className="relative w-full h-screen select-none"
+      style={{ overflow: 'visible' }}
     >
+      {/* ─── White Background Layer (slides UP on exit) ───────────────── */}
+      <div
+        ref={bgRef}
+        className="absolute inset-0 bg-white z-0"
+      />
+
+      {/* ─── Burger Canvas (slides DOWN on exit) ──────────────────────── */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full block z-10"
+      />
+
       {/* ─── Loading Screen ────────────────────────────────────────────── */}
       {!isLoaded && (
         <div className="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center px-4">
@@ -203,7 +222,7 @@ export default function BurgerHeroCanvas() {
             </div>
 
             <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-300"
                 style={{ width: `${loadingProgress}%` }}
               />
@@ -211,12 +230,6 @@ export default function BurgerHeroCanvas() {
           </div>
         </div>
       )}
-
-      {/* ─── Centered Burger Canvas Scene ────────────────────────────── */}
-      <canvas 
-        ref={canvasRef} 
-        className="absolute inset-0 w-full h-full block z-0"
-      />
     </section>
   );
 }
