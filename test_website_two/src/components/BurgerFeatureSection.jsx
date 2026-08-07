@@ -16,61 +16,31 @@ export default function BurgerFeatureSection() {
     if (!section) return;
 
     const ctx = gsap.context(() => {
-      // Scroll-driven handoff: As hero section scrolls off, burger slides down into left column
+      // Content panel rises into view as section enters the viewport
+      // (hero slides off above, this section is already in normal flow beneath)
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          start: 'top 95%',
-          end: 'top 20%',
-          scrub: 1.1,
+          start: 'top 90%',
+          end: 'top 15%',
+          scrub: 1.0,
           invalidateOnRefresh: true
         }
       });
 
-      // Left Burger Image: Slides down smoothly into left column position as hero scrolls off
-      tl.fromTo(imageRef.current, 
-        { 
-          y: -140,
-          scale: 1.08,
-          opacity: 0.2
-        },
-        { 
-          y: 0,
-          scale: 1.0,
-          opacity: 1.0,
-          ease: 'power2.out' 
-        },
+      // Right content: smooth rise
+      tl.fromTo(contentRef.current,
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, ease: 'power2.out' },
         0
       );
 
-      // Right Content Panel: Rises smoothly into view
-      tl.fromTo(contentRef.current, 
-        { 
-          y: 80,
-          opacity: 0.15
-        },
-        { 
-          y: 0,
-          opacity: 1.0,
-          ease: 'power2.out' 
-        },
-        0.1
-      );
-
-      // 2x2 Feature Items: Staggered reveal
+      // Feature grid items: staggered rise
       if (gridRef.current && gridRef.current.children) {
         tl.fromTo(gridRef.current.children,
-          { 
-            y: 30,
-            opacity: 0 
-          },
-          { 
-            y: 0,
-            opacity: 1,
-            stagger: 0.08,
-            ease: 'power2.out' 
-          },
-          0.25
+          { y: 40, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.08, ease: 'power2.out' },
+          0.15
         );
       }
 

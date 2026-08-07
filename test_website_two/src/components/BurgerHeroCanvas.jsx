@@ -142,9 +142,11 @@ export default function BurgerHeroCanvas() {
       scrollTrigger: {
         trigger: sectionRef.current,
         start: 'top top',
-        end: '+=2400',
+        // 2400px for frame assembly + 800px for the slide-off transition
+        end: '+=3200',
         scrub: 1.0,
         pin: true,
+        anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: () => {
           frameRef.current = animObj.frame;
@@ -154,7 +156,17 @@ export default function BurgerHeroCanvas() {
       }
     });
 
+    // Phase 1 (0 → 10): Scrub through all 96 burger frames
     tl.to(animObj, { frame: TOTAL_FRAMES - 1, ease: 'none', duration: 10 });
+
+    // Phase 2 (10 → 12.5): Entire hero panel slides UP off viewport → reveals next section
+    // We move sectionRef (the whole pinned section — canvas + white bg) so nothing is left behind.
+    gsap.set(sectionRef.current, { willChange: 'transform' });
+    tl.to(sectionRef.current, {
+      y: '-100vh',
+      ease: 'power2.inOut',
+      duration: 2.5,
+    }, 10);
 
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -167,7 +179,7 @@ export default function BurgerHeroCanvas() {
     <section 
       ref={sectionRef} 
       id="hero" 
-      className="relative w-full h-screen bg-white overflow-hidden select-none border-b border-slate-100"
+      className="relative w-full h-screen bg-white select-none border-b border-slate-100"
     >
       {/* ─── Loading Screen ────────────────────────────────────────────── */}
       {!isLoaded && (
