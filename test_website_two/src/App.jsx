@@ -73,10 +73,10 @@ export default function App() {
         onOpenReserve={openReserve}
       />
 
-      {/* Hero Canvas Component (Clean burger frame assembly in center) */}
+      {/* Hero Canvas Component (Centered Burger Frame Assembly) */}
       <BurgerHeroCanvas />
 
-      {/* Static Feature Section Directly After Hero (Matching Reference Layout) */}
+      {/* Feature Section (Burger slides down into left column as Hero scrolls off) */}
       <BurgerFeatureSection />
 
       {/* Gourmet Menu */}
