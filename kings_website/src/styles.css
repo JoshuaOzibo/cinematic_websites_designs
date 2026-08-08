@@ -1,0 +1,310 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * KINGS LOUNGE — design system
+ * Warm charcoal / espresso / antique gold. No pure black or white.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-display: "Cormorant Garamond", "Playfair Display", serif;
+  --font-sans: "Manrope", "Inter", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--primary);
+  --color-accent-foreground: var(--primary-foreground);
+  --color-gold: var(--primary);
+  --color-burgundy: var(--burgundy);
+  --color-cream: var(--cream);
+  --color-cream-foreground: var(--cream-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+
+  --shadow-lift: 0 18px 40px -18px oklch(0 0 0 / 0.75);
+  --shadow-card: 0 10px 30px -20px oklch(0 0 0 / 0.9);
+}
+
+:root {
+  --radius: 6px;
+
+  /* #0E0D0C */
+  --background: oklch(0.155 0.004 60);
+  /* #14110F */
+  --background-elevated: oklch(0.18 0.006 55);
+  /* #211B17 */
+  --surface: oklch(0.235 0.011 55);
+  --surface-raised: oklch(0.27 0.013 55);
+  /* #F4EDE4 */
+  --foreground: oklch(0.943 0.014 78);
+  /* #B9AFA2 */
+  --muted-foreground: oklch(0.735 0.017 78);
+  /* #C9A24B */
+  --primary: oklch(0.716 0.104 82);
+  --primary-foreground: oklch(0.155 0.004 60);
+  /* #5A1F24 */
+  --burgundy: oklch(0.29 0.086 20);
+  --cream: oklch(0.943 0.014 78);
+  --cream-foreground: oklch(0.19 0.006 55);
+  --destructive: oklch(0.55 0.19 25);
+  --border: oklch(0.943 0.014 78 / 0.12);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 140px;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ---------- utilities ---------- */
+
+@utility kicker {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+@utility label-track {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@utility price {
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+
+@utility grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@utility rule-gold {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--primary),
+    color-mix(in oklab, var(--primary) 15%, transparent)
+  );
+}
+
+@utility surface-panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+@utility btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 5px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms ease-in-out,
+    transform 180ms ease-in-out,
+    box-shadow 180ms ease-in-out;
+  &:hover {
+    background: color-mix(in oklab, var(--primary) 88%, black);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lift);
+  }
+  &:disabled {
+    opacity: 0.65;
+    transform: none;
+  }
+}
+
+@utility btn-ghost-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 5px;
+  border: 1px solid color-mix(in oklab, var(--primary) 70%, transparent);
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms ease-in-out,
+    transform 180ms ease-in-out,
+    border-color 180ms ease-in-out;
+  &:hover {
+    background: color-mix(in oklab, var(--primary) 12%, transparent);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+}
+
+@utility link-underline {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    height: 1px;
+    width: 100%;
+    background: var(--primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 260ms ease-in-out;
+  }
+  &:hover::after,
+  &[data-active="true"]::after {
+    transform: scaleX(1);
+  }
+}
+
+@utility field {
+  width: 100%;
+  min-height: 48px;
+  background: color-mix(in oklab, var(--surface) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0 0.9rem;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+  &::placeholder {
+    color: color-mix(in oklab, var(--muted-foreground) 80%, transparent);
+  }
+  &:focus {
+    outline: none;
+    border-color: color-mix(in oklab, var(--primary) 70%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 28%, transparent);
+  }
+}
+
+/* ---------- motion ---------- */
+
+@keyframes kl-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes kl-ken-burns {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1.16);
+  }
+}
+
+@keyframes kl-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 22px transparent;
+  }
+}
+
+@utility reveal {
+  opacity: 0;
+  &[data-visible="true"] {
+    animation: kl-fade-up 760ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  }
+}
+
+@utility ken-burns {
+  animation: kl-ken-burns 48s ease-in-out infinite alternate;
+}
+
+@utility pulse-once {
+  animation: kl-pulse-ring 1.8s ease-out 2;
+}
