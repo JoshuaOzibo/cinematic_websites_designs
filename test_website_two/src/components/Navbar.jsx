@@ -27,12 +27,6 @@ export default function Navbar({ cartCount, onOpenCart, onOpenReserve }) {
             <Sparkles size={13} className="text-amber-500" />
             <span>Anatomy</span>
           </a>
-          <a href="#menu" className="font-sans text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-amber-400 transition-colors cursor-pointer">
-            Menu
-          </a>
-          <a href="#craftsmanship" className="font-sans text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-amber-400 transition-colors cursor-pointer">
-            Craftsmanship
-          </a>
           <a href="#location" className="font-sans text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1">
             <MapPin size={13} className="text-orange-400" />
             <span>Locate Us</span>

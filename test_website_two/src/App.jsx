@@ -3,8 +3,6 @@ import Navbar from './components/Navbar';
 import BurgerHeroCanvas from './components/BurgerHeroCanvas';
 import BurgerFeatureSection from './components/BurgerFeatureSection';
 import BurgerFeatureSection2 from './components/BurgerFeatureSection2';
-import GourmetMenu from './components/GourmetMenu';
-import CraftsmanshipBento from './components/CraftsmanshipBento';
 import ReservationDrawer from './components/ReservationDrawer';
 import Footer from './components/Footer';
 
@@ -88,13 +86,7 @@ export default function App() {
       {/* Feature Section 2 — burger re-launches and flies into the RIGHT slot */}
       <BurgerFeatureSection2 />
 
-      {/* Gourmet Menu */}
-      <GourmetMenu
-        onAddToCart={handleAddToCart}
-      />
 
-      {/* Craftsmanship & Diagnostics Bento */}
-      <CraftsmanshipBento />
 
       {/* Reservation & Order Summary Drawer */}
       <ReservationDrawer
