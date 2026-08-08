@@ -33,25 +33,28 @@ body {
 }
 
 .burger-slot-placeholder {
-  opacity: clamp(0, calc((0.4 - var(--burger-travel)) / 0.4), 1);
+  /* Fade out well before the burger arrives */
+  opacity: clamp(0, calc((0.3 - var(--burger-travel)) / 0.3), 1);
 }
 
 .burger-slot-image {
-  /* Fades IN as the burger arrives (Phase 2), fades OUT as it lifts off (Phase 3). */
+  /* Fades IN only in the last 3% of travel (canvas & static img nearly co-located at this point).
+     Fades OUT almost instantly when Phase 3 starts (travel-2 0 → 0.03). */
   opacity: calc(
-    clamp(0, calc((var(--burger-travel)   - 0.88) / 0.12), 1) *
-    clamp(0, calc((0.25 - var(--burger-travel-2))  / 0.25), 1)
+    clamp(0, calc((var(--burger-travel)   - 0.97) / 0.03), 1) *
+    clamp(0, calc((0.03 - var(--burger-travel-2)) / 0.03), 1)
   );
 }
 
 /* ── Second burger slot (dark section, right side) ──────────────────────────
    Driven by --burger-travel-2 written by Phase 3 of BurgerHeroCanvas. */
 .burger-slot-placeholder-2 {
-  opacity: clamp(0, calc((0.4 - var(--burger-travel-2)) / 0.4), 1);
+  opacity: clamp(0, calc((0.3 - var(--burger-travel-2)) / 0.3), 1);
 }
 
 .burger-slot-image-2 {
-  opacity: clamp(0, calc((var(--burger-travel-2) - 0.88) / 0.12), 1);
+  /* Same tight HANDOFF window as slot 1 */
+  opacity: clamp(0, calc((var(--burger-travel-2) - 0.97) / 0.03), 1);
 }
 
 /* Custom Scrollbar */

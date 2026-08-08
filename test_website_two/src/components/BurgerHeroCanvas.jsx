@@ -16,7 +16,7 @@ const BEAT_VH = 0.3;
 const TRAVEL_VH = 1;
 const TRACK_VH = ASSEMBLY_VH + BEAT_VH + TRAVEL_VH;
 /** Travel progress at which the canvas hands off to each static <img> in its slot. */
-const HANDOFF = 0.88;
+const HANDOFF = 0.97;  // Start crossfade very late so canvas & static img are nearly co-located
 
 /** Landing targets */
 export const LANDING_SLOT_ID        = 'burger-landing-slot';
@@ -174,26 +174,6 @@ export default function BurgerHeroCanvas() {
       }
 
       ctx.globalAlpha = alpha;
-
-      // Contact shadow
-      const sx = box.x + box.w * 0.5;
-      const sy = box.y + box.h * 0.755;
-      const rx = box.w * 0.18;
-      const ry = box.h * 0.038;
-
-      ctx.save();
-      ctx.translate(sx, sy);
-      ctx.scale(1, ry / rx);
-      const shadow = ctx.createRadialGradient(0, 0, rx * 0.1, 0, 0, rx);
-      shadow.addColorStop(0,   'rgba(0,0,0,0.16)');
-      shadow.addColorStop(0.5, 'rgba(0,0,0,0.05)');
-      shadow.addColorStop(1,   'rgba(0,0,0,0)');
-      ctx.fillStyle = shadow;
-      ctx.beginPath();
-      ctx.arc(0, 0, rx, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
       ctx.drawImage(img, box.x, box.y, box.w, box.h);
       ctx.restore();
     };
