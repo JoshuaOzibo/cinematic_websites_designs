@@ -38,11 +38,11 @@ body {
 }
 
 .burger-slot-image {
-  /* Fades IN only in the last 3% of travel (canvas & static img nearly co-located at this point).
-     Fades OUT almost instantly when Phase 3 starts (travel-2 0 → 0.03). */
+  /* Fades IN only in the last 1% of travel (canvas & static img nearly co-located at this point).
+     Fades OUT almost instantly when Phase 3 starts (travel-2 0 → 0.01). */
   opacity: calc(
-    clamp(0, calc((var(--burger-travel)   - 0.97) / 0.03), 1) *
-    clamp(0, calc((0.03 - var(--burger-travel-2)) / 0.03), 1)
+    clamp(0, calc((var(--burger-travel)   - 0.99) / 0.01), 1) *
+    clamp(0, calc((0.01 - var(--burger-travel-2)) / 0.01), 1)
   );
 }
 
@@ -54,7 +54,7 @@ body {
 
 .burger-slot-image-2 {
   /* Same tight HANDOFF window as slot 1 */
-  opacity: clamp(0, calc((var(--burger-travel-2) - 0.97) / 0.03), 1);
+  opacity: clamp(0, calc((var(--burger-travel-2) - 0.99) / 0.01), 1);
 }
 
 /* Custom Scrollbar */

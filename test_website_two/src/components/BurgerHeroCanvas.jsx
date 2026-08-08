@@ -16,7 +16,7 @@ const BEAT_VH = 0.3;
 const TRAVEL_VH = 1;
 const TRACK_VH = ASSEMBLY_VH + BEAT_VH + TRAVEL_VH;
 /** Travel progress at which the canvas hands off to each static <img> in its slot. */
-const HANDOFF = 0.97;  // Start crossfade very late so canvas & static img are nearly co-located
+const HANDOFF = 0.99;  // Start crossfade very late so canvas & static img are nearly co-located
 
 /** Landing targets */
 export const LANDING_SLOT_ID        = 'burger-landing-slot';
@@ -217,7 +217,7 @@ export default function BurgerHeroCanvas() {
           scrollTrigger: {
             trigger: feature,
             start: 'top bottom',
-            end: 'top top',
+            end: 'top top+=20%',
             scrub: true,
             invalidateOnRefresh: true,
           },
@@ -240,8 +240,8 @@ export default function BurgerHeroCanvas() {
           ease: 'none',
           scrollTrigger: {
             trigger: feature2,
-            start: 'top bottom',
-            end: 'top top',
+            start: 'top+=30% bottom',
+            end: 'top top+=20%',
             scrub: true,
             invalidateOnRefresh: true,
           },
