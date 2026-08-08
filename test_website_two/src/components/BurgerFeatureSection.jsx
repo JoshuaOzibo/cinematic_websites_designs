@@ -114,6 +114,38 @@ export default function BurgerFeatureSection() {
       id={FEATURE_SECTION_ID}
       className="relative w-full min-h-screen bg-white overflow-hidden select-none"
     >
+      {/* Top Wave (Transition from Hero) */}
+      <div className="section-wave-top">
+        <svg viewBox="0 0 1440 120" fill="none" preserveAspectRatio="none">
+          {/* Back Wave (Semi-transparent) */}
+          <path 
+            d="M0,40 C 360,120, 720,10, 1080,110 C 1260,60, 1360,30, 1440,50 L 1440,0 L 0,0 Z" 
+            fill="rgba(255, 255, 255, 0.25)"
+          />
+          {/* Front Wave (Solid White) */}
+          <path 
+            d="M0,60 C 240,110, 480,10, 720,70 C 960,120, 1200,20, 1440,60 L 1440,0 L 0,0 Z" 
+            fill="#ffffff"
+          />
+        </svg>
+      </div>
+
+      {/* Bottom Wave (Transition to Section 2 - Dark) */}
+      <div className="section-wave-bottom">
+        <svg viewBox="0 0 1440 120" fill="none" preserveAspectRatio="none">
+          {/* Back Wave (Semi-transparent) */}
+          <path 
+            d="M0,80 C 360,0, 720,110, 1080,20 C 1260,70, 1360,90, 1440,70 L 1440,120 L 0,120 Z" 
+            fill="rgba(14, 11, 7, 0.35)"
+          />
+          {/* Front Wave (Solid Dark) */}
+          <path 
+            d="M0,60 C 240,10, 480,110, 720,60 C 960,10, 1200,110, 1440,60 L 1440,120 L 0,120 Z" 
+            fill="#0e0b07"
+          />
+        </svg>
+      </div>
+
       {/* ── Subtle warm tint strip behind burger side ─────────────────── */}
       <div className="absolute inset-y-0 left-0 w-1/2 bg-[#fdfaf7] pointer-events-none" />
 

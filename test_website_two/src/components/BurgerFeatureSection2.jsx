@@ -110,6 +110,22 @@ export default function BurgerFeatureSection2() {
       id={FEATURE_SECTION_2_ID}
       className="relative w-full min-h-screen bg-[#0e0b07] overflow-hidden select-none"
     >
+      {/* Bottom Wave (Transition to Gourmet Menu - Dark Black) */}
+      <div className="section-wave-bottom">
+        <svg viewBox="0 0 1440 120" fill="none" preserveAspectRatio="none">
+          {/* Back Wave (Semi-transparent) */}
+          <path 
+            d="M0,80 C 360,0, 720,110, 1080,20 C 1260,70, 1360,90, 1440,70 L 1440,120 L 0,120 Z" 
+            fill="rgba(6, 6, 10, 0.4)"
+          />
+          {/* Front Wave (Solid Black) */}
+          <path 
+            d="M0,60 C 240,10, 480,110, 720,60 C 960,10, 1200,110, 1440,60 L 1440,120 L 0,120 Z" 
+            fill="#06060a"
+          />
+        </svg>
+      </div>
+
       {/* Warm tint strip — RIGHT side (where the burger lands) */}
       <div className="absolute inset-y-0 right-0 w-1/2 bg-[#110d06] pointer-events-none" />
 
