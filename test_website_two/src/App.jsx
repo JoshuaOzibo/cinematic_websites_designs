@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import BurgerHeroCanvas from './components/BurgerHeroCanvas';
 import BurgerFeatureSection from './components/BurgerFeatureSection';
+import BurgerFeatureSection2 from './components/BurgerFeatureSection2';
 import GourmetMenu from './components/GourmetMenu';
 import CraftsmanshipBento from './components/CraftsmanshipBento';
 import ReservationDrawer from './components/ReservationDrawer';
@@ -81,8 +82,11 @@ export default function App() {
           the finished burger into BurgerFeatureSection's landing slot. */}
       <BurgerHeroCanvas />
 
-      {/* Feature Section — empty frame on the left is filled by the arriving burger */}
+      {/* Feature Section 1 — burger flies into the LEFT slot */}
       <BurgerFeatureSection />
+
+      {/* Feature Section 2 — burger re-launches and flies into the RIGHT slot */}
+      <BurgerFeatureSection2 />
 
       {/* Gourmet Menu */}
       <GourmetMenu

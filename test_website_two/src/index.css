@@ -29,6 +29,7 @@ body {
    fades in over the last stretch, meeting the canvas exactly on the slot. */
 :root {
   --burger-travel: 0;
+  --burger-travel-2: 0;
 }
 
 .burger-slot-placeholder {
@@ -37,6 +38,16 @@ body {
 
 .burger-slot-image {
   opacity: clamp(0, calc((var(--burger-travel) - 0.88) / 0.12), 1);
+}
+
+/* ── Second burger slot (dark section, right side) ──────────────────────────
+   Driven by --burger-travel-2 written by Phase 3 of BurgerHeroCanvas. */
+.burger-slot-placeholder-2 {
+  opacity: clamp(0, calc((0.4 - var(--burger-travel-2)) / 0.4), 1);
+}
+
+.burger-slot-image-2 {
+  opacity: clamp(0, calc((var(--burger-travel-2) - 0.88) / 0.12), 1);
 }
 
 /* Custom Scrollbar */
