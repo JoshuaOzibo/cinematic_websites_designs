@@ -37,7 +37,11 @@ body {
 }
 
 .burger-slot-image {
-  opacity: clamp(0, calc((var(--burger-travel) - 0.88) / 0.12), 1);
+  /* Fades IN as the burger arrives (Phase 2), fades OUT as it lifts off (Phase 3). */
+  opacity: calc(
+    clamp(0, calc((var(--burger-travel)   - 0.88) / 0.12), 1) *
+    clamp(0, calc((0.25 - var(--burger-travel-2))  / 0.25), 1)
+  );
 }
 
 /* ── Second burger slot (dark section, right side) ──────────────────────────

@@ -117,36 +117,53 @@ export default function BurgerHeroCanvas() {
       const t  = clamp01(travelRef.current);
       const t2 = clamp01(travel2Ref.current);
 
-      // ── Decide which flight is active ────────────────────────────────────
-      // Phase 2 (hero → slot 1):  t  0→1, t2 = 0
-      // Phase 3 (hero → slot 2):  t2 0→1  (burger re-appears from center)
-      // Between phases (landed):   t = 1, t2 = 0  → canvas fades out (static img takes over)
+      // ── Determine which flight phase is active ───────────────────────────
+      // Phase 2: hero-centre → slot 1  (t  0→1, t2 = 0)
+      // Phase 3: slot 1      → slot 2  (t2 0→1, t  = 1)
+      // Resting: t = 1, t2 = 0         → static img in slot 1 holds, canvas hidden
+      const inPhase2 = t > 0 && t2 === 0;
+      const inPhase3 = t2 > 0;
+      const resting  = t === 1 && t2 === 0;
 
-      let activeT  = t;
-      let slotId   = LANDING_SLOT_ID;
-      let isPhase3 = t2 > 0;
-
-      if (isPhase3) {
-        activeT = t2;
-        slotId  = LANDING_SLOT_2_ID;
+      // Alpha controls canvas visibility at the tail end of each flight.
+      let alpha;
+      if (inPhase3) {
+        alpha = t2 <= HANDOFF ? 1 : 1 - (t2 - HANDOFF) / (1 - HANDOFF);
+      } else {
+        alpha = t  <= HANDOFF ? 1 : 1 - (t  - HANDOFF) / (1 - HANDOFF);
       }
 
-      const alpha = activeT <= HANDOFF ? 1 : 1 - (activeT - HANDOFF) / (1 - HANDOFF);
+      const shouldHide = resting || alpha <= 0.002;
+      canvas.style.visibility = shouldHide ? 'hidden' : 'visible';
+      if (shouldHide) { ctx.restore(); return; }
 
-      // Between the two flight phases (t=1, t2=0) the canvas is invisible —
-      // the static img in slot 1 holds the burger visually.
-      canvas.style.visibility = (alpha <= 0.002 && !isPhase3) || (t === 1 && t2 === 0)
-        ? 'hidden'
-        : 'visible';
-      if (canvas.style.visibility === 'hidden') { ctx.restore(); return; }
+      // ── Compute the burger's bounding box for this frame ─────────────────
+      let box = getHeroBox(w, h); // default: centred in the viewport (Phase 2 start)
 
-      let box = getHeroBox(w, h);
-
-      if (activeT > 0) {
-        const slot = document.getElementById(slotId);
-        if (slot) {
-          const r = slot.getBoundingClientRect();
-          const e = easeInOutCubic(activeT);
+      if (inPhase3) {
+        // Phase 3: burger travels from slot 1's live rect → slot 2's live rect.
+        // getBoundingClientRect() tracks each element's viewport position every
+        // frame, so as slot 1 scrolls off the top and slot 2 rises from below,
+        // the burger naturally follows — a true physical lift-off and landing.
+        const slot1 = document.getElementById(LANDING_SLOT_ID);
+        const slot2 = document.getElementById(LANDING_SLOT_2_ID);
+        if (slot1 && slot2) {
+          const r1 = slot1.getBoundingClientRect();
+          const r2 = slot2.getBoundingClientRect();
+          const e  = easeInOutCubic(t2);
+          box = {
+            x: lerp(r1.left,   r2.left,   e),
+            y: lerp(r1.top,    r2.top,    e),
+            w: lerp(r1.width,  r2.width,  e),
+            h: lerp(r1.height, r2.height, e),
+          };
+        }
+      } else if (inPhase2) {
+        // Phase 2: burger travels from hero centre → slot 1's live rect.
+        const slot1 = document.getElementById(LANDING_SLOT_ID);
+        if (slot1) {
+          const r = slot1.getBoundingClientRect();
+          const e = easeInOutCubic(t);
           box = {
             x: lerp(box.x, r.left,   e),
             y: lerp(box.y, r.top,    e),
@@ -156,7 +173,7 @@ export default function BurgerHeroCanvas() {
         }
       }
 
-      ctx.globalAlpha = isPhase3 ? (alpha <= 0.002 ? 0 : alpha) : alpha;
+      ctx.globalAlpha = alpha;
 
       // Contact shadow
       const sx = box.x + box.w * 0.5;
