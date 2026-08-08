@@ -57,8 +57,9 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   // NOTE: no `overflow-x-hidden` on the root — it computes overflow-y:auto,
-  // turning this div into a scroll container and breaking the hero's sticky
-  // panel. Horizontal clipping is handled by `body` in index.css instead.
+  // turning this div into its own scroll container, which GSAP ScrollTrigger
+  // won't track (it watches window scroll by default) and breaks the hero's
+  // pin. Horizontal clipping is handled by `body` in index.css instead.
   return (
     <div className="min-h-screen bg-[#06060a] text-slate-100 font-sans selection:bg-amber-500/30 selection:text-amber-200">
 

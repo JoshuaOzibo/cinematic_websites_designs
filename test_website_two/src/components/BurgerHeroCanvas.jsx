@@ -8,10 +8,15 @@ gsap.registerPlugin(ScrollTrigger);
 const TOTAL_FRAMES = 96;
 const FRAME_RATIO = 1280 / 720;     // source frames are 16:9 with the burger centred
 
-/** Hero scroll track height, in viewport heights. Sticky panel unsticks at (TRACK - 1). */
-const TRACK_VH = 4;
-/** Assembly finishes this many viewport-heights in, leaving a short beat before the flight. */
+/** Scroll (in viewport heights) spent assembling the burger, while genuinely pinned. */
 const ASSEMBLY_VH = 2.7;
+/** Short pause, still pinned, between "assembly done" and "unpin". */
+const BEAT_VH = 0.3;
+/** Scroll spent (after unpin, real page scroll) flying the burger into the landing slot. */
+const TRAVEL_VH = 1;
+/** Total scroll track height. Pin holds for (TRACK_VH - TRAVEL_VH); the final TRAVEL_VH
+ *  is real, unpinned scrolling — the feature section rising into view IS the travel. */
+const TRACK_VH = ASSEMBLY_VH + BEAT_VH + TRAVEL_VH;
 /** Travel progress at which the canvas hands off to the static <img> in the slot. */
 const HANDOFF = 0.88;
 
@@ -43,16 +48,20 @@ const getHeroBox = (w, h) => {
 };
 
 export default function BurgerHeroCanvas() {
-  const sectionRef = useRef(null);
-  const canvasRef = useRef(null);
-  const framesRef = useRef([]);
+  const sectionRef = useRef(null);   // outer scroll track, TRACK_VH tall
+  const pinRef     = useRef(null);   // inner panel that gets pinned
+  const canvasRef  = useRef(null);
+  const framesRef  = useRef([]);
 
-  const frameRef = useRef(0);      // 0 → 95, assembly
-  const travelRef = useRef(0);     // 0 = hero centre, 1 = landed in the feature slot
-  const rafRef = useRef(null);
+  const frameRef  = useRef(0);      // 0 → 95, assembly
+  const travelRef = useRef(0);      // 0 = hero centre, 1 = landed in the feature slot
+  const rafRef    = useRef(null);
+
+  // Cache canvas dimensions so we only reallocate the backing store on actual size changes.
+  const canvasSizeRef = useRef({ w: 0, h: 0, dpr: 1 });
 
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded]               = useState(false);
 
   // ── Preload every assembly frame ───────────────────────────────────────────
   useEffect(() => {
@@ -78,35 +87,44 @@ export default function BurgerHeroCanvas() {
     }
     framesRef.current = frames;
 
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, []);
 
   // ── Scroll-driven rendering ────────────────────────────────────────────────
   useEffect(() => {
     if (!isLoaded) return;
 
-    const section = sectionRef.current;
-    if (!section) return;
+    const section   = sectionRef.current;
+    const pinTarget = pinRef.current;
+    if (!section || !pinTarget) return;
 
     /**
-     * Draws the current frame at the current point along the hero → slot flight.
-     * The landing box is read live from the slot's bounding rect, so the burger
-     * tracks the section as it scrolls up and lands exactly on it.
+     * Sync canvas backing-store size. Reallocates only when dimensions change,
+     * avoiding the GPU texture upload that would otherwise happen every frame.
+     */
+    const syncSize = (canvas) => {
+      const w   = canvas.clientWidth;
+      const h   = canvas.clientHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const c   = canvasSizeRef.current;
+      if (c.w !== w || c.h !== h || c.dpr !== dpr) {
+        canvas.width  = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        canvasSizeRef.current = { w, h, dpr };
+      }
+      return { w, h, dpr };
+    };
+
+    /**
+     * Draws the current frame at the current travel position.
+     * Called SYNCHRONOUSLY inside GSAP's onUpdate — no requestAnimationFrame
+     * wrapper — so the canvas is always in perfect lockstep with the scroll.
      */
     const draw = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
-        canvas.width = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
-      }
+      const { w, h, dpr } = syncSize(canvas);
 
       const ctx = canvas.getContext('2d');
       ctx.save();
@@ -115,21 +133,13 @@ export default function BurgerHeroCanvas() {
 
       const idx = Math.min(Math.max(Math.round(frameRef.current), 0), TOTAL_FRAMES - 1);
       const img = framesRef.current[idx];
-      if (!img || !img.complete || !img.naturalWidth) {
-        ctx.restore();
-        return;
-      }
+      if (!img || !img.complete || !img.naturalWidth) { ctx.restore(); return; }
 
-      const t = clamp01(travelRef.current);
-
-      // Fade the canvas out over the last stretch; the static slot <img> fades in
-      // to meet it. By then both occupy the same box, so the swap is invisible.
+      const t     = clamp01(travelRef.current);
       const alpha = t <= HANDOFF ? 1 : 1 - (t - HANDOFF) / (1 - HANDOFF);
+
       canvas.style.visibility = alpha <= 0.002 ? 'hidden' : 'visible';
-      if (alpha <= 0.002) {
-        ctx.restore();
-        return;
-      }
+      if (alpha <= 0.002) { ctx.restore(); return; }
 
       let box = getHeroBox(w, h);
 
@@ -139,9 +149,9 @@ export default function BurgerHeroCanvas() {
           const r = slot.getBoundingClientRect();
           const e = easeInOutCubic(t);
           box = {
-            x: lerp(box.x, r.left, e),
-            y: lerp(box.y, r.top, e),
-            w: lerp(box.w, r.width, e),
+            x: lerp(box.x, r.left,  e),
+            y: lerp(box.y, r.top,   e),
+            w: lerp(box.w, r.width,  e),
             h: lerp(box.h, r.height, e),
           };
         }
@@ -149,7 +159,7 @@ export default function BurgerHeroCanvas() {
 
       ctx.globalAlpha = alpha;
 
-      // Contact shadow, sat under the burger's base (~0.755 down the 16:9 frame)
+      // Contact shadow under the burger's base (~0.755 down the 16:9 frame)
       const sx = box.x + box.w * 0.5;
       const sy = box.y + box.h * 0.755;
       const rx = box.w * 0.18;
@@ -159,9 +169,9 @@ export default function BurgerHeroCanvas() {
       ctx.translate(sx, sy);
       ctx.scale(1, ry / rx);
       const shadow = ctx.createRadialGradient(0, 0, rx * 0.1, 0, 0, rx);
-      shadow.addColorStop(0, 'rgba(0, 0, 0, 0.16)');
-      shadow.addColorStop(0.5, 'rgba(0, 0, 0, 0.05)');
-      shadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      shadow.addColorStop(0,   'rgba(0,0,0,0.16)');
+      shadow.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+      shadow.addColorStop(1,   'rgba(0,0,0,0)');
       ctx.fillStyle = shadow;
       ctx.beginPath();
       ctx.arc(0, 0, rx, 0, Math.PI * 2);
@@ -172,40 +182,42 @@ export default function BurgerHeroCanvas() {
       ctx.restore();
     };
 
-    const scheduleDraw = () => {
+    // Resize only needs a RAf — the user won't be scrubbing during resize.
+    const handleResize = () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(draw);
     };
-
-    draw();
-
-    const handleResize = () => scheduleDraw();
     window.addEventListener('resize', handleResize);
 
+    draw(); // initial paint
+
     const ctxGsap = gsap.context(() => {
-      // ── Phase 1: assemble the burger while the hero panel is stuck ──────────
+
+      // ── Phase 1: assemble the burger — genuinely pinned ─────────────────────
+      // scrub: true  →  perfectly 1-to-1 with scroll position.
+      // No lag, no interpolation, no hang. Frames advance exactly as fast as
+      // you scroll, giving you full physical control over the assembly.
       const assembly = { frame: 0 };
       gsap.to(assembly, {
         frame: TOTAL_FRAMES - 1,
         ease: 'none',
         scrollTrigger: {
           trigger: section,
+          pin: pinTarget,
           start: 'top top',
-          end: () => '+=' + window.innerHeight * ASSEMBLY_VH,
-          scrub: 0.7,
+          end: 'bottom bottom',
+          scrub: true,          // ← 1:1, zero lag
+          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
-        onUpdate: () => {
+        onUpdate() {
           frameRef.current = assembly.frame;
-          scheduleDraw();
+          draw();               // ← synchronous — no RAF bounce
         },
       });
 
       // ── Phase 2: fly the finished burger into the feature section's slot ────
-      // Runs from the moment the feature section touches the bottom of the
-      // viewport until its top reaches the top — exactly the window in which the
-      // hero panel unsticks and slides away, so the burger appears to ride down
-      // out of the hero and settle into the empty frame.
+      // scrub: true keeps the flying burger perfectly locked to scroll position.
       const feature = document.getElementById(FEATURE_SECTION_ID);
       if (feature) {
         const travel = { t: 0 };
@@ -216,20 +228,20 @@ export default function BurgerHeroCanvas() {
             trigger: feature,
             start: 'top bottom',
             end: 'top top',
-            scrub: 0.7,
+            scrub: true,        // ← 1:1, zero lag
             invalidateOnRefresh: true,
           },
-          onUpdate: () => {
+          onUpdate() {
             travelRef.current = travel.t;
-            // Drives the slot placeholder out and the static burger in (see index.css)
             document.documentElement.style.setProperty('--burger-travel', String(travel.t));
-            scheduleDraw();
+            draw();             // ← synchronous — no RAF bounce
           },
         });
       }
+
     }, section);
 
-    // Later sections settle after mount; make sure trigger ends are measured right.
+    // Refresh after mount so trigger end positions are measured correctly.
     const refreshId = requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => {
@@ -247,21 +259,20 @@ export default function BurgerHeroCanvas() {
       className="relative w-full select-none"
       style={{ height: `${TRACK_VH * 100}vh` }}
     >
-      {/* ─── Sticky hero panel — unsticks and slides away as the burger departs ─── */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-white">
+      {/* ─── Pinned panel ─── */}
+      <div ref={pinRef} className="h-screen w-full overflow-hidden bg-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,176,60,0.10),rgba(255,255,255,0)_62%)]" />
       </div>
 
-      {/* ─── Travelling burger. Fixed to the viewport so it can outlive the hero. ───
-          Must stay clear of transformed ancestors, or `fixed` would resolve
-          against them instead of the viewport. */}
+      {/* ─── Travelling burger canvas ─── */}
       <canvas
         ref={canvasRef}
         aria-hidden="true"
         className="fixed inset-0 w-full h-full block z-30 pointer-events-none"
+        style={{ willChange: 'contents' }}
       />
 
-      {/* ─── Loading Screen ────────────────────────────────────────────────────── */}
+      {/* ─── Loading Screen ─── */}
       {!isLoaded && (
         <div className="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center px-4">
           <div className="flex flex-col items-center gap-6 max-w-sm w-full">
