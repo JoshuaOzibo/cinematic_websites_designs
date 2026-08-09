@@ -28,7 +28,17 @@ function Placeholder({ seed }: { seed: number }) {
   );
 }
 
-function ItemCard({ item, index, tier }: { item: MenuItem; index: number; tier: MenuCategory["tier"] }) {
+function ItemCard({
+  item,
+  index,
+  tier,
+  image,
+}: {
+  item: MenuItem;
+  index: number;
+  tier: MenuCategory["tier"];
+  image: string;
+}) {
   return (
     <Reveal
       as="li"
@@ -41,6 +51,15 @@ function ItemCard({ item, index, tier }: { item: MenuItem; index: number; tier: 
         }`}
       >
         <Placeholder seed={index} />
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-250 ease-in-out group-hover:scale-105"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
         <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,13,12,0.55),transparent_55%)] transition-transform duration-250 ease-in-out group-hover:scale-105" />
       </div>
       <div className="flex items-start justify-between gap-4 p-4 sm:p-5">
@@ -121,7 +140,7 @@ export function MenuBrowser() {
 
             <ul className={`mt-12 grid gap-6 sm:gap-8 ${gridClass(category.tier)}`}>
               {category.items.map((item, i) => (
-                <ItemCard key={item.name} item={item} index={i} tier={category.tier} />
+                <ItemCard key={item.name} item={item} index={i} tier={category.tier} image={category.image} />
               ))}
             </ul>
           </section>

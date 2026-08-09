@@ -10,6 +10,8 @@ export type MenuCategory = {
   blurb: string;
   /** premium categories get a roomier grid */
   tier: "premium" | "standard" | "compact";
+  /** shared card image for every item in this category, e.g. "/images/menu/bar.jpg" */
+  image: string;
   items: MenuItem[];
 };
 
@@ -19,6 +21,7 @@ const rawMenu: MenuCategory[] = [
     title: "Bar",
     blurb: "The counter where the night begins — pours, mixers and house measures.",
     tier: "compact",
+    image: "/images/menu/bar.jpg",
     items: [
       { name: "Teeling", price: 70000 },
       { name: "Margarita", price: 8000 },
@@ -93,6 +96,7 @@ const rawMenu: MenuCategory[] = [
     title: "Cocktails, Mocktails & Smoothies",
     blurb: "Stirred slow, built to order. Ask the bar for the off-menu list.",
     tier: "standard",
+    image: "/images/menu/cocktails.jpg",
     items: [
       { name: "Adios Mother Fucker", price: 8000 },
       { name: "Capman Mocktail", price: 6000 },
@@ -107,6 +111,7 @@ const rawMenu: MenuCategory[] = [
     title: "Soft Drinks & Juice",
     blurb: "Chilled, non-alcoholic and always on ice.",
     tier: "compact",
+    image: "/images/menu/soft.jpg",
     items: [
       { name: "Chapman", price: 8000 },
       { name: "Cranberry Lime", price: 6000 },
@@ -131,6 +136,7 @@ const rawMenu: MenuCategory[] = [
     title: "Beers, Ciders & Bitters",
     blurb: "Cold, quick and always in stock.",
     tier: "compact",
+    image: "/images/menu/beers.jpg",
     items: [
       { name: "Brass Monkey", price: 8000 },
       { name: "Cosmopolitan", price: 8000 },
@@ -159,6 +165,7 @@ const rawMenu: MenuCategory[] = [
     title: "Spirit, Tequila & Liquor",
     blurb: "The reserve shelf. Rare bottles, poured with ceremony.",
     tier: "premium",
+    image: "/images/menu/spirits.jpg",
     items: [
       { name: "Green Adventure", price: 6000 },
       { name: "Azul White", price: 400000 },
@@ -183,6 +190,7 @@ const rawMenu: MenuCategory[] = [
     title: "Shots",
     blurb: "Short, cold and to the point.",
     tier: "compact",
+    image: "/images/menu/shots.jpg",
     items: [
       { name: "Brandy Shot", price: 3000 },
       { name: "Gin Shot", price: 3000 },
@@ -194,6 +202,7 @@ const rawMenu: MenuCategory[] = [
     title: "Kitchen",
     blurb: "Grill-led plates and small bites, served till late.",
     tier: "standard",
+    image: "/images/menu/kitchen.jpg",
     items: [
       { name: "Turkey Sauce", price: 8000 },
       { name: "Chicken Sauce", price: 5000 },
@@ -234,6 +243,7 @@ const rawMenu: MenuCategory[] = [
     title: "Champagne & Wine",
     blurb: "Cellared cold. From Sunday bottles to milestone magnums.",
     tier: "premium",
+    image: "/images/menu/wine.jpg",
     items: [
       { name: "Clicqout Veuve Rich", price: 250000 },
       { name: "Chamdor Wine", price: 20000 },
@@ -251,6 +261,7 @@ const rawMenu: MenuCategory[] = [
     title: "Shisha",
     blurb: "Hand-packed bowls, fresh coals, changed on request.",
     tier: "standard",
+    image: "/images/menu/shisha.jpg",
     items: [
       { name: "Shisha", price: 10000 },
     ],
@@ -260,6 +271,7 @@ const rawMenu: MenuCategory[] = [
     title: "Shisha & Other Service",
     blurb: "Add-ons for the table.",
     tier: "compact",
+    image: "/images/menu/shisha-service.jpg",
     items: [
       { name: "Advert Package", price: 20000 },
     ],
@@ -269,6 +281,7 @@ const rawMenu: MenuCategory[] = [
     title: "Photo Shoot",
     blurb: "Our lounge, lit for the camera. Sessions by appointment.",
     tier: "standard",
+    image: "/images/menu/photo-shoot.jpg",
     items: [
       { name: "Photo Shot Phone", price: 10000 },
       { name: "Takeout Brown Pack", price: 1000 },
