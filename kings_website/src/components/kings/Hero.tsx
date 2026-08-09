@@ -8,6 +8,7 @@ const LETTERS = ["K", "I", "N", "G", "S"];
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
+  const pinSpacerRef = useRef<HTMLDivElement>(null);
 
   /* The arch is a doorway, so scrolling walks you through it: the aperture
      opens until the photo is the room, the bottle settles from monument to
@@ -19,16 +20,23 @@ export function Hero() {
      keep driving it and there is no second copy of the arch arithmetic. */
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    const pinSpacer = pinSpacerRef.current;
+    if (!section || !pinSpacer) return;
 
     if (typeof window !== "undefined") {
       if ("scrollRestoration" in window.history) {
         window.history.scrollRestoration = "manual";
       }
+      // Force instant scroll by bypassing smooth scrolling during registration
+      const html = document.documentElement;
+      const originalScrollBehavior = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto";
       window.scrollTo(0, 0);
+      html.style.scrollBehavior = originalScrollBehavior;
     }
 
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.clearScrollMemory();
     // 100svh changes every time a mobile URL bar hides. Without this each one
     // is a full refresh, and a pinned section visibly jumps through it.
     ScrollTrigger.config({ ignoreMobileResize: true });
@@ -52,6 +60,15 @@ export function Hero() {
             start: "top top",
             end: "+=120%",
             pin: true,
+            // Left to itself ScrollTrigger creates the spacer and moves the
+            // section into it, which detaches and re-attaches this whole
+            // subtree. That cancels every running CSS animation inside and
+            // restarts it from its delay — so the entrance sequence played
+            // once on paint and then again the moment the pin was built, and
+            // once more on every refresh() (fonts landing, resize). Handing it
+            // a spacer that is already the section's parent skips the move
+            // (`pin.parentNode !== spacer` guards it) and the intro runs once.
+            pinSpacer,
             pinSpacing: true,
             anticipatePin: 1,
             scrub: 0.8,
@@ -72,6 +89,15 @@ export function Hero() {
         .to(section, { "--bottle-open": 1, duration: 0.92, ease: "power1.inOut" }, 0.08);
     });
 
+    // Force a refresh after the first two animation frames so the pin
+    // spacer is measured at the correct full-viewport width (not at the
+    // narrower clientWidth that includes a visible scrollbar).
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh(true);
+      });
+    });
+
     // --hero-word-size feeds the stage's min-height, which feeds the section
     // height, which decides where the pin ends. Playfair landing late moves it.
     void document.fonts?.ready.then(() => ScrollTrigger.refresh());
@@ -84,113 +110,122 @@ export function Hero() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      id="top"
-      className="hero-light relative flex min-h-[100svh] items-center overflow-hidden"
-    >
-      <div aria-hidden className="hero-glow" />
+    // Plain block wrapper, layout-neutral — it exists only so the pin has a
+    // spacer it does not have to reparent the section into. ScrollTrigger
+    // writes the pin sizing onto it and restores it on revert.
+    <div ref={pinSpacerRef} className="w-full overflow-hidden">
+      <section
+        ref={sectionRef}
+        id="top"
+        className="hero-light relative flex w-full min-h-[100svh] items-center overflow-hidden"
+        style={{ left: 0, maxWidth: "100%" }}
+      >
+        <div aria-hidden className="hero-glow" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
-        {/* MEMORABLE leads on the left and LOUNGE answers bottom-right, as in
-            the reference; the locality kicker takes the spare right slot. */}
-        <div className="flex items-end justify-between gap-6">
+        <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
+          {/* MEMORABLE leads on the left and LOUNGE answers bottom-right, as in
+              the reference; the locality kicker takes the spare right slot. */}
+          <div className="flex items-end justify-between gap-6">
+            <p
+              aria-hidden="true"
+              data-visible="true"
+              className="reveal hero-cap"
+              style={{ animationDelay: "140ms" }}
+            >
+              Memorable
+            </p>
+
+            <p
+              data-visible="true"
+              className="reveal kicker hidden items-center gap-2 sm:flex"
+              style={{ animationDelay: "60ms" }}
+            >
+              <span
+                aria-hidden
+                className="inline-block h-px w-6 shrink-0 bg-[var(--hero-gold-ink)]"
+              />
+              Asaba, Delta State
+            </p>
+          </div>
+
+          {/* Arch photo, wordmark and bottle share one positioning context so the
+              letters can straddle the panel and the bottle can bleed past both. */}
+          <div className="hero-stage mt-8 sm:mt-4">
+            <h1 className="hero-word" aria-label="Kings Lounge">
+              <span aria-hidden="true" className="hero-word__letters">
+                {LETTERS.map((letter, i) => (
+                  <span
+                    key={letter}
+                    data-visible="true"
+                    className="reveal hero-word__letter"
+                    style={{ animationDelay: `${300 + i * 70}ms` }}
+                  >
+                    {letter}
+                  </span>
+                ))}
+              </span>
+            </h1>
+          </div>
+
           <p
             aria-hidden="true"
             data-visible="true"
-            className="reveal hero-cap"
-            style={{ animationDelay: "140ms" }}
+            className="reveal hero-cap mt-4 block text-right sm:mt-2"
+            style={{ animationDelay: "400ms" }}
           >
-            Memorable
+            Lounge
           </p>
 
-          <p
-            data-visible="true"
-            className="reveal kicker hidden items-center gap-2 sm:flex"
-            style={{ animationDelay: "60ms" }}
-          >
-            <span aria-hidden className="inline-block h-px w-6 shrink-0 bg-[var(--hero-gold-ink)]" />
-            Asaba, Delta State
-          </p>
+          <div className="mt-12 flex flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <p
+              data-visible="true"
+              className="reveal max-w-[20rem] text-[clamp(0.9rem,1.1vw,1rem)] leading-[1.72] tracking-[0.005em] text-[var(--hero-ink-muted)]"
+              style={{ animationDelay: "940ms" }}
+            >
+              A bar, a kitchen and a shisha lounge built for long evenings — rare pours, slow smoke,
+              and a room lit for the camera.
+            </p>
+          </div>
         </div>
 
-        {/* Arch photo, wordmark and bottle share one positioning context so the
-            letters can straddle the panel and the bottle can bleed past both. */}
-        <div className="hero-stage mt-8 sm:mt-4">
-          <h1 className="hero-word" aria-label="Kings Lounge">
-            <span aria-hidden="true" className="hero-word__letters">
-              {LETTERS.map((letter, i) => (
-                <span
-                  key={letter}
-                  data-visible="true"
-                  className="reveal hero-word__letter"
-                  style={{ animationDelay: `${300 + i * 70}ms` }}
-                >
-                  {letter}
-                </span>
-              ))}
-            </span>
-          </h1>
-        </div>
+        {/* arch and bottle are siblings of the content div so they position
+            relative to the section (100svh), not the stage inner height.
+            This lets us pin their tops flush to the navbar bottom.
 
-        <p
-          aria-hidden="true"
+            The figure is a full-bleed plate cut down to the arch; __inner is the
+            same cut 1px in, which is what leaves the gold showing as a hairline
+            that follows the shape as it opens. */}
+        <figure
           data-visible="true"
-          className="reveal hero-cap mt-4 block text-right sm:mt-2"
-          style={{ animationDelay: "400ms" }}
+          className="arch-open hero-arch m-0"
+          style={{ animationDelay: "220ms" }}
         >
-          Lounge
-        </p>
+          <span className="hero-arch__inner">
+            <img
+              src={archImage}
+              alt="A bartender pouring whisky from a cut-glass decanter at Kings Lounge, Asaba"
+              width={1920}
+              height={1280}
+              loading="eager"
+              fetchPriority="high"
+            />
+          </span>
+        </figure>
 
-        <div className="mt-12 flex flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
-          <p
-            data-visible="true"
-            className="reveal max-w-[20rem] text-[clamp(0.9rem,1.1vw,1rem)] leading-[1.72] tracking-[0.005em] text-[var(--hero-ink-muted)]"
-            style={{ animationDelay: "940ms" }}
-          >
-            A bar, a kitchen and a shisha lounge built for long evenings — rare pours, slow
-            smoke, and a room lit for the camera.
-          </p>
-        </div>
-      </div>
+        <img
+          src={bottleImage}
+          alt=""
+          aria-hidden="true"
+          width={284}
+          height={943}
+          data-visible="true"
+          className="rise hero-bottle"
+          style={{ animationDelay: "640ms" }}
+          draggable={false}
+        />
 
-      {/* arch and bottle are siblings of the content div so they position
-          relative to the section (100svh), not the stage inner height.
-          This lets us pin their tops flush to the navbar bottom.
-
-          The figure is a full-bleed plate cut down to the arch; __inner is the
-          same cut 1px in, which is what leaves the gold showing as a hairline
-          that follows the shape as it opens. */}
-      <figure
-        data-visible="true"
-        className="arch-open hero-arch m-0"
-        style={{ animationDelay: "220ms" }}
-      >
-        <span className="hero-arch__inner">
-          <img
-            src={archImage}
-            alt="A bartender pouring whisky from a cut-glass decanter at Kings Lounge, Asaba"
-            width={1920}
-            height={1280}
-            loading="eager"
-            fetchPriority="high"
-          />
-        </span>
-      </figure>
-
-      <img
-        src={bottleImage}
-        alt=""
-        aria-hidden="true"
-        width={284}
-        height={943}
-        data-visible="true"
-        className="rise hero-bottle"
-        style={{ animationDelay: "640ms" }}
-        draggable={false}
-      />
-
-      <div aria-hidden className="hero-grain" />
-    </section>
+        <div aria-hidden className="hero-grain" />
+      </section>
+    </div>
   );
 }

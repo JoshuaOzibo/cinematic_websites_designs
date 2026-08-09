@@ -87,6 +87,7 @@
     /* body is charcoal but the hero is cream — stop iOS rubber-band
        from exposing black above it. */
     overscroll-behavior-y: none;
+    overflow-x: hidden;
   }
 
   body {
@@ -94,6 +95,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   h1,
@@ -316,6 +318,8 @@
  */
 
 .hero-light {
+  width: 100%;
+  min-width: 100%;
   /* ground — #F7F3EA */
   --hero-cream: oklch(0.958 0.01 84);
   --hero-cream-deep: oklch(0.936 0.014 82);
