@@ -21,52 +21,66 @@ export function Hero() {
     const section = sectionRef.current;
     if (!section) return;
 
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    }
+
     gsap.registerPlugin(ScrollTrigger);
     // 100svh changes every time a mobile URL bar hides. Without this each one
     // is a full refresh, and a pinned section visibly jumps through it.
     ScrollTrigger.config({ ignoreMobileResize: true });
 
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
+    // matchMedia is itself a gsap context, so it owns cleanup directly rather
+    // than being nested inside another one. That matters here: `mm.revert()`
+    // is what tears down the pin spacer and the inline custom properties, and
+    // dev HMR re-runs this effect on every edit — a partial teardown would
+    // stack a second pinned trigger on the same section.
+    const mm = gsap.matchMedia();
 
-      // Under 900px the arch is an in-flow box, so there is no aperture to
-      // open. The reduce query has to be here rather than in the stylesheet:
-      // a scrubbed timeline is not a CSS animation, so the reduced-motion
-      // block in styles.css would never see it.
-      mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: section,
-              start: "top top",
-              end: "+=120%",
-              pin: true,
-              pinSpacing: true,
-              anticipatePin: 1,
-              scrub: 0.8,
-              invalidateOnRefresh: true,
-              onToggle: (self) => {
-                section.dataset["aperture"] = self.isActive ? "active" : "idle";
-              },
-              onUpdate: (self) => {
-                // The header runs charcoal-on-cream until the photo takes the
-                // room. Its old fixed scroll depth is wrong now that the pin
-                // has moved where that moment happens.
-                document.documentElement.dataset["heroDark"] =
-                  self.progress > 0.45 ? "true" : "false";
-              },
+    // Under 900px the arch is an in-flow box, so there is no aperture to
+    // open. The reduce query has to be here rather than in the stylesheet:
+    // a scrubbed timeline is not a CSS animation, so the reduced-motion
+    // block in styles.css would never see it.
+    mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: "+=120%",
+            pin: true,
+            pinSpacing: true,
+            anticipatePin: 1,
+            scrub: 0.8,
+            invalidateOnRefresh: true,
+            onToggle: (self) => {
+              section.dataset["aperture"] = self.isActive ? "active" : "idle";
             },
-          })
-          .to(section, { "--hero-expand": 1, duration: 1, ease: "power2.inOut" }, 0)
-          .to(section, { "--bottle-open": 1, duration: 0.92, ease: "power1.inOut" }, 0.08);
-      });
-    }, sectionRef);
+            onUpdate: (self) => {
+              // The header runs charcoal-on-cream until the photo takes the
+              // room. Its old fixed scroll depth is wrong now that the pin
+              // has moved where that moment happens.
+              document.documentElement.dataset["heroDark"] =
+                self.progress > 0.45 ? "true" : "false";
+            },
+          },
+        })
+        .to(section, { "--hero-expand": 1, duration: 1, ease: "power2.inOut" }, 0)
+        .to(section, { "--bottle-open": 1, duration: 0.92, ease: "power1.inOut" }, 0.08);
+    });
 
     // --hero-word-size feeds the stage's min-height, which feeds the section
     // height, which decides where the pin ends. Playfair landing late moves it.
     void document.fonts?.ready.then(() => ScrollTrigger.refresh());
 
-    return () => ctx.revert();
+    return () => {
+      mm.revert();
+      // Otherwise the header stays stuck dark after the hero unmounts.
+      delete document.documentElement.dataset["heroDark"];
+    };
   }, []);
 
   return (
@@ -77,7 +91,7 @@ export function Hero() {
     >
       <div aria-hidden className="hero-glow" />
 
-      <div className="relative mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
         {/* MEMORABLE leads on the left and LOUNGE answers bottom-right, as in
             the reference; the locality kicker takes the spare right slot. */}
         <div className="flex items-end justify-between gap-6">
@@ -131,7 +145,7 @@ export function Hero() {
         <div className="mt-12 flex flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
           <p
             data-visible="true"
-            className="reveal max-w-[26rem] text-[clamp(0.9rem,1.1vw,1rem)] leading-[1.72] tracking-[0.005em] text-[var(--hero-ink-muted)]"
+            className="reveal max-w-[20rem] text-[clamp(0.9rem,1.1vw,1rem)] leading-[1.72] tracking-[0.005em] text-[var(--hero-ink-muted)]"
             style={{ animationDelay: "940ms" }}
           >
             A bar, a kitchen and a shisha lounge built for long evenings — rare pours, slow

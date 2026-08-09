@@ -1,4 +1,4 @@
-@import "tailwindcss" source(none);
+@import "tailwindcss";
 @source "../src";
 @import "tw-animate-css";
 
@@ -320,33 +320,30 @@
   --hero-cream: oklch(0.958 0.01 84);
   --hero-cream-deep: oklch(0.936 0.014 82);
 
-  /* wordmark gold — #F0C04A. Brighter than the site's antique #C9A24B, which
-     at low chroma on a warm ground reads as a stain rather than pigment.
-     Wordmark ONLY: 1.73:1 on cream, exempt as a logotype, never for text. */
-  --hero-gold: oklch(0.827 0.135 86);
+  /* wordmark gold — #F0C04A. Transitions to pure white on scroll. */
+  --hero-gold: color-mix(
+    in oklab,
+    oklch(1 0 0) calc(var(--hero-expand) * 100%),
+    oklch(0.827 0.135 86)
+  );
   /* Has to read against both the cream ground and the lifted photo. */
   --hero-gold-line: oklch(0.66 0.11 80 / 0.9);
 
   /* Readable ink, on a ground that moves. At rest the hero is cream and the
-     ink is charcoal (15.1:1 / 5.9:1 / 6.9:1). By the end of the scrub the
-     photo owns the viewport under a scrim, so the same three tokens land on
-     cream-on-dark. Nothing moves — this is a colour shift, not a recompose.
-     `--primary`, `--foreground` and `--muted-foreground` are re-pointed at
-     these below, so the caps, the kicker rule, the paragraph and the focus
-     ring all follow without a second declaration. */
+     ink is charcoal. By the end of the scroll, everything transitions to pure white. */
   --hero-ink: color-mix(
     in oklab,
-    oklch(0.96 0.012 84) calc(var(--hero-expand) * 100%),
+    oklch(1 0 0) calc(var(--hero-expand) * 100%),
     oklch(0.19 0.006 55)
   );
   --hero-ink-muted: color-mix(
     in oklab,
-    oklch(0.86 0.015 80) calc(var(--hero-expand) * 100%),
+    oklch(1 0 0) calc(var(--hero-expand) * 100%),
     oklch(0.43 0.012 60)
   );
   --hero-gold-ink: color-mix(
     in oklab,
-    oklch(0.79 0.105 84) calc(var(--hero-expand) * 100%),
+    oklch(1 0 0) calc(var(--hero-expand) * 100%),
     oklch(0.42 0.075 72)
   );
 
@@ -374,7 +371,7 @@
   /* ---- tuning knobs for the aperture sequence ----
      Proportional, not absolute: the bottle's rendered height is a vw clamp, so
      a fixed end height would shrink it on one screen and grow it on another. */
-  --bottle-scale-end: 0.78;
+  --bottle-scale-end: 0.6;
   /* The photo is laid out for the full-bleed frame, so at rest the aperture
      would show a wider, looser crop than the panel does today. A slight
      uplift at rest pulls the pour back into the arch and eases out to 1 as
@@ -453,9 +450,11 @@
   z-index: 0;
   background: var(--hero-gold-line);
 
-  --arch-t: calc((100% - var(--arch-h)) / 2);
+  /* Raised 2rem above the navbar-anchored rest position so the arch+bottle
+     sit higher in the hero at rest, giving more breathing room above them. */
+  --arch-t: calc(var(--nav-h) - 2rem + (var(--bottle-h) - var(--arch-h)) / 2);
   --arch-i: calc((100% - var(--arch-w)) / 2);
-  --arch-b: calc((100% - var(--arch-h)) / 2);
+  --arch-b: calc(100% - var(--arch-t) - var(--arch-h));
   /* 1 at rest, 0 at full bleed — every inset is scaled by it */
   --arch-k: calc(1 - var(--hero-expand));
   /* resting bottom inset, reused by the entrance term below */
@@ -572,13 +571,17 @@
   color: var(--hero-ink);
 }
 
-/* bottle: same positioning context (section); top pinned just below navbar,
-   slightly taller than the arch so it visibly overflows the bottom edge */
+/* bottle: positioned using --hero-expand so it starts 2rem above the navbar
+   anchor (matching the raised arch) and transitions to perfectly centered
+   (50% / 50%) once the image fills the viewport.
+
+   At expand=0:  top = nav-h - 2rem,  translateY = 0    → raised rest
+   At expand=1:  top = 50%,           translateY = -50% → true centre */
 .hero-bottle {
   position: absolute;
   left: 50%;
-  top: 50%;
-  translate: -50% -50%;
+  top: calc(var(--nav-h) - 2rem + (50% - var(--nav-h) + 2rem) * var(--hero-expand));
+  translate: -50% calc(-50% * var(--hero-expand));
   height: var(--bottle-h);
   width: auto;
   max-width: none;
@@ -586,7 +589,10 @@
   pointer-events: none;
   filter: drop-shadow(0 30px 46px oklch(0.42 0.06 60 / 0.28));
 
-  /* Centered transform origin so it remains centered vertically and horizontally as it scales down */
+  /* transform-origin at 50% 50% (element centre) so scale shrinks the bottle
+     around its own midpoint. Combined with top:50% + translateY:-50%, the
+     visual centre of the scaled bottle lands exactly at the section centre
+     when --hero-expand reaches 1. */
   transform-origin: 50% 50%;
   scale: calc(1 - (1 - var(--bottle-scale-end)) * var(--bottle-open));
 }

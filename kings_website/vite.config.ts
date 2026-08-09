@@ -11,6 +11,8 @@ export default defineConfig({
     tanstackStart({
       server: { entry: "server" },
     }),
+    // TanStack Start's React dev mode resolves /@react-refresh through this.
+    // Without it every module request 500s and nothing hydrates.
     react(),
   ],
 });
