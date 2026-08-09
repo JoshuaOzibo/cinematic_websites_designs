@@ -11,7 +11,7 @@ export function Hero() {
     >
       <div aria-hidden className="hero-glow" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
+      <div className="relative mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
         {/* MEMORABLE leads on the left and LOUNGE answers bottom-right, as in
             the reference; the locality kicker takes the spare right slot. */}
         <div className="flex items-end justify-between gap-6">

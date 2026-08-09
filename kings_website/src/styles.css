@@ -372,7 +372,7 @@
   width: var(--arch-w);
   height: var(--arch-h);
   aspect-ratio: unset;
-  z-index: 10;
+  z-index: 0;
   border: 1px solid var(--hero-gold-line);
   border-radius: calc(var(--arch-w) / 2) calc(var(--arch-w) / 2) 4px 4px;
   overflow: hidden;
