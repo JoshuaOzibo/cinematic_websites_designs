@@ -1,11 +1,77 @@
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import archImage from "@/assets/hero.jpg";
 import bottleImage from "@/assets/kings-bottle.webp";
 
 const LETTERS = ["K", "I", "N", "G", "S"];
 
 export function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  /* The arch is a doorway, so scrolling walks you through it: the aperture
+     opens until the photo is the room, the bottle settles from monument to
+     object, and the ink turns cream because you are inside now. The letters
+     never move — they are the fixed frame the world changes behind.
+
+     GSAP writes two numbers per frame and nothing else. All the geometry
+     lives in styles.css, next to the tokens it reads, so the breakpoints
+     keep driving it and there is no second copy of the arch arithmetic. */
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+    // 100svh changes every time a mobile URL bar hides. Without this each one
+    // is a full refresh, and a pinned section visibly jumps through it.
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+
+      // Under 900px the arch is an in-flow box, so there is no aperture to
+      // open. The reduce query has to be here rather than in the stylesheet:
+      // a scrubbed timeline is not a CSS animation, so the reduced-motion
+      // block in styles.css would never see it.
+      mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: section,
+              start: "top top",
+              end: "+=120%",
+              pin: true,
+              pinSpacing: true,
+              anticipatePin: 1,
+              scrub: 0.8,
+              invalidateOnRefresh: true,
+              onToggle: (self) => {
+                section.dataset["aperture"] = self.isActive ? "active" : "idle";
+              },
+              onUpdate: (self) => {
+                // The header runs charcoal-on-cream until the photo takes the
+                // room. Its old fixed scroll depth is wrong now that the pin
+                // has moved where that moment happens.
+                document.documentElement.dataset["heroDark"] =
+                  self.progress > 0.45 ? "true" : "false";
+              },
+            },
+          })
+          .to(section, { "--hero-expand": 1, duration: 1, ease: "power2.inOut" }, 0)
+          .to(section, { "--bottle-open": 1, duration: 0.92, ease: "power1.inOut" }, 0.08);
+      });
+    }, sectionRef);
+
+    // --hero-word-size feeds the stage's min-height, which feeds the section
+    // height, which decides where the pin ends. Playfair landing late moves it.
+    void document.fonts?.ready.then(() => ScrollTrigger.refresh());
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
       id="top"
       className="hero-light relative flex min-h-[100svh] items-center overflow-hidden"
     >
@@ -76,20 +142,26 @@ export function Hero() {
 
       {/* arch and bottle are siblings of the content div so they position
           relative to the section (100svh), not the stage inner height.
-          This lets us pin their tops flush to the navbar bottom. */}
+          This lets us pin their tops flush to the navbar bottom.
+
+          The figure is a full-bleed plate cut down to the arch; __inner is the
+          same cut 1px in, which is what leaves the gold showing as a hairline
+          that follows the shape as it opens. */}
       <figure
         data-visible="true"
         className="arch-open hero-arch m-0"
         style={{ animationDelay: "220ms" }}
       >
-        <img
-          src={archImage}
-          alt="A bartender pouring whisky from a cut-glass decanter at Kings Lounge, Asaba"
-          width={1920}
-          height={1280}
-          loading="eager"
-          fetchPriority="high"
-        />
+        <span className="hero-arch__inner">
+          <img
+            src={archImage}
+            alt="A bartender pouring whisky from a cut-glass decanter at Kings Lounge, Asaba"
+            width={1920}
+            height={1280}
+            loading="eager"
+            fetchPriority="high"
+          />
+        </span>
       </figure>
 
       <img

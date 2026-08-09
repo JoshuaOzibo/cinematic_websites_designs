@@ -20,7 +20,17 @@ export function Header() {
   );
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.7);
+    // While the hero's aperture is pinned it owns this decision: the header
+    // has to turn dark when the photo does, and the pin moved that moment away
+    // from any fixed scroll depth. The threshold is the fallback for the
+    // widths and motion preferences where the pin never runs.
+    const onScroll = () => {
+      const heroDark = document.documentElement.dataset["heroDark"];
+      setScrolled(
+        heroDark === "true" ||
+          (heroDark === undefined && window.scrollY > window.innerHeight * 0.7),
+      );
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

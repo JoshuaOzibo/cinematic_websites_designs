@@ -272,6 +272,39 @@
   }
 }
 
+/* ---------- hero: the aperture ----------
+ *
+ * Three registered scalars drive the whole hero. Registration is not
+ * decoration: it types them as numbers so `calc()` and `color-mix()` accept
+ * them, and it guarantees a 0 on the SSR/no-JS frame so the hero renders at
+ * rest without a script.
+ *
+ *   --arch-reveal  0→1  the on-load wipe (CSS keyframe, 900ms)
+ *   --hero-expand  0→1  the scrubbed aperture (GSAP, pinned)
+ *   --bottle-open  0→1  the same scrub, lagged, for the bottle
+ *
+ * The entrance and the scroll never touch the same CSS property, which is the
+ * point: a `forwards`-filled keyframe outranks inline styles in the cascade,
+ * so anything GSAP wrote to `clip-path` would be silently discarded. Both
+ * instead feed one composed clip-path that re-resolves whenever either moves.
+ */
+
+@property --hero-expand {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --bottle-open {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --arch-reveal {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
 /* ---------- hero: cream editorial composition ----------
  *
  * Unlayered on purpose. Tailwind v4 compiles @utility into the `utilities`
@@ -294,10 +327,28 @@
   /* Has to read against both the cream ground and the lifted photo. */
   --hero-gold-line: oklch(0.66 0.11 80 / 0.9);
 
-  /* readable ink */
-  --hero-ink: oklch(0.19 0.006 55); /* 15.1:1 */
-  --hero-ink-muted: oklch(0.43 0.012 60); /* 5.9:1 */
-  --hero-gold-ink: oklch(0.42 0.075 72); /* bronze, 6.9:1 — all gold UI */
+  /* Readable ink, on a ground that moves. At rest the hero is cream and the
+     ink is charcoal (15.1:1 / 5.9:1 / 6.9:1). By the end of the scrub the
+     photo owns the viewport under a scrim, so the same three tokens land on
+     cream-on-dark. Nothing moves — this is a colour shift, not a recompose.
+     `--primary`, `--foreground` and `--muted-foreground` are re-pointed at
+     these below, so the caps, the kicker rule, the paragraph and the focus
+     ring all follow without a second declaration. */
+  --hero-ink: color-mix(
+    in oklab,
+    oklch(0.96 0.012 84) calc(var(--hero-expand) * 100%),
+    oklch(0.19 0.006 55)
+  );
+  --hero-ink-muted: color-mix(
+    in oklab,
+    oklch(0.86 0.015 80) calc(var(--hero-expand) * 100%),
+    oklch(0.43 0.012 60)
+  );
+  --hero-gold-ink: color-mix(
+    in oklab,
+    oklch(0.79 0.105 84) calc(var(--hero-expand) * 100%),
+    oklch(0.42 0.075 72)
+  );
 
   /* Re-point the inherited tokens: `kicker`, `btn-ghost-gold`, `rule-gold`,
      `text-gold` and :focus-visible all read these and re-tint for free. */
@@ -319,6 +370,16 @@
   /* Reduced height of the image panel so the bottle neck stands taller above it */
   --arch-h: calc(var(--bottle-h) * 0.82);
   --badge-d: clamp(6.5rem, 9vw, 8.5rem);
+
+  /* ---- tuning knobs for the aperture sequence ----
+     Proportional, not absolute: the bottle's rendered height is a vw clamp, so
+     a fixed end height would shrink it on one screen and grow it on another. */
+  --bottle-scale-end: 0.78;
+  /* The photo is laid out for the full-bleed frame, so at rest the aperture
+     would show a wider, looser crop than the panel does today. A slight
+     uplift at rest pulls the pour back into the arch and eases out to 1 as
+     the frame opens, which also gives the image somewhere to travel. */
+  --arch-zoom-rest: 1.28;
 
   background:
     radial-gradient(120% 90% at 50% 8%, oklch(0.972 0.014 88) 0%, transparent 60%),
@@ -363,49 +424,111 @@
   min-height: calc(var(--hero-word-size) * 0.78);
 }
 
-/* arch: positioned relative to the section, vertically centered on the bottle's center */
+/* ---- the arch, as an aperture ----
+ *
+ * The panel is no longer a box with a border; it is a full-bleed plate cut
+ * down to the arch by clip-path. That is what lets it open to the viewport
+ * without touching a layout property: the element never resizes, only the
+ * cut moves. It is also why the border became a plate — a `border` cannot
+ * follow an animated clip shape, so the gold sits underneath and the image
+ * plate is cut 1px inside it. At full bleed both cuts coincide and the
+ * hairline thins to nothing, which is what a full-bleed frame wants anyway.
+ *
+ * clip-path also clips descendants, so the entrance wipe only has to be
+ * expressed once, on the outer plate.
+ *
+ * The geometry below is the same arithmetic the old absolute positioning
+ * used, moved into custom properties so the breakpoints keep driving it:
+ * every term reads --arch-w / --arch-h / --nav-h / --bottle-h, unchanged.
+ * In `inset()` each side resolves its percentage against its own axis, so
+ * --arch-i is width-relative and --arch-b is height-relative for free.
+ */
 .hero-arch {
   position: absolute;
-  left: var(--arch-x);
-  top: calc(var(--nav-h) + (var(--bottle-h) - var(--arch-h)) / 2);
-  translate: -50% 0;
-  width: var(--arch-w);
-  height: var(--arch-h);
+  inset: 0;
+  width: auto;
+  height: auto;
   aspect-ratio: unset;
+  translate: none;
   z-index: 0;
-  border: 1px solid var(--hero-gold-line);
-  border-radius: calc(var(--arch-w) / 2) calc(var(--arch-w) / 2) 4px 4px;
-  overflow: hidden;
-  isolation: isolate;
-  background: oklch(0.14 0.01 55);
+  background: var(--hero-gold-line);
+
+  --arch-t: calc((100% - var(--arch-h)) / 2);
+  --arch-i: calc((100% - var(--arch-w)) / 2);
+  --arch-b: calc((100% - var(--arch-h)) / 2);
+  /* 1 at rest, 0 at full bleed — every inset is scaled by it */
+  --arch-k: calc(1 - var(--hero-expand));
+  /* resting bottom inset, reused by the entrance term below */
+  --arch-cb: calc(var(--arch-b) * var(--arch-k));
+
+  clip-path: inset(
+    calc(var(--arch-t) * var(--arch-k)) calc(var(--arch-i) * var(--arch-k))
+      calc(var(--arch-cb) + (100% - var(--arch-cb)) * (1 - var(--arch-reveal)))
+      calc(var(--arch-i) * var(--arch-k))
+      round calc(var(--arch-w) / 2 * var(--arch-k)) calc(var(--arch-w) / 2 * var(--arch-k))
+      calc(4px * var(--arch-k)) calc(4px * var(--arch-k))
+  );
 }
 
-/* Panel is now sized via --arch-h (explicit height), so the old
-   top/-52% oversizing trick can be relaxed. The image still needs to
-   be slightly taller than the container so we can nudge object-position
-   vertically; 120% is enough for the landscape source. */
-.hero-arch > img {
+/* The image plate: the same cut, 1px in on every side. */
+.hero-arch__inner {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  background: oklch(0.14 0.01 55);
+
+  clip-path: inset(
+    calc((var(--arch-t) + 1px) * var(--arch-k)) calc((var(--arch-i) + 1px) * var(--arch-k))
+      calc((var(--arch-b) + 1px) * var(--arch-k)) calc((var(--arch-i) + 1px) * var(--arch-k))
+      round calc((var(--arch-w) / 2 - 1px) * var(--arch-k))
+      calc((var(--arch-w) / 2 - 1px) * var(--arch-k)) calc(3px * var(--arch-k))
+      calc(3px * var(--arch-k))
+  );
+}
+
+/* The photo is laid out once, for the full-bleed frame, and never re-laid-out:
+   the aperture moves over a stationary image. Slightly taller than its box so
+   object-position has somewhere to nudge; 120% is enough for the landscape
+   source. The scale is the one thing that travels — see --arch-zoom-rest. */
+.hero-arch__inner > img {
   position: absolute;
   left: 0;
   top: -10%;
   width: 100%;
   height: 120%;
   object-fit: cover;
-  object-position: 23% 40%;
+  object-position: 38% 42%;
   filter: grayscale(1) sepia(0.5) saturate(1.6) contrast(0.94) brightness(1.72);
+  transform-origin: 50% 34%;
+  scale: calc(var(--arch-zoom-rest) - (var(--arch-zoom-rest) - 1) * var(--hero-expand));
 }
 
-/* keeps the gold letters off any hot spot */
-.hero-arch::after {
+/* Two jobs, and only the first one exists at rest: the radial keeps the gold
+   letters off a hot spot in the panel, and the linear is the scrim that earns
+   the cream ink its contrast once the photo owns the viewport. Darkening with
+   a scrim rather than by easing the image's own brightness() is deliberate —
+   re-running a five-stage filter chain on a full-screen photo every scrubbed
+   frame is the one thing here that would cost real milliseconds. */
+.hero-arch__inner::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    120% 80% at 50% 30%,
-    transparent 45%,
-    oklch(0.14 0.01 55 / 0.32) 100%
-  );
+  background:
+    radial-gradient(120% 80% at 50% 30%, transparent 45%, oklch(0.14 0.01 55 / 0.32) 100%),
+    linear-gradient(
+      180deg,
+      oklch(0.13 0.012 55 / calc(0.58 * var(--hero-expand))) 0%,
+      oklch(0.1 0.012 55 / calc(0.74 * var(--hero-expand))) 100%
+    );
+}
+
+/* Promoted only while the pin is live. A permanently promoted full-screen
+   image layer costs memory for the whole session to buy smoothness during
+   about two seconds of it. */
+.hero-light[data-aperture="active"] .hero-arch,
+.hero-light[data-aperture="active"] .hero-arch__inner {
+  will-change: clip-path;
 }
 
 /* ---- the wordmark ---- */
@@ -454,14 +577,18 @@
 .hero-bottle {
   position: absolute;
   left: 50%;
-  top: var(--nav-h);
-  translate: -50% 0;
+  top: 50%;
+  translate: -50% -50%;
   height: var(--bottle-h);
   width: auto;
   max-width: none;
   z-index: 40;
   pointer-events: none;
   filter: drop-shadow(0 30px 46px oklch(0.42 0.06 60 / 0.28));
+
+  /* Centered transform origin so it remains centered vertically and horizontally as it scales down */
+  transform-origin: 50% 50%;
+  scale: calc(1 - (1 - var(--bottle-scale-end)) * var(--bottle-open));
 }
 
 /* ---- circular badge ---- */
@@ -548,14 +675,32 @@
     --arch-h: calc(var(--bottle-h) * 0.72);
     --arch-w: clamp(8rem, 24vw, 16rem);
   }
-  /* Arch leaves the word and sits below it; the bottle flanks rather than bisects. */
+  /* Arch leaves the word and sits below it; the bottle flanks rather than
+     bisects. Below this width the arch is an in-flow box, so there is nothing
+     for an aperture to open into — the pin does not run here (see Hero.tsx)
+     and the panel reverts to a plain bordered frame. */
   .hero-arch {
     position: relative;
+    inset: auto;
     left: auto;
     top: auto;
     translate: none;
     width: clamp(9rem, 26vw, 14rem);
+    height: var(--arch-h);
     margin-inline: auto;
+    clip-path: none;
+    background: none;
+    border: 1px solid var(--hero-gold-line);
+    border-radius: calc(var(--arch-w) / 2) calc(var(--arch-w) / 2) 4px 4px;
+    overflow: hidden;
+  }
+  .hero-arch__inner {
+    clip-path: none;
+  }
+  .hero-arch__inner > img {
+    /* framing was tuned for the narrow in-flow box, not the bleed frame */
+    object-position: 23% 40%;
+    scale: 1;
   }
   .hero-bottle {
     left: 78%;
@@ -612,16 +757,18 @@
   }
 }
 
-/* clip-path, not transform: a transformed overflow:hidden + border-radius
-   box renders jagged edges in Chromium. */
-@keyframes kl-arch-open {
+/* Drives a scalar rather than clip-path itself. The arch's clip-path is now
+   shared with the scroll aperture, and a `forwards`-filled keyframe outranks
+   inline styles — animating it here would permanently win over anything GSAP
+   writes. Feeding one number into the composed cut keeps both live. */
+@keyframes kl-arch-reveal {
   from {
     opacity: 0;
-    clip-path: inset(0 0 100% 0);
+    --arch-reveal: 0;
   }
   to {
     opacity: 1;
-    clip-path: inset(0 0 0 0);
+    --arch-reveal: 1;
   }
 }
 
@@ -651,7 +798,7 @@
 @utility arch-open {
   opacity: 0;
   &[data-visible="true"] {
-    animation: kl-arch-open 900ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    animation: kl-arch-reveal 900ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
   }
 }
 
