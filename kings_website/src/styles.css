@@ -16,9 +16,12 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --font-display: "Cormorant Garamond", "Playfair Display", serif;
+  /* Hero wordmark only — a Didone with enough mass to hold 20vw. */
+  --font-hero: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   --font-sans: "Manrope", "Inter", system-ui, sans-serif;
 
   --color-background: var(--background);
+  --color-background-elevated: var(--background-elevated);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
@@ -81,6 +84,9 @@
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 140px;
+    /* body is charcoal but the hero is cream — stop iOS rubber-band
+       from exposing black above it. */
+    overscroll-behavior-y: none;
   }
 
   body {
@@ -116,6 +122,9 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      /* Without this, staggered delays leave elements at opacity 0 for
+         up to a second for the users who asked for less motion. */
+      animation-delay: 0ms !important;
       transition-duration: 0.01ms !important;
     }
   }
@@ -263,6 +272,322 @@
   }
 }
 
+/* ---------- hero: cream editorial composition ----------
+ *
+ * Unlayered on purpose. Tailwind v4 compiles @utility into the `utilities`
+ * cascade layer, and unlayered rules beat any layered rule regardless of
+ * specificity — so these override `kicker`, `reveal` etc. without !important.
+ *
+ * Stacking inside .hero-light:  glow 0 · arch 10 · letters 20 · caps 25 ·
+ * bottle 40 · badge 50 · grain 60.
+ */
+
+.hero-light {
+  /* ground — #F7F3EA */
+  --hero-cream: oklch(0.958 0.01 84);
+  --hero-cream-deep: oklch(0.936 0.014 82);
+
+  /* wordmark gold — #F0C04A. Brighter than the site's antique #C9A24B, which
+     at low chroma on a warm ground reads as a stain rather than pigment.
+     Wordmark ONLY: 1.73:1 on cream, exempt as a logotype, never for text. */
+  --hero-gold: oklch(0.827 0.135 86);
+  /* Has to read against both the cream ground and the lifted photo. */
+  --hero-gold-line: oklch(0.66 0.11 80 / 0.9);
+
+  /* readable ink */
+  --hero-ink: oklch(0.19 0.006 55); /* 15.1:1 */
+  --hero-ink-muted: oklch(0.43 0.012 60); /* 5.9:1 */
+  --hero-gold-ink: oklch(0.42 0.075 72); /* bronze, 6.9:1 — all gold UI */
+
+  /* Re-point the inherited tokens: `kicker`, `btn-ghost-gold`, `rule-gold`,
+     `text-gold` and :focus-visible all read these and re-tint for free. */
+  --primary: var(--hero-gold-ink);
+  --primary-foreground: var(--hero-cream);
+  --foreground: var(--hero-ink);
+  --muted-foreground: var(--hero-ink-muted);
+  --border: oklch(0.19 0.006 55 / 0.14);
+
+  --hero-word-size: clamp(5rem, 27vw, 23rem);
+  --hero-cap-size: clamp(0.7rem, 1.15vw, 0.95rem);
+  /* navbar height — keep in sync with the fixed header */
+  --nav-h: 4.5rem;
+  /* Narrower to make the image smaller and let the bottle dominate */
+  --arch-w: clamp(10rem, 26vw, 24rem);
+  /* Centered on the bottle — same horizontal axis */
+  --arch-x: 50%;
+  --bottle-h: clamp(28rem, 58vw, 62rem);
+  /* Reduced height of the image panel so the bottle neck stands taller above it */
+  --arch-h: calc(var(--bottle-h) * 0.82);
+  --badge-d: clamp(6.5rem, 9vw, 8.5rem);
+
+  background:
+    radial-gradient(120% 90% at 50% 8%, oklch(0.972 0.014 88) 0%, transparent 60%),
+    linear-gradient(180deg, var(--hero-cream) 0%, var(--hero-cream-deep) 100%);
+  color: var(--hero-ink);
+  border-bottom: 1px solid oklch(0.76 0.1 82 / 0.3);
+  /* Contains the badge's z-50 so it can't punch through the fixed header. */
+  isolation: isolate;
+}
+
+.hero-glow {
+  position: absolute;
+  left: var(--arch-x);
+  top: 50%;
+  translate: -50% -50%;
+  width: min(120vw, 1100px);
+  aspect-ratio: 1;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side, oklch(0.86 0.09 86 / 0.22), transparent 70%);
+}
+
+/* The film grain has to be its own element: the `grain` utility paints from a
+   z-index:auto ::after, which would land beneath every layer below. */
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- the stage: arch + word + bottle share one positioning context ---- */
+
+.hero-stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-height: calc(var(--hero-word-size) * 0.78);
+}
+
+/* arch: positioned relative to the section, vertically centered on the bottle's center */
+.hero-arch {
+  position: absolute;
+  left: var(--arch-x);
+  top: calc(var(--nav-h) + (var(--bottle-h) - var(--arch-h)) / 2);
+  translate: -50% 0;
+  width: var(--arch-w);
+  height: var(--arch-h);
+  aspect-ratio: unset;
+  z-index: 10;
+  border: 1px solid var(--hero-gold-line);
+  border-radius: calc(var(--arch-w) / 2) calc(var(--arch-w) / 2) 4px 4px;
+  overflow: hidden;
+  isolation: isolate;
+  background: oklch(0.14 0.01 55);
+}
+
+/* Panel is now sized via --arch-h (explicit height), so the old
+   top/-52% oversizing trick can be relaxed. The image still needs to
+   be slightly taller than the container so we can nudge object-position
+   vertically; 120% is enough for the landscape source. */
+.hero-arch > img {
+  position: absolute;
+  left: 0;
+  top: -10%;
+  width: 100%;
+  height: 120%;
+  object-fit: cover;
+  object-position: 23% 40%;
+  filter: grayscale(1) sepia(0.5) saturate(1.6) contrast(0.94) brightness(1.72);
+}
+
+/* keeps the gold letters off any hot spot */
+.hero-arch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 80% at 50% 30%,
+    transparent 45%,
+    oklch(0.14 0.01 55 / 0.32) 100%
+  );
+}
+
+/* ---- the wordmark ---- */
+
+.hero-word {
+  position: relative;
+  z-index: 20;
+  margin: 0;
+  font-family: var(--font-hero);
+  font-weight: 800;
+  /* Playfair carries an opsz axis; auto optical sizing thins the strokes at
+     this size, which is the opposite of what a Didone wants. */
+  font-optical-sizing: none;
+  font-size: var(--hero-word-size);
+  line-height: 0.78;
+  letter-spacing: -0.022em;
+  text-transform: uppercase;
+  color: var(--hero-gold);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.hero-word__letters {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-word__letter {
+  display: inline-block;
+  position: relative;
+  z-index: 20;
+}
+
+.hero-cap {
+  font-family: var(--font-hero);
+  font-weight: 500;
+  font-size: var(--hero-cap-size);
+  letter-spacing: 0.42em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--hero-ink);
+}
+
+/* bottle: same positioning context (section); top pinned just below navbar,
+   slightly taller than the arch so it visibly overflows the bottom edge */
+.hero-bottle {
+  position: absolute;
+  left: 50%;
+  top: var(--nav-h);
+  translate: -50% 0;
+  height: var(--bottle-h);
+  width: auto;
+  max-width: none;
+  z-index: 40;
+  pointer-events: none;
+  filter: drop-shadow(0 30px 46px oklch(0.42 0.06 60 / 0.28));
+}
+
+/* ---- circular badge ---- */
+
+.hero-badge {
+  position: relative;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  width: var(--badge-d);
+  height: var(--badge-d);
+  border-radius: 50%;
+  border: 1px solid var(--hero-gold-line);
+  background: oklch(0.99 0.006 88 / 0.86);
+  backdrop-filter: blur(6px);
+  color: var(--hero-ink);
+  transition:
+    transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 320ms ease,
+    background-color 320ms ease;
+  &:hover {
+    transform: translateY(-3px);
+    border-color: var(--hero-gold-ink);
+    background: oklch(0.99 0.006 88);
+  }
+  &:focus-visible {
+    outline-offset: 4px;
+  }
+}
+
+.hero-badge__arc {
+  font-family: var(--font-hero);
+  font-weight: 500;
+  font-size: 8.2px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  fill: var(--hero-gold-ink);
+}
+
+.hero-badge__label {
+  font-family: var(--font-hero);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+/* ---- header, while the cream hero owns the viewport ---- */
+
+.kl-header {
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    color 220ms ease;
+}
+
+.kl-header--cream {
+  --primary: oklch(0.42 0.075 72);
+  --hdr-ink: oklch(0.19 0.006 55);
+  --hdr-ink-muted: oklch(0.43 0.012 60);
+  --border: oklch(0.19 0.006 55 / 0.16);
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+.kl-header--dark {
+  --hdr-ink: var(--foreground);
+  --hdr-ink-muted: var(--muted-foreground);
+  background: color-mix(in oklab, var(--background) 95%, transparent);
+  border-bottom-color: var(--border);
+  box-shadow: 0 10px 30px -24px rgb(0 0 0 / 0.9);
+  backdrop-filter: blur(12px);
+}
+
+/* ---- responsive: the overlap stops working below 900px ---- */
+
+@media (max-width: 899px) {
+  .hero-light {
+    --arch-x: 50%;
+    --bottle-h: clamp(24rem, 50vw, 34rem);
+    --arch-h: calc(var(--bottle-h) * 0.72);
+    --arch-w: clamp(8rem, 24vw, 16rem);
+  }
+  /* Arch leaves the word and sits below it; the bottle flanks rather than bisects. */
+  .hero-arch {
+    position: relative;
+    left: auto;
+    top: auto;
+    translate: none;
+    width: clamp(9rem, 26vw, 14rem);
+    margin-inline: auto;
+  }
+  .hero-bottle {
+    left: 78%;
+  }
+  .hero-stage {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 599px) {
+  .hero-light {
+    --hero-word-size: clamp(3.6rem, 21vw, 6rem);
+    --hero-cap-size: 0.7rem;
+  }
+  .hero-cap {
+    letter-spacing: 0.3em;
+  }
+  /* Fully stacked — the bottle becomes a quiet right-edge bleed behind it. */
+  .hero-bottle {
+    left: auto;
+    right: -14%;
+    top: 46%;
+    translate: 0 -50%;
+    height: clamp(15rem, 62vw, 20rem);
+    opacity: 0.3;
+    z-index: 0;
+  }
+}
+
+/* The bottle stays at every width — it is the centrepiece, and at 52 kB the
+   payload argument for dropping it on small screens no longer applies. */
+
 /* ---------- motion ---------- */
 
 @keyframes kl-fade-up {
@@ -276,12 +601,27 @@
   }
 }
 
-@keyframes kl-ken-burns {
+@keyframes kl-rise {
   from {
-    transform: scale(1.04);
+    opacity: 0;
+    transform: translateY(56px) scale(0.985);
   }
   to {
-    transform: scale(1.16);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* clip-path, not transform: a transformed overflow:hidden + border-radius
+   box renders jagged edges in Chromium. */
+@keyframes kl-arch-open {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
   }
 }
 
@@ -301,8 +641,18 @@
   }
 }
 
-@utility ken-burns {
-  animation: kl-ken-burns 48s ease-in-out infinite alternate;
+@utility rise {
+  opacity: 0;
+  &[data-visible="true"] {
+    animation: kl-rise 1100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@utility arch-open {
+  opacity: 0;
+  &[data-visible="true"] {
+    animation: kl-arch-open 900ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  }
 }
 
 @utility pulse-once {

@@ -35,17 +35,18 @@ export function Header() {
 
   return (
     <>
+      {/* Until `scrolled` the cream hero owns the viewport, so the header runs
+          dark-on-cream. Both variants only re-point custom properties, so
+          `text-gold`, `btn-ghost-gold` and the hamburger re-tint for free. */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 h-[76px] transition-[background-color,border-color,box-shadow] duration-200 ease-in-out ${
-          scrolled
-            ? "border-b border-border bg-background/95 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md"
-            : "border-b border-transparent bg-transparent"
+        className={`kl-header fixed inset-x-0 top-0 z-50 h-[76px] border-b ${
+          scrolled ? "kl-header--dark" : "kl-header--cream"
         }`}
       >
         <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
           <a href="#top" className="flex min-w-0 items-center gap-3">
             <Crown className="h-4 w-6 shrink-0 text-gold" />
-            <span className="font-display truncate text-[1.15rem] leading-none tracking-[0.22em] text-foreground">
+            <span className="font-display truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
               KINGS LOUNGE
             </span>
           </a>
@@ -56,7 +57,7 @@ export function Header() {
                 key={item.id}
                 href={`#${item.id}`}
                 data-active={active === item.id}
-                className="link-underline label-track text-[0.7rem] font-semibold text-muted-foreground transition-colors duration-200 hover:text-foreground data-[active=true]:text-foreground"
+                className="link-underline label-track text-[0.7rem] font-semibold text-[var(--hdr-ink-muted)] transition-colors duration-200 hover:text-[var(--hdr-ink)] data-[active=true]:text-[var(--hdr-ink)]"
               >
                 {item.label}
               </a>
@@ -72,7 +73,7 @@ export function Header() {
               onClick={() => setOpen(true)}
               aria-label="Open menu"
               aria-expanded={open}
-              className="grid h-11 w-11 place-items-center rounded-[5px] border border-border text-foreground lg:hidden"
+              className="grid h-11 w-11 place-items-center rounded-[5px] border border-border text-[var(--hdr-ink)] lg:hidden"
             >
               <span className="sr-only">Open navigation</span>
               <span aria-hidden className="flex flex-col gap-[5px]">

@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 
+import heroArch from "@/assets/hero.jpg";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -75,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Kings Lounge Asaba" },
       { name: "description", content: "Bar, kitchen, shisha and photo lounge in Asaba, Delta State." },
-      { name: "theme-color", content: "#0E0D0C" },
+      { name: "theme-color", content: "#F7F3EA" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -88,8 +90,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,800;1,500&display=swap",
       },
+      // The arch photo in the hero is the LCP candidate.
+      { rel: "preload", as: "image", href: heroArch },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
