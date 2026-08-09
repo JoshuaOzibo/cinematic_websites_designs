@@ -13,7 +13,7 @@ export type MenuCategory = {
   items: MenuItem[];
 };
 
-export const menu: MenuCategory[] = [
+const rawMenu: MenuCategory[] = [
   {
     id: "bar",
     title: "Bar",
@@ -206,6 +206,11 @@ export const menu: MenuCategory[] = [
     ],
   },
 ];
+
+export const menu: MenuCategory[] = rawMenu.map((category) => ({
+  ...category,
+  items: [...category.items].sort((a, b) => a.name.localeCompare(b.name)),
+}));
 
 export const formatNaira = (value: number) =>
   `₦${value.toLocaleString("en-NG")}`;
