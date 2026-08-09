@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { Crown } from "./Crown";
 import { useScrollSpy } from "./useScrollSpy";
+import { menu } from "@/data/menu";
 
 const NAV = [
   { id: "bar", label: "Bar" },
@@ -14,6 +15,129 @@ const NAV = [
 
 export interface HeaderProps {
   mode?: "home" | "menu";
+}
+
+interface SearchMenuProps {
+  onSelect: () => void;
+}
+
+function SearchMenu({ onSelect }: SearchMenuProps) {
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Prepare search items (categories + individual menu items)
+  const searchItems = menu.flatMap((category) => {
+    const items = category.items.map((item) => ({
+      type: "item" as const,
+      name: item.name,
+      categoryId: category.id,
+      categoryName: category.title,
+    }));
+    const cat = {
+      type: "category" as const,
+      name: category.title,
+      categoryId: category.id,
+      categoryName: category.title,
+    };
+    return [cat, ...items];
+  });
+
+  const filteredItems = query.trim() === ""
+    ? searchItems.filter((item) => item.type === "category")
+    : searchItems.filter((item) =>
+        item.name.toLowerCase().includes(query.toLowerCase())
+      );
+
+  const handleItemClick = (categoryId: string) => {
+    setIsOpen(false);
+    setQuery("");
+    onSelect();
+    
+    // Set URL hash to trigger navigation & scroll
+    window.location.hash = categoryId;
+    
+    const el = document.getElementById(categoryId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="Search menu..."
+          className="w-full h-10 pl-9 pr-8 bg-background border border-border rounded-[5px] text-[0.85rem] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/60 transition-all duration-200"
+        />
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+        </span>
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 max-h-[260px] overflow-y-auto rounded-[5px] border border-border bg-background-elevated shadow-lift">
+          {filteredItems.length > 0 ? (
+            <ul className="py-1.5" role="listbox">
+              {filteredItems.map((item, idx) => (
+                <li key={`${item.categoryId}-${item.name}-${idx}`}>
+                  <button
+                    type="button"
+                    onClick={() => handleItemClick(item.categoryId)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors duration-150 flex flex-col gap-0.5"
+                  >
+                    <span className="text-[0.82rem] font-semibold text-foreground">
+                      {item.name}
+                    </span>
+                    {item.type === "item" && (
+                      <span className="text-[0.68rem] text-muted-foreground uppercase tracking-wider">
+                        in {item.categoryName}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-4 py-6 text-center text-[0.82rem] text-muted-foreground">
+              No results for "{query}"
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function Header({ mode = "home" }: HeaderProps) {
@@ -49,16 +173,20 @@ export function Header({ mode = "home" }: HeaderProps) {
     // from any fixed scroll depth. The threshold is the fallback for the
     // widths and motion preferences where the pin never runs.
     const onScroll = () => {
-      const heroDark = document.documentElement.dataset["heroDark"];
-      setScrolled(
-        heroDark === "true" ||
-          (heroDark === undefined && window.scrollY > window.innerHeight * 0.7),
-      );
+      if (mode === "menu") {
+        setScrolled(window.scrollY > 0);
+      } else {
+        const heroDark = document.documentElement.dataset["heroDark"];
+        setScrolled(
+          heroDark === "true" ||
+            (heroDark === undefined && window.scrollY > window.innerHeight * 0.7),
+        );
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -74,7 +202,7 @@ export function Header({ mode = "home" }: HeaderProps) {
           `text-gold`, `btn-ghost-gold` and the hamburger re-tint for free. */}
       <header
         className={`kl-header fixed inset-x-0 top-0 z-50 h-[76px] border-b ${
-          scrolled ? "kl-header--dark" : "kl-header--cream"
+          mode === "menu" || scrolled ? "kl-header--dark" : "kl-header--cream"
         }`}
       >
         <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
@@ -94,19 +222,10 @@ export function Header({ mode = "home" }: HeaderProps) {
             </Link>
           )}
 
-          <nav className="hidden justify-end gap-8 lg:flex" aria-label="Menu sections">
-            {mode === "menu" &&
-              NAV.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  data-active={active === item.id}
-                  className="link-underline label-track text-[0.7rem] font-semibold text-[var(--hdr-ink-muted)] transition-colors duration-200 hover:text-[var(--hdr-ink)] data-[active=true]:text-[var(--hdr-ink)]"
-                >
-                  {item.label}
-                </a>
-              ))}
-          </nav>
+          {/* Desktop Search Bar (Only in Menu Mode) */}
+          <div className="hidden lg:flex w-full px-8 min-w-0">
+            {mode === "menu" && <SearchMenu onSelect={() => {}} />}
+          </div>
 
           <div className="flex items-center justify-end gap-5">
             {/* Theme switcher */}
@@ -158,7 +277,7 @@ export function Header({ mode = "home" }: HeaderProps) {
 
       {open && mode === "menu" && (
         <div className="fixed inset-0 z-[60] flex flex-col bg-background/98 backdrop-blur-xl lg:hidden">
-          <div className="flex h-[76px] items-center justify-between px-5">
+          <div className="flex h-[76px] items-center justify-between px-5 border-b border-border">
             <span className="font-display text-[1.15rem] tracking-[0.22em] text-foreground">
               KINGS LOUNGE
             </span>
@@ -173,20 +292,30 @@ export function Header({ mode = "home" }: HeaderProps) {
               </span>
             </button>
           </div>
-          <nav className="flex flex-1 flex-col justify-center gap-6 px-7" aria-label="Mobile menu">
-            {NAV.map((item, i) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                onClick={() => setOpen(false)}
-                data-visible="true"
-                style={{ animationDelay: `${i * 60}ms` }}
-                className="reveal font-display text-[2.1rem] leading-none text-foreground"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          <div className="flex-1 flex flex-col overflow-y-auto justify-start px-7 pt-10 pb-8 gap-8">
+            <div className="w-full flex flex-col gap-2">
+              <span className="label-track text-[0.65rem] font-semibold text-gold">Search Menu</span>
+              <SearchMenu onSelect={() => setOpen(false)} />
+            </div>
+
+            <div className="w-full flex flex-col gap-4 mt-2">
+              <span className="label-track text-[0.65rem] font-semibold text-gold">Menu Categories</span>
+              <nav className="flex flex-col gap-4" aria-label="Mobile categories">
+                {NAV.map((item, i) => (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    onClick={() => setOpen(false)}
+                    data-visible="true"
+                    style={{ animationDelay: `${i * 60}ms` }}
+                    className="reveal font-display text-[1.85rem] leading-none text-foreground"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </div>
         </div>
       )}
     </>
