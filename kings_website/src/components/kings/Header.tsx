@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Crown } from "./Crown";
 import { useScrollSpy } from "./useScrollSpy";
 
@@ -11,11 +12,16 @@ const NAV = [
   { id: "photo-shoot", label: "Photo Shoot" },
 ];
 
-export function Header() {
+export interface HeaderProps {
+  mode?: "home" | "menu";
+}
+
+export function Header({ mode = "home" }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  
   const active = useScrollSpy(
-    NAV.map((n) => n.id),
+    mode === "menu" ? NAV.map((n) => n.id) : [],
     220,
   );
 
@@ -54,49 +60,67 @@ export function Header() {
         }`}
       >
         <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
-          <a href="#top" className="flex min-w-0 items-center gap-3">
-            <Crown className="h-4 w-6 shrink-0 text-gold" />
-            <span className="font-display truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
-              KINGS LOUNGE
-            </span>
-          </a>
+          {mode === "home" ? (
+            <a href="#top" className="flex min-w-0 items-center gap-3">
+              <Crown className="h-4 w-6 shrink-0 text-gold" />
+              <span className="font-display truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
+                KINGS LOUNGE
+              </span>
+            </a>
+          ) : (
+            <Link to="/" className="flex min-w-0 items-center gap-3">
+              <Crown className="h-4 w-6 shrink-0 text-gold" />
+              <span className="font-display truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
+                KINGS LOUNGE
+              </span>
+            </Link>
+          )}
 
           <nav className="hidden justify-end gap-8 lg:flex" aria-label="Menu sections">
-            {NAV.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                data-active={active === item.id}
-                className="link-underline label-track text-[0.7rem] font-semibold text-[var(--hdr-ink-muted)] transition-colors duration-200 hover:text-[var(--hdr-ink)] data-[active=true]:text-[var(--hdr-ink)]"
-              >
-                {item.label}
-              </a>
-            ))}
+            {mode === "menu" &&
+              NAV.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  data-active={active === item.id}
+                  className="link-underline label-track text-[0.7rem] font-semibold text-[var(--hdr-ink-muted)] transition-colors duration-200 hover:text-[var(--hdr-ink)] data-[active=true]:text-[var(--hdr-ink)]"
+                >
+                  {item.label}
+                </a>
+              ))}
           </nav>
 
           <div className="flex items-center justify-end gap-3">
-            <a href="#reserve" className="btn-ghost-gold hidden lg:inline-flex">
-              Reserve a Table
-            </a>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              aria-label="Open menu"
-              aria-expanded={open}
-              className="grid h-11 w-11 place-items-center rounded-[5px] border border-border text-[var(--hdr-ink)] lg:hidden"
-            >
-              <span className="sr-only">Open navigation</span>
-              <span aria-hidden className="flex flex-col gap-[5px]">
-                <span className="block h-px w-5 bg-gold" />
-                <span className="block h-px w-5 bg-gold" />
-                <span className="block h-px w-3.5 bg-gold" />
-              </span>
-            </button>
+            {mode === "home" ? (
+              <Link to="/menu" className="btn-gold">
+                Menu
+              </Link>
+            ) : (
+              <>
+                <Link to="/" hash="reserve" className="btn-ghost-gold hidden lg:inline-flex">
+                  Reserve a Table
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  aria-label="Open menu"
+                  aria-expanded={open}
+                  className="grid h-11 w-11 place-items-center rounded-[5px] border border-border text-[var(--hdr-ink)] lg:hidden"
+                >
+                  <span className="sr-only">Open navigation</span>
+                  <span aria-hidden className="flex flex-col gap-[5px]">
+                    <span className="block h-px w-5 bg-gold" />
+                    <span className="block h-px w-5 bg-gold" />
+                    <span className="block h-px w-3.5 bg-gold" />
+                  </span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {open && (
+      {open && mode === "menu" && (
         <div className="fixed inset-0 z-[60] flex flex-col bg-background/98 backdrop-blur-xl lg:hidden">
           <div className="flex h-[76px] items-center justify-between px-5">
             <span className="font-display text-[1.15rem] tracking-[0.22em] text-foreground">
@@ -128,13 +152,14 @@ export function Header() {
             ))}
           </nav>
           <div className="px-7 pb-10">
-            <a
-              href="#reserve"
+            <Link
+              to="/"
+              hash="reserve"
               onClick={() => setOpen(false)}
               className="btn-gold w-full"
             >
               Reserve a Table
-            </a>
+            </Link>
           </div>
         </div>
       )}
