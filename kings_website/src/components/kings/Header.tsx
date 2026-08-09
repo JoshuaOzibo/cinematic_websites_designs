@@ -19,11 +19,29 @@ export interface HeaderProps {
 export function Header({ mode = "home" }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   
   const active = useScrollSpy(
     mode === "menu" ? NAV.map((n) => n.id) : [],
     220,
   );
+
+  // Sync initial theme on mount
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setTheme(isDark ? "dark" : "light");
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    localStorage.setItem("kl-theme", nextTheme);
+    if (nextTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   useEffect(() => {
     // While the hero's aperture is pinned it owns this decision: the header
@@ -90,16 +108,34 @@ export function Header({ mode = "home" }: HeaderProps) {
               ))}
           </nav>
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-5">
+            {/* Theme switcher */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="grid h-10 w-10 place-items-center rounded-[5px] border border-border text-[var(--hdr-ink)] hover:bg-gold/10 hover:border-gold transition-colors duration-200"
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            >
+              {theme === "light" ? (
+                // Moon icon
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                </svg>
+              ) : (
+                // Sun icon
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                  <circle cx="12" cy="12" r="4"/>
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                </svg>
+              )}
+            </button>
+
             {mode === "home" ? (
-              <Link to="/menu" className="btn-gold">
+              <Link to="/menu" className="btn-theme-invert">
                 Menu
               </Link>
             ) : (
-              <>
-                <Link to="/" hash="reserve" className="btn-ghost-gold hidden lg:inline-flex">
-                  Reserve a Table
-                </Link>
+              mode === "menu" && (
                 <button
                   type="button"
                   onClick={() => setOpen(true)}
@@ -114,7 +150,7 @@ export function Header({ mode = "home" }: HeaderProps) {
                     <span className="block h-px w-3.5 bg-gold" />
                   </span>
                 </button>
-              </>
+              )
             )}
           </div>
         </div>
@@ -151,16 +187,6 @@ export function Header({ mode = "home" }: HeaderProps) {
               </a>
             ))}
           </nav>
-          <div className="px-7 pb-10">
-            <Link
-              to="/"
-              hash="reserve"
-              onClick={() => setOpen(false)}
-              className="btn-gold w-full"
-            >
-              Reserve a Table
-            </Link>
-          </div>
         </div>
       )}
     </>

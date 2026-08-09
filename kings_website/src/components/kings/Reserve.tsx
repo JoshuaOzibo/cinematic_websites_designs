@@ -48,7 +48,6 @@ export function Reserve() {
             <iframe
               title="Map showing Kings Lounge in Asaba, Delta State"
               src="https://www.openstreetmap.org/export/embed.html?bbox=6.68%2C6.16%2C6.78%2C6.24&layer=mapnik"
-              style={{ filter: "invert(0.92) hue-rotate(180deg) grayscale(0.55) contrast(0.85) brightness(0.9)" }}
               className="h-[16rem] w-full sm:h-[19rem]"
               loading="lazy"
             />

@@ -49,10 +49,10 @@ export function Experiences() {
                 <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,13,12,0.94)_5%,rgba(14,13,12,0.45)_50%,transparent_100%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-6 sm:p-9">
                   <p className="kicker">{exp.kicker}</p>
-                  <h3 className="font-display mt-3 text-[1.65rem] leading-tight text-foreground sm:text-[2rem]">
+                  <h3 className="font-display mt-3 text-[1.65rem] leading-tight text-[oklch(0.943_0.014_78)] sm:text-[2rem]">
                     {exp.title}
                   </h3>
-                  <p className="mt-3 max-w-[26rem] text-[0.92rem] leading-relaxed text-muted-foreground">
+                  <p className="mt-3 max-w-[26rem] text-[0.92rem] leading-relaxed text-[oklch(0.735_0.017_78)]">
                     {exp.copy}
                   </p>
                   <a href="#reserve" className="btn-ghost-gold mt-7">
