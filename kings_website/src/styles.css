@@ -311,8 +311,8 @@
   --hero-cap-size: clamp(0.7rem, 1.15vw, 0.95rem);
   /* navbar height — keep in sync with the fixed header */
   --nav-h: 4.5rem;
-  /* Narrower to make the image smaller and let the bottle dominate */
-  --arch-w: clamp(10rem, 26vw, 24rem);
+  /* Increased width of the image panel slightly as requested */
+  --arch-w: clamp(16rem, 36vw, 32rem);
   /* Centered on the bottle — same horizontal axis */
   --arch-x: 50%;
   --bottle-h: clamp(28rem, 58vw, 62rem);
