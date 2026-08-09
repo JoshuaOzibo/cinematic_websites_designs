@@ -434,7 +434,6 @@
     radial-gradient(120% 90% at 50% 8%, oklch(0.972 0.014 88) 0%, transparent 60%),
     linear-gradient(180deg, var(--hero-cream) 0%, var(--hero-cream-deep) 100%);
   color: var(--hero-ink);
-  border-bottom: 1px solid oklch(0.76 0.1 82 / 0.3);
   /* Contains the badge's z-50 so it can't punch through the fixed header. */
   isolation: isolate;
 }
@@ -837,6 +836,25 @@
   100% {
     box-shadow: 0 0 0 22px transparent;
   }
+}
+
+@keyframes kl-fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.reveal.reveal-down {
+  opacity: 0;
+}
+
+.reveal.reveal-down[data-visible="true"] {
+  animation: kl-fade-down 1200ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 @utility reveal {
