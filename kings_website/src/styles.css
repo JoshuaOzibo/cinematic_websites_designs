@@ -935,23 +935,34 @@
    * (H - gap) / 2, i.e. genuinely equal halves.
    */
   .showcase-col[data-side] {
-    grid-template-rows: calc(var(--showcase-split) * (50% - var(--showcase-gap) / 2)) 1fr;
     row-gap: calc(var(--showcase-split) * var(--showcase-gap));
+  }
+
+  .showcase-col[data-side]:not([data-fly-pos="bottom"]) {
+    grid-template-rows: calc(var(--showcase-split) * (50% - var(--showcase-gap) / 2)) 1fr;
+  }
+
+  .showcase-col[data-side][data-fly-pos="bottom"] {
+    grid-template-rows: 1fr calc(var(--showcase-split) * (50% - var(--showcase-gap) / 2));
   }
 
   /* Mandatory. .showcase-fly is absolutely positioned, so grid auto-placement
      skips it and the card would otherwise be placed into row 1 — inverting the
      entire effect. */
-  .showcase-col[data-side] > .showcase-tile {
+  .showcase-col[data-side]:not([data-fly-pos="bottom"]) > .showcase-tile {
     grid-row: 2;
   }
 
-  /* The whole panel descends — window, photo, border and shadow as one solid
+  .showcase-col[data-side][data-fly-pos="bottom"] > .showcase-tile {
+    grid-row: 1;
+  }
+
+  /* The whole panel descends/ascends — window, photo, border and shadow as one solid
    * card — rather than the photo sliding around inside a window that is
-   * already sitting there. Straight down, no lateral travel and no tilt.
+   * already sitting there. Straight down/up, no lateral travel and no tilt.
    *
-   * 180% of its own height is what guarantees it starts fully above the
-   * section's top edge, where the section's overflow: hidden clips it. Worst
+   * 180% of its own height is what guarantees it starts fully above/below the
+   * section's edge, where the section's overflow: hidden clips it. Worst
    * case is a tall viewport, where --showcase-h caps at 58rem and the grid
    * sits lowest: panel height ~454px against a ~174px top offset needs 138%,
    * so 180% keeps a real margin at every size. That clipping is why no
@@ -969,7 +980,7 @@
     overflow: hidden;
     border-radius: var(--showcase-radius);
     border: 1px solid var(--border);
-    pointer-events: none;
+    pointer-events: auto;
     translate: 0 calc((var(--showcase-fly) - 1) * var(--fly-y));
     /* The shadow escapes the element's own overflow, which is what makes the
        panel read as a card arriving OVER the one below rather than a hole cut
@@ -977,28 +988,19 @@
     box-shadow: 0 30px 60px -26px oklch(0 0 0 / calc(0.7 * var(--showcase-fly)));
   }
 
-  .showcase-fly > img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .showcase-fly::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 55%, oklch(0 0 0 / 0.5));
-    pointer-events: none;
+  .showcase-col[data-fly-pos="bottom"] > .showcase-fly {
+    inset: auto 0 0 0;
+    translate: 0 calc((1 - var(--showcase-fly)) * var(--fly-y));
   }
 
   /* The two side cards lose half their height; their padding and title would
      otherwise stay sized for the full-height plate and crowd the bottom edge. */
-  .showcase-tile[data-compress="true"] .showcase-card__pad {
+  .showcase-tile[data-compress="true"] .showcase-card__pad,
+  .showcase-fly .showcase-card__pad {
     padding: calc(2.25rem - var(--showcase-split) * 0.7rem);
   }
-  .showcase-tile[data-compress="true"] .showcase-card__title {
+  .showcase-tile[data-compress="true"] .showcase-card__title,
+  .showcase-fly .showcase-card__title {
     font-size: calc(2.2rem - var(--showcase-split) * 0.35rem);
   }
 }

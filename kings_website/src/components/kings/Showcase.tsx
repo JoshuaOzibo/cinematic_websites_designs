@@ -133,19 +133,69 @@ function Card({ item }: { item: Item }) {
  * then pops in mid-animation. It costs nothing: same import, same hashed URL
  * as the card, so it resolves from cache either way.
  */
-function FlyPanel({ src }: { src: string }) {
+function FlyPanel({ item }: { item: Item }) {
+  const cta = (
+    <>
+      <span>Discover More</span>
+      <svg
+        className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+      </svg>
+    </>
+  );
+  const ctaClass =
+    "inline-flex items-center gap-2 text-[0.8rem] font-bold tracking-[0.16em] uppercase text-primary group-hover:text-white transition-colors duration-300";
+
   return (
-    <figure className="showcase-fly" aria-hidden="true">
-      <img
-        src={src}
-        alt=""
-        width={PLATE_W}
-        height={PLATE_H}
-        loading="eager"
-        decoding="async"
-        fetchPriority="low"
-      />
-    </figure>
+    <div className="showcase-fly showcase-card group relative overflow-hidden rounded-[24px] border border-border bg-[var(--showcase-plate)] transition-[border-color,box-shadow] duration-500 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(201,162,75,0.08)]">
+      {/* image */}
+      <div className="absolute inset-0 overflow-hidden rounded-[24px]">
+        <img
+          src={item.image}
+          alt={item.alt}
+          width={PLATE_W}
+          height={PLATE_H}
+          loading="eager"
+          decoding="async"
+          fetchPriority="low"
+          className="h-full w-full object-cover object-center transition-transform duration-[1000ms] ease-out group-hover:scale-[1.08]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
+      </div>
+
+      {/* text */}
+      <div className="showcase-card__pad absolute inset-0 flex flex-col justify-end p-6 sm:p-9 z-10">
+        <span className="kicker transition-colors duration-300">{item.kicker}</span>
+        <h3 className="showcase-card__title font-display mt-3 text-[1.85rem] sm:text-[2.2rem] leading-tight text-cream transition-colors duration-300 group-hover:text-white">
+          {item.title}
+        </h3>
+        <div className="grid grid-rows-[0fr] transition-all duration-500 ease-in-out group-hover:grid-rows-[1fr] group-hover:mt-3">
+          <div className="min-h-0 overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+            <p className="showcase-card__desc text-[0.9rem] leading-relaxed">{item.description}</p>
+          </div>
+        </div>
+        <div className="mt-6 translate-y-3 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+          {item.link.startsWith("/") ? (
+            <Link to={item.link} className={ctaClass}>
+              {cta}
+            </Link>
+          ) : (
+            <a href={item.link} className={ctaClass}>
+              {cta}
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* ambient corner glow */}
+      <div className="absolute top-0 right-0 w-[80px] h-[80px] bg-[radial-gradient(circle_at_top_right,oklch(0.716_0.104_82_/_0.15),transparent_60%)] pointer-events-none rounded-[24px]" />
+    </div>
   );
 }
 
@@ -292,12 +342,12 @@ export function Showcase() {
 
         <div className="showcase-inner">
           <div ref={gridRef} className="showcase-grid">
-            {/* LEFT — cognac card compresses, cocktail arrives from the top-left */}
-            <div className="showcase-col" data-side="left">
+            {/* LEFT — cognac card compresses upwards, cocktail arrives from the bottom-left */}
+            <div className="showcase-col" data-side="left" data-fly-pos="bottom">
               <div {...tileProps(0, true)}>
                 <Card item={COGNAC} />
               </div>
-              <FlyPanel src={cocktailImage} />
+              <FlyPanel item={COCKTAIL} />
             </div>
 
             {/* CENTRE — anchored, full height for the whole scrub */}
@@ -312,7 +362,7 @@ export function Showcase() {
               <div {...tileProps(2, true)}>
                 <Card item={COCKTAIL} />
               </div>
-              <FlyPanel src={cognacImage} />
+              <FlyPanel item={COGNAC} />
             </div>
           </div>
         </div>
