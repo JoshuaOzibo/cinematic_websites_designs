@@ -372,11 +372,11 @@
   --hero-cream: oklch(0.958 0.01 84);
   --hero-cream-deep: oklch(0.936 0.014 82);
 
-  /* wordmark gold — #F0C04A. Transitions to pure white on scroll. */
+  /* wordmark crimson red — #8B1E1E. Transitions to pure white on scroll. */
   --hero-gold: color-mix(
     in oklab,
     oklch(1 0 0) calc(var(--hero-expand) * 100%),
-    oklch(0.827 0.135 86)
+    oklch(0.42 0.17 25)
   );
   /* Has to read against both the cream ground and the lifted photo. */
   --hero-gold-line: oklch(0.66 0.11 80 / 0.9);
