@@ -1141,3 +1141,24 @@ iframe {
 .dark iframe {
   filter: invert(0.92) hue-rotate(180deg) grayscale(0.55) contrast(0.85) brightness(0.9);
 }
+
+/* Continuous Marquee Ticker for Arch Banner */
+@keyframes marquee-banner {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-banner {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-banner 16s linear infinite;
+}
+
+.animate-marquee-banner:hover {
+  animation-play-state: paused;
+}
