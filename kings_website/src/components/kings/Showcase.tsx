@@ -6,6 +6,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import cognacImage from "@/assets/card-cognac.png";
 import shishaImage from "@/assets/card-shisha.png";
 import cocktailImage from "@/assets/card-cocktail.png";
+import whiskeyImage from "@/assets/02_whiskey_rocks_glass.png";
+import espressoMartiniImage from "@/assets/04_espresso_martini.png";
 
 /* Entrance stagger between the three columns. Not the scroll animation —
    that one is scrubbed and owns no clock of its own. */
@@ -53,6 +55,26 @@ const COCKTAIL: Item = {
   title: "Craft Cocktails",
   description:
     "Expertly mixed craft creations featuring fresh botanical infusions and premium spirits.",
+  link: "/menu",
+};
+
+const WHISKEY: Item = {
+  image: whiskeyImage,
+  alt: "A crystal rocks glass filled with small-batch bourbon over hand-carved ice",
+  kicker: "Aged Whiskies",
+  title: "Single Malt & Bourbon",
+  description:
+    "Small-batch whiskies poured over crystal-clear ice spheres, capturing rich charred oak and caramel aromas.",
+  link: "/menu",
+};
+
+const ESPRESSO_MARTINI: Item = {
+  image: espressoMartiniImage,
+  alt: "Artisanal espresso martini topped with coffee beans in a chilled glass",
+  kicker: "Nightcap Special",
+  title: "Espresso Martini",
+  description:
+    "Freshly pulled espresso shaken with artisanal vodka and coffee liqueur, finished with dark chocolate velvet.",
   link: "/menu",
 };
 
@@ -342,12 +364,12 @@ export function Showcase() {
 
         <div className="showcase-inner">
           <div ref={gridRef} className="showcase-grid">
-            {/* LEFT — cognac card compresses upwards, cocktail arrives from the bottom-left */}
+            {/* LEFT — cognac card compresses upwards, whiskey arrives from the bottom-left */}
             <div className="showcase-col" data-side="left" data-fly-pos="bottom">
               <div {...tileProps(0, true)}>
                 <Card item={COGNAC} />
               </div>
-              <FlyPanel item={COCKTAIL} />
+              <FlyPanel item={WHISKEY} />
             </div>
 
             {/* CENTRE — anchored, full height for the whole scrub */}
@@ -357,12 +379,12 @@ export function Showcase() {
               </div>
             </div>
 
-            {/* RIGHT — cocktail card compresses, cognac arrives from the top-right */}
+            {/* RIGHT — cocktail card compresses, espresso martini arrives from the top-right */}
             <div className="showcase-col" data-side="right">
               <div {...tileProps(2, true)}>
                 <Card item={COCKTAIL} />
               </div>
-              <FlyPanel item={COGNAC} />
+              <FlyPanel item={ESPRESSO_MARTINI} />
             </div>
           </div>
         </div>
