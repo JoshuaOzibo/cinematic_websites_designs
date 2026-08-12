@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import archImage from "@/assets/hero.jpg";
 import bottleImage from "@/assets/kings-bottle.webp";
+import logoImg from "@/assets/logo.png";
 
 const LETTERS = ["K", "I", "N", "G", "S"];
 
@@ -123,17 +124,19 @@ export function Hero() {
         <div aria-hidden className="hero-glow" />
 
         <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pt-32 pb-24 sm:px-10 lg:px-16">
-          {/* MEMORABLE leads on the left and LOUNGE answers bottom-right, as in
-              the reference; the locality kicker takes the spare right slot. */}
+          {/* BIG BRAND LOGO top-left and bottom-right around wordmark */}
           <div className="flex items-end justify-between gap-6">
-            <p
-              aria-hidden="true"
+            <div
               data-visible="true"
-              className="reveal hero-cap"
+              className="reveal flex items-center"
               style={{ animationDelay: "140ms" }}
             >
-              Memorable
-            </p>
+              <img
+                src={logoImg}
+                alt="D Kings Logo"
+                className="h-10 sm:h-16 md:h-20 lg:h-24 w-auto object-contain drop-shadow-lg"
+              />
+            </div>
 
             <p
               data-visible="true"
@@ -144,7 +147,7 @@ export function Hero() {
                 aria-hidden
                 className="inline-block h-px w-6 shrink-0 bg-[var(--hero-gold-ink)]"
               />
-              Asaba, Delta State
+              Ogwashi, Delta State
             </p>
           </div>
 
@@ -170,7 +173,7 @@ export function Hero() {
           <p
             aria-hidden="true"
             data-visible="true"
-            className="reveal hero-cap mt-4 block text-right sm:mt-2"
+            className="reveal font-display text-[1.1rem] sm:text-[1.6rem] lg:text-[2.2rem] font-medium tracking-[0.25em] uppercase text-right leading-none mt-3 sm:mt-2 text-[var(--hero-ink)]"
             style={{ animationDelay: "400ms" }}
           >
             Lounge

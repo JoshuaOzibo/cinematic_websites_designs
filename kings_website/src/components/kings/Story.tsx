@@ -1,6 +1,6 @@
 import houseArchImage from "@/assets/the_house_lounge_arch.png";
 import { Reveal } from "./Reveal";
-import { Crown } from "./Crown";
+import logoImg from "@/assets/logo.png";
 
 export function Story() {
   return (
@@ -31,7 +31,7 @@ export function Story() {
           {/* Crown Divider Line */}
           <div className="my-8 flex items-center gap-4 max-w-[34rem]">
             <div className="h-[1px] flex-1 bg-gradient-to-r from-[#C9A24B]/60 via-[#C9A24B]/30 to-transparent" />
-            <Crown className="h-3.5 w-4 text-[#C9A24B]" />
+            <img src={logoImg} alt="" className="h-6 w-auto object-contain" />
             <div className="h-[1px] flex-1 bg-gradient-to-l from-[#C9A24B]/60 via-[#C9A24B]/30 to-transparent" />
           </div>
 
@@ -50,7 +50,7 @@ export function Story() {
             {/* Stat 1 */}
             <div className="flex flex-col pr-2 sm:pr-4">
               <div className="flex items-center gap-1.5 text-[#C9A24B] mb-2">
-                <Crown className="h-4 w-4" />
+                <img src={logoImg} alt="" className="h-5 w-auto object-contain" />
               </div>
               <span className="font-display text-[2.2rem] sm:text-[2.8rem] leading-none font-medium text-[#8B1E1E] dark:text-[#E24A4A]">
                 02
@@ -128,7 +128,7 @@ export function Story() {
                       <span className="text-[0.68rem] sm:text-[0.75rem] font-bold tracking-[0.22em] uppercase text-[#EBE3D5]">
                         GOOD DRINKS. GREAT VIBES. LASTING NIGHTS.
                       </span>
-                      <Crown className="h-3.5 w-3.5 text-[#C9A24B] shrink-0 ml-2" />
+                      <img src={logoImg} alt="" className="h-4.5 w-auto object-contain shrink-0 ml-2" />
                     </div>
                   ))}
                 </div>

@@ -1,5 +1,5 @@
 import { menu } from "@/data/menu";
-import { Crown } from "./Crown";
+import logoImg from "@/assets/logo.png";
 
 export function Footer() {
   return (
@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div>
             <div className="flex items-center gap-3">
-              <Crown className="h-4 w-6 text-gold" />
+              <img src={logoImg} alt="D Kings Lounge Logo" className="h-16 w-auto object-contain shrink-0" />
               <span className="font-display text-[1.05rem] tracking-[0.22em] text-foreground">
                 KINGS LOUNGE
               </span>
@@ -80,7 +80,7 @@ export function Footer() {
           <p className="text-[0.78rem] text-muted-foreground">
             © {new Date().getFullYear()} Kings Lounge, Asaba. Menu prices subject to change.
           </p>
-          <Crown className="h-3.5 w-5 text-gold/70" />
+          <img src={logoImg} alt="" className="h-10 w-auto object-contain opacity-70" />
         </div>
       </div>
     </footer>
