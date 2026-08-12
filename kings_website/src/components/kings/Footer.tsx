@@ -37,7 +37,7 @@ export function Footer() {
           <div>
             <h3 className="label-track text-[0.65rem] font-semibold text-gold">Contact</h3>
             <ul className="mt-5 grid gap-2.5 text-[0.9rem] text-muted-foreground">
-              <li>Okpanam Road, Asaba, Delta State</li>
+              <li>Polytechnic Road, Ogwashi-Ukwu, Delta State</li>
               <li>
                 <a href="tel:+2348000000000" className="link-underline hover:text-foreground">
                   +234 800 000 0000

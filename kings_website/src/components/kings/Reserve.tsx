@@ -17,11 +17,11 @@ export function Reserve() {
         <Reveal>
           <p className="kicker">Find Us</p>
           <h2 className="font-display mt-5 text-[2rem] leading-[1.06] text-foreground sm:text-[2.6rem]">
-            Okpanam Road, Asaba.
+            Polytechnic Road, Ogwashi-Ukwu.
           </h2>
           <div className="rule-gold mt-6 w-24" />
           <p className="mt-6 text-[0.98rem] leading-relaxed text-muted-foreground">
-            Kings Lounge, Okpanam Road, Asaba, Delta State, Nigeria.
+            Kings Lounge, Polytechnic Road, Ogwashi-Ukwu, Delta State, Nigeria.
             <br />
             <a href="tel:+2348000000000" className="link-underline text-gold">
               +234 800 000 0000
@@ -68,7 +68,7 @@ export function Reserve() {
                   >
                     Book Another Table
                   </button>
-                </div>
+                  </div>
               ) : (
                 <form onSubmit={onSubmit} className="grid gap-5">
                   <div>
@@ -137,12 +137,14 @@ export function Reserve() {
               )}
             </div>
           */}
-          <div className="overflow-hidden rounded-[8px] border border-border h-full min-h-[300px] lg:min-h-[400px]">
+          <div className="overflow-hidden rounded-[8px] border border-border h-full min-h-[350px] lg:min-h-[450px]">
             <iframe
-              title="Map showing Kings Lounge in Asaba, Delta State"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=6.68%2C6.16%2C6.78%2C6.24&layer=mapnik"
-              className="h-full min-h-[320px] w-full"
+              title="Map showing Kings Lounge in Ogwashi-Ukwu, Delta State"
+              src="https://maps.google.com/maps?q=5GMF%2B6P9%2C%20Polytechnic%20Road%2C%20Ogwashi-Ukwu%20320109%2C%20Delta&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              className="h-full min-h-[350px] w-full border-0"
               loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
         </Reveal>
