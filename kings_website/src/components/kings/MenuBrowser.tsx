@@ -95,7 +95,6 @@ export function MenuBrowser() {
   // Filter & view states
   const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeId>("all");
   const [sortOrder, setSortOrder] = useState<"default" | "asc" | "desc">("default");
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<"grid" | "text">("grid");
 
   // Keep chip scroll non-blocking and instant to eliminate scroll hanging
@@ -121,9 +120,7 @@ export function MenuBrowser() {
   const filteredCategories = useMemo(() => {
     return menu.map((cat) => {
       let items = cat.items.filter((item) => {
-        const matchesQuery = item.name.toLowerCase().includes(searchQuery.toLowerCase().trim());
-        const matchesP = matchesPrice(item.price, selectedPriceRange);
-        return matchesQuery && matchesP;
+        return matchesPrice(item.price, selectedPriceRange);
       });
 
       if (sortOrder === "asc") {
@@ -137,19 +134,18 @@ export function MenuBrowser() {
         items,
       };
     });
-  }, [selectedPriceRange, sortOrder, searchQuery]);
+  }, [selectedPriceRange, sortOrder]);
 
   // Total matching item count
   const totalItemsCount = useMemo(() => {
     return filteredCategories.reduce((acc, cat) => acc + cat.items.length, 0);
   }, [filteredCategories]);
 
-  const isFiltered = selectedPriceRange !== "all" || sortOrder !== "default" || searchQuery.trim() !== "";
+  const isFiltered = selectedPriceRange !== "all" || sortOrder !== "default";
 
   const resetFilters = () => {
     setSelectedPriceRange("all");
     setSortOrder("default");
-    setSearchQuery("");
   };
 
   return (
@@ -177,83 +173,52 @@ export function MenuBrowser() {
             ))}
           </div>
 
-          {/* Filter, Sort & View Mode Controls Row */}
-          <div className="flex flex-col md:flex-row gap-2.5 items-stretch md:items-center justify-between px-4 py-2.5 sm:px-8">
-            {/* Top/Left Section: Search + View Mode Segmented Toggle */}
-            <div className="flex items-center gap-2 w-full md:w-auto flex-1 max-w-lg">
-              {/* Search Input */}
-              <div className="relative flex-1">
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          {/* Controls Row: Left View Mode Switch, Right Filter Controls */}
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-8">
+            {/* Left Side: View Mode Segmented Button */}
+            <div className="flex items-center rounded-[5px] border border-border/60 bg-background-elevated p-0.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                title="Image Cards View"
+                aria-label="Image Cards View"
+                className={`flex items-center gap-1.5 rounded-[4px] px-3 py-1.5 text-[0.72rem] font-semibold transition-all duration-200 ${
+                  viewMode === "grid"
+                    ? "bg-gold text-black font-bold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search food, cocktails..."
-                  className="w-full bg-background-elevated border border-border/60 rounded-[5px] pl-8 pr-7 py-1.5 text-[0.78rem] text-foreground placeholder:text-muted-foreground/70 focus:border-gold/60 focus:outline-none transition-colors"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-[0.75rem]"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {/* View Mode Segmented Button */}
-              <div className="flex items-center rounded-[5px] border border-border/60 bg-background-elevated p-0.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("grid")}
-                  title="Image Grid View"
-                  aria-label="Image Grid View"
-                  className={`flex items-center gap-1 rounded-[4px] px-2.5 py-1 text-[0.72rem] font-semibold transition-all duration-200 ${
-                    viewMode === "grid"
-                      ? "bg-gold text-black font-bold shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
-                  <span className="text-[0.68rem]">Cards</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("text")}
-                  title="Editorial Text View"
-                  aria-label="Editorial Text View"
-                  className={`flex items-center gap-1 rounded-[4px] px-2.5 py-1 text-[0.72rem] font-semibold transition-all duration-200 ${
-                    viewMode === "text"
-                      ? "bg-gold text-black font-bold shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  <span className="text-[0.68rem]">Text</span>
-                </button>
-              </div>
+                <span>Images</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("text")}
+                title="Editorial Text View"
+                aria-label="Editorial Text View"
+                className={`flex items-center gap-1.5 rounded-[4px] px-3 py-1.5 text-[0.72rem] font-semibold transition-all duration-200 ${
+                  viewMode === "text"
+                    ? "bg-gold text-black font-bold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>Text</span>
+              </button>
             </div>
 
-            {/* Bottom/Right Section: Price Filter Pills & Sort Dropdown */}
-            <div className="flex items-center justify-between md:justify-end gap-2 overflow-x-auto">
-              <div className="flex items-center gap-1 overflow-x-auto py-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shrink">
+            {/* Right Side: Price Filter Pills & Sort Dropdown */}
+            <div className="flex items-center gap-2 overflow-x-auto py-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden justify-end">
+              <div className="flex items-center gap-1 overflow-x-auto shrink">
                 {PRICE_RANGES.map((range) => (
                   <button
                     key={range.id}
                     onClick={() => setSelectedPriceRange(range.id)}
-                    className={`px-2.5 py-1 rounded-[4px] text-[0.66rem] font-semibold whitespace-nowrap transition-all duration-200 ${
+                    className={`px-2.5 py-1 rounded-[4px] text-[0.68rem] font-semibold whitespace-nowrap transition-all duration-200 ${
                       selectedPriceRange === range.id
                         ? "bg-gold text-black font-bold shadow-sm"
                         : "bg-background-elevated hover:bg-border/50 text-muted-foreground hover:text-foreground border border-border/40"
@@ -337,7 +302,7 @@ export function MenuBrowser() {
                   </p>
                 </Reveal>
 
-                <ul className={`mt-8 grid gap-5 sm:gap-8 ${gridClass(category.tier)}`}>
+                <ul className={`mt-10 grid gap-6 sm:gap-8 ${gridClass(category.tier)}`}>
                   {category.items.map((item, i) => (
                     <ItemCard key={item.name} item={item} index={i} tier={category.tier} image={category.image} />
                   ))}
