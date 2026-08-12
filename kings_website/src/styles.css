@@ -457,8 +457,7 @@
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -472,25 +471,7 @@
   min-height: calc(var(--hero-word-size) * 0.78);
 }
 
-/* ---- the arch, as an aperture ----
- *
- * The panel is no longer a box with a border; it is a full-bleed plate cut
- * down to the arch by clip-path. That is what lets it open to the viewport
- * without touching a layout property: the element never resizes, only the
- * cut moves. It is also why the border became a plate — a `border` cannot
- * follow an animated clip shape, so the gold sits underneath and the image
- * plate is cut 1px inside it. At full bleed both cuts coincide and the
- * hairline thins to nothing, which is what a full-bleed frame wants anyway.
- *
- * clip-path also clips descendants, so the entrance wipe only has to be
- * expressed once, on the outer plate.
- *
- * The geometry below is the same arithmetic the old absolute positioning
- * used, moved into custom properties so the breakpoints keep driving it:
- * every term reads --arch-w / --arch-h / --nav-h / --bottle-h, unchanged.
- * In `inset()` each side resolves its percentage against its own axis, so
- * --arch-i is width-relative and --arch-b is height-relative for free.
- */
+/* ---- the arch, as an aperture ---- */
 .hero-arch {
   position: absolute;
   inset: 0;
@@ -500,6 +481,9 @@
   translate: none;
   z-index: 0;
   background: var(--hero-gold-line);
+  will-change: clip-path, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 
   /* Raised 2rem above the navbar-anchored rest position so the arch+bottle
      sit higher in the hero at rest, giving more breathing room above them. */
@@ -526,6 +510,9 @@
   inset: 0;
   isolation: isolate;
   background: oklch(0.14 0.01 55);
+  will-change: clip-path, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 
   clip-path: inset(
     calc((var(--arch-t) + 1px) * var(--arch-k)) calc((var(--arch-i) + 1px) * var(--arch-k))
@@ -551,6 +538,9 @@
   filter: grayscale(1) sepia(0.5) saturate(1.6) contrast(0.94) brightness(1.72);
   transform-origin: 50% 34%;
   scale: calc(var(--arch-zoom-rest) - (var(--arch-zoom-rest) - 1) * var(--hero-expand));
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Two jobs, and only the first one exists at rest: the radial keeps the gold
@@ -639,6 +629,9 @@
   z-index: 40;
   pointer-events: none;
   filter: drop-shadow(0 30px 46px oklch(0.42 0.06 60 / 0.28));
+  will-change: transform, scale;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 
   /* transform-origin at 50% 50% (element centre) so scale shrinks the bottle
      around its own midpoint. Combined with top:50% + translateY:-50%, the

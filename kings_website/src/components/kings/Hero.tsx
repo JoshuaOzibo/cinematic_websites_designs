@@ -54,25 +54,22 @@ export function Hero() {
     // a scrubbed timeline is not a CSS animation, so the reduced-motion
     // block in styles.css would never see it.
     mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
+      // Prevent lag spikes during screen recording or rapid scrolling
+      gsap.ticker.lagSmoothing(1000, 16);
+
       gsap
         .timeline({
           scrollTrigger: {
             trigger: section,
             start: "top top",
-            end: "+=120%",
+            end: "+=100%",
             pin: true,
-            // Left to itself ScrollTrigger creates the spacer and moves the
-            // section into it, which detaches and re-attaches this whole
-            // subtree. That cancels every running CSS animation inside and
-            // restarts it from its delay — so the entrance sequence played
-            // once on paint and then again the moment the pin was built, and
-            // once more on every refresh() (fonts landing, resize). Handing it
-            // a spacer that is already the section's parent skips the move
-            // (`pin.parentNode !== spacer` guards it) and the intro runs once.
             pinSpacer,
             pinSpacing: true,
             anticipatePin: 1,
-            scrub: 0.8,
+            scrub: 0.35,
+            fastScrollEnd: true,
+            preventOverlaps: true,
             invalidateOnRefresh: true,
             onToggle: (self) => {
               section.dataset["aperture"] = self.isActive ? "active" : "idle";
@@ -86,8 +83,8 @@ export function Hero() {
             },
           },
         })
-        .to(section, { "--hero-expand": 1, duration: 1, ease: "power2.inOut" }, 0)
-        .to(section, { "--bottle-open": 1, duration: 0.92, ease: "power1.inOut" }, 0.08);
+        .to(section, { "--hero-expand": 1, duration: 1, ease: "power1.out" }, 0)
+        .to(section, { "--bottle-open": 1, duration: 0.95, ease: "power1.out" }, 0.04);
     });
 
     // Force a refresh after the first two animation frames so the pin
