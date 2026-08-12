@@ -1162,3 +1162,32 @@ iframe {
 .animate-marquee-banner:hover {
   animation-play-state: paused;
 }
+
+/* Floating animation for badge overlays */
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 3.5s ease-in-out infinite;
+}
+
+/* Line growth animation */
+@keyframes line-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-line-grow {
+  transform-origin: left;
+  animation: line-grow 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
