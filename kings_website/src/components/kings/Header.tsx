@@ -208,16 +208,16 @@ export function Header({ mode = "home" }: HeaderProps) {
         <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
           {mode === "home" ? (
             <a href="#top" className="flex min-w-0 items-center gap-3">
-              <img src={logoImg} alt="D Kings Lounge Logo" className="h-9 w-auto object-contain shrink-0" />
+              <img src={logoImg} alt="D Royal Lounge Logo" className="h-9 w-auto object-contain shrink-0" />
               <span className="font-display mt-4 truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
-                KINGS LOUNGE
+                ROYAL LOUNGE
               </span>
             </a>
           ) : (
             <Link to="/" className="flex min-w-0 items-center gap-3">
-              <img src={logoImg} alt="D Kings Lounge Logo" className="h-9 w-auto object-contain shrink-0" />
+              <img src={logoImg} alt="D Royal Lounge Logo" className="h-9 w-auto object-contain shrink-0" />
               <span className="font-display mt-4 truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
-                KINGS LOUNGE
+                ROYAL LOUNGE
               </span>
             </Link>
           )}
@@ -279,9 +279,9 @@ export function Header({ mode = "home" }: HeaderProps) {
         <div className="fixed inset-0 z-[60] flex flex-col bg-background/98 backdrop-blur-xl lg:hidden">
           <div className="flex h-[76px] items-center justify-between px-5 border-b border-border">
             <div className="flex items-center gap-2.5">
-              <img src={logoImg} alt="D Kings Lounge Logo" className="h-8 w-auto object-contain shrink-0" />
+              <img src={logoImg} alt="D Royal Lounge Logo" className="h-8 w-auto object-contain shrink-0" />
               <span className="font-display text-[1.15rem] tracking-[0.22em] text-foreground">
-                KINGS LOUNGE
+                ROYAL LOUNGE
               </span>
             </div>
             <button

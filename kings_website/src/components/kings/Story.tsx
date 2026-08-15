@@ -45,7 +45,7 @@ export function Story() {
           <Reveal delay={220}>
             <div className="space-y-4 max-w-[36rem] text-[0.98rem] sm:text-[1.05rem] leading-relaxed text-[#4A453E] dark:text-[#B9AFA2]">
               <p>
-                D Kings Lounge brings the evening together under one roof — a refined bar, intimate shisha room, kitchen and space made for the camera.
+                D Royal Lounge brings the evening together under one roof — a refined bar, intimate shisha room, kitchen and space made for the camera.
               </p>
               <p>
                 Slow pours. Late plates. Fresh coals. Good company. Stay for one drink, or stay until the room goes quiet.
@@ -113,7 +113,7 @@ export function Story() {
               <span className="text-[#C9A24B] font-display">★</span>
               <span>THE LOUNGE</span>
               <span className="text-[#C9A24B]">•</span>
-              <span>OGWASHI, DELTA STATE</span>
+              <span>COKA, ASABA, DELTA STATE</span>
             </div>
           </Reveal>
         </div>
@@ -131,7 +131,7 @@ export function Story() {
               <div className="relative rounded-t-[190px] sm:rounded-t-[250px] overflow-hidden aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5.1] w-full bg-[#12100E]">
                 <img
                   src={houseArchImage}
-                  alt="D Kings Lounge Ogwashi velvet interior and crystal whiskey rocks glass"
+                  alt="D Royal Lounge Coka Asaba velvet interior and crystal whiskey rocks glass"
                   loading="lazy"
                   width={1000}
                   height={1250}

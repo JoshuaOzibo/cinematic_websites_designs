@@ -5,14 +5,14 @@ import { Reveal } from "./Reveal";
 const experiences = [
   {
     image: shishaImage,
-    alt: "Brass shisha pipe with glowing coals and drifting smoke at Kings Lounge, Asaba",
+    alt: "Brass shisha pipe with glowing coals and drifting smoke at Royal Lounge, Asaba",
     kicker: "The Smoke Room",
     title: "Shisha, kept alive all night",
     copy: "Hand-packed bowls, fresh coals brought to the table, and blends mixed to your taste. Booths available for groups of six and up.",
   },
   {
     image: photoImage,
-    alt: "Warmly lit photo shoot corner with softbox lighting inside Kings Lounge, Asaba",
+    alt: "Warmly lit photo shoot corner with softbox lighting inside Royal Lounge, Asaba",
     kicker: "The Frame",
     title: "A room lit for the camera",
     copy: "Our lounge doubles as a studio — practical gold lighting, velvet sets and a photographer on call. Birthdays, brand shoots, full buyouts.",

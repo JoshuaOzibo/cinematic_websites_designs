@@ -19,14 +19,14 @@ export function Reserve() {
           <Reveal delay={0}>
             <p className="kicker">Find Us</p>
             <h2 className="font-display mt-5 text-[2rem] leading-[1.06] text-foreground sm:text-[2.6rem]">
-              Polytechnic Road, Ogwashi-Ukwu.
+              Coka Junction, Asaba.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
             <div className="rule-gold mt-6 w-24" />
             <p className="mt-6 text-[0.98rem] leading-relaxed text-muted-foreground">
-              Kings Lounge, Polytechnic Road, Ogwashi-Ukwu, Delta State, Nigeria.
+              Royal Lounge, Coka Junction, Asaba, Delta State, Nigeria.
               <br />
               <a href="tel:+2348000000000" className="link-underline text-gold font-semibold">
                 +234 800 000 0000
@@ -64,12 +64,12 @@ export function Reserve() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C9A24B] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#C9A24B]" />
                 </span>
-                <span>Ogwashi-Ukwu • Open Today</span>
+                <span>Coka Asaba • Open Today</span>
               </div>
 
               {/* Get Directions Button Overlay */}
               <a
-                href="https://maps.google.com/?q=5GMF%2B6P9%2C%20Polytechnic%20Road%2C%20Ogwashi-Ukwu%20320109%2C%20Delta"
+                href="https://maps.google.com/?q=Coka+Junction%2C+Asaba%2C+Delta+State"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-4 right-4 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#C9A24B] text-[#0E0D0C] font-bold text-[0.72rem] tracking-wider uppercase shadow-xl transition-all duration-300 hover:scale-105 hover:bg-white"
@@ -82,8 +82,8 @@ export function Reserve() {
 
               {/* Interactive Map Iframe */}
               <iframe
-                title="Map showing Kings Lounge in Ogwashi-Ukwu, Delta State"
-                src="https://maps.google.com/maps?q=5GMF%2B6P9%2C%20Polytechnic%20Road%2C%20Ogwashi-Ukwu%20320109%2C%20Delta&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                title="Map showing Royal Lounge in Coka, Asaba, Delta State"
+                src="https://maps.google.com/maps?q=Coka%20Junction%2C%20Asaba%2C%20Delta&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 className="h-full min-h-[350px] w-full border-0 transition-opacity duration-300"
                 loading="lazy"
                 allowFullScreen

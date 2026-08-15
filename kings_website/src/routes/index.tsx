@@ -7,9 +7,9 @@ import { Experiences } from "@/components/kings/Experiences";
 import { Reserve } from "@/components/kings/Reserve";
 import { Footer } from "@/components/kings/Footer";
 
-const title = "Kings Lounge Asaba — Bar, Kitchen, Shisha & Photo Lounge";
+const title = "Royal Lounge Asaba — Bar, Kitchen, Shisha & Photo Lounge";
 const description =
-  "Asaba's upscale bar, kitchen and shisha lounge. Browse the full menu in Naira, book a photo shoot, and reserve a table at Kings Lounge, Delta State.";
+  "Asaba's upscale bar, kitchen and shisha lounge. Browse the full menu in Naira, book a photo shoot, and reserve a table at Royal Lounge, Delta State.";
 
 export const Route = createFileRoute("/")({
   head: () => ({

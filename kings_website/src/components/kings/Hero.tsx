@@ -5,7 +5,7 @@ import archImage from "@/assets/hero.jpg";
 import bottleImage from "@/assets/kings-bottle.webp";
 import logoImg from "@/assets/logo.png";
 
-const LETTERS = ["K", "I", "N", "G", "S"];
+const LETTERS = ["R", "O", "Y", "A", "L"];
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -130,7 +130,7 @@ export function Hero() {
             >
               <img
                 src={logoImg}
-                alt="D Kings Logo"
+                alt="D Royal Logo"
                 className="h-10 sm:h-16 md:h-20 lg:h-24 w-auto object-contain drop-shadow-lg"
               />
             </div>
@@ -144,14 +144,14 @@ export function Hero() {
                 aria-hidden
                 className="inline-block h-px w-6 shrink-0 bg-[var(--hero-gold-ink)]"
               />
-              Ogwashi, Delta State
+              Coka, Asaba, Delta State
             </p>
           </div>
 
           {/* Arch photo, wordmark and bottle share one positioning context so the
               letters can straddle the panel and the bottle can bleed past both. */}
           <div className="hero-stage mt-8 sm:mt-4">
-            <h1 className="hero-word" aria-label="Kings Lounge">
+            <h1 className="hero-word" aria-label="Royal Lounge">
               <span aria-hidden="true" className="hero-word__letters">
                 {LETTERS.map((letter, i) => (
                   <span
@@ -203,7 +203,7 @@ export function Hero() {
           <span className="hero-arch__inner">
             <img
               src={archImage}
-              alt="A bartender pouring whisky from a cut-glass decanter at Kings Lounge, Asaba"
+              alt="A bartender pouring whisky from a cut-glass decanter at Royal Lounge, Asaba"
               width={1920}
               height={1280}
               loading="eager"

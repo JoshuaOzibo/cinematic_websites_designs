@@ -30,9 +30,9 @@ type Item = {
 
 const COGNAC: Item = {
   image: cognacImage,
-  alt: "A bottle of Kingston XO Extra Old Cognac on a reflective surface",
+  alt: "A bottle of Royal XO Extra Old Cognac on a reflective surface",
   kicker: "Rare Spirits",
-  title: "Kingston XO Extra Old",
+  title: "Royal XO Extra Old",
   description:
     "An exquisite blend of aged cognacs with rich oak, vanilla and warm spice notes, poured with ceremony.",
   link: "/menu",

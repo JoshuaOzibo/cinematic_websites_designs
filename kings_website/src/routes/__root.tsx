@@ -75,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Kings Lounge Asaba" },
+      { title: "Royal Lounge Asaba" },
       { name: "description", content: "Bar, kitchen, shisha and photo lounge in Asaba, Delta State." },
       { name: "theme-color", content: "#F7F3EA" },
       { property: "og:type", content: "website" },

@@ -8,9 +8,9 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div>
             <div className="flex items-center gap-3">
-              <img src={logoImg} alt="D Kings Lounge Logo" className="h-16 w-auto object-contain shrink-0" />
+              <img src={logoImg} alt="D Royal Lounge Logo" className="h-16 w-auto object-contain shrink-0" />
               <span className="font-display text-[1.05rem] tracking-[0.22em] text-foreground">
-                KINGS LOUNGE
+                ROYAL LOUNGE
               </span>
             </div>
             <p className="mt-5 max-w-[18rem] text-[0.9rem] leading-relaxed text-muted-foreground">
@@ -37,7 +37,7 @@ export function Footer() {
           <div>
             <h3 className="label-track text-[0.65rem] font-semibold text-gold">Contact</h3>
             <ul className="mt-5 grid gap-2.5 text-[0.9rem] text-muted-foreground">
-              <li>Polytechnic Road, Ogwashi-Ukwu, Delta State</li>
+              <li>Coka Junction, Asaba, Delta State</li>
               <li>
                 <a href="tel:+2348000000000" className="link-underline hover:text-foreground">
                   +234 800 000 0000
@@ -45,10 +45,10 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@kingsloungeasaba.com"
+                  href="mailto:hello@royalloungeasaba.com"
                   className="link-underline hover:text-foreground"
                 >
-                  hello@kingsloungeasaba.com
+                  hello@royalloungeasaba.com
                 </a>
               </li>
               <li className="flex gap-4 pt-2">
@@ -78,7 +78,7 @@ export function Footer() {
         <div className="rule-gold mt-14" />
         <div className="mt-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
           <p className="text-[0.78rem] text-muted-foreground">
-            © {new Date().getFullYear()} Kings Lounge, Asaba. Menu prices subject to change.
+            © {new Date().getFullYear()} Royal Lounge, Asaba. Menu prices subject to change.
           </p>
           <img src={logoImg} alt="" className="h-10 w-auto object-contain opacity-70" />
         </div>

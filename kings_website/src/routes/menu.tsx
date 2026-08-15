@@ -3,9 +3,9 @@ import { Header } from "@/components/kings/Header";
 import { MenuBrowser } from "@/components/kings/MenuBrowser";
 import { Footer } from "@/components/kings/Footer";
 
-const title = "Menu — Kings Lounge Asaba";
+const title = "Menu — Royal Lounge Asaba";
 const description =
-  "Explore the upscale food, drinks, champagne, cocktails, and shisha menu at Kings Lounge Asaba.";
+  "Explore the upscale food, drinks, champagne, cocktails, and shisha menu at Royal Lounge Asaba.";
 
 export const Route = createFileRoute("/menu")({
   head: () => ({
