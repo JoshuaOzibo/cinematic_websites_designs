@@ -376,30 +376,40 @@
   --hero-cream: oklch(0.958 0.01 84);
   --hero-cream-deep: oklch(0.936 0.014 82);
 
-  /* wordmark crimson red — #8B1E1E. Transitions to pure white on scroll. */
+  /* What the ink drifts toward as --hero-expand goes 0→1. White above 900px,
+     where the aperture opens into the whole section — the ground behind the
+     text becomes the dark photo, so the ink has to lighten to stay legible.
+     Below 900px the photo only ever fills .hero-frame, underneath the text,
+     not behind it — the ground behind the text stays the cream ground at
+     every value of --hero-expand, so lightening toward white would fade the
+     ink into it instead. Overridden to a near-black there (in the responsive
+     block below) so the transition deepens the ink rather than erasing it. */
+  --hero-transition-target: oklch(1 0 0);
+
+  /* wordmark crimson red — #8B1E1E. */
   --hero-gold: color-mix(
     in oklab,
-    oklch(1 0 0) calc(var(--hero-expand) * 100%),
+    var(--hero-transition-target) calc(var(--hero-expand) * 100%),
     oklch(0.42 0.17 25)
   );
   /* Has to read against both the cream ground and the lifted photo. */
   --hero-gold-line: oklch(0.66 0.11 80 / 0.9);
 
   /* Readable ink, on a ground that moves. At rest the hero is cream and the
-     ink is charcoal. By the end of the scroll, everything transitions to pure white. */
+     ink is charcoal. */
   --hero-ink: color-mix(
     in oklab,
-    oklch(1 0 0) calc(var(--hero-expand) * 100%),
+    var(--hero-transition-target) calc(var(--hero-expand) * 100%),
     oklch(0.19 0.006 55)
   );
   --hero-ink-muted: color-mix(
     in oklab,
-    oklch(1 0 0) calc(var(--hero-expand) * 100%),
+    var(--hero-transition-target) calc(var(--hero-expand) * 100%),
     oklch(0.43 0.012 60)
   );
   --hero-gold-ink: color-mix(
     in oklab,
-    oklch(1 0 0) calc(var(--hero-expand) * 100%),
+    var(--hero-transition-target) calc(var(--hero-expand) * 100%),
     oklch(0.42 0.075 72)
   );
 
@@ -757,6 +767,11 @@
 
 @media (max-width: 899px) {
   .hero-light {
+    /* See --hero-transition-target's definition above: the text never sits
+       on the photo at this width, so drift toward a warm near-black instead
+       of white — matching this file's "no pure black or white" palette —
+       rather than fading the ink into the cream ground it's always on. */
+    --hero-transition-target: oklch(0.14 0.01 55);
     --bottle-h: clamp(14rem, 46vw, 22rem);
     --arch-h: calc(var(--bottle-h) * 0.86);
     --arch-w: clamp(7rem, 30vw, 12rem);
