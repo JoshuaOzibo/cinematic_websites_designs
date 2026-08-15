@@ -3,17 +3,17 @@ import logoImg from "@/assets/logo.png";
 
 export function Footer() {
   return (
-    <footer className="grain relative border-t border-border bg-[oklch(0.135_0.004_60)]">
+    <footer className="grain relative border-t border-border bg-[oklch(0.135_0.004_60)] text-[#F4EDE4]">
       <div className="mx-auto max-w-[1280px] px-5 py-16 sm:px-8 lg:py-20">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div>
             <div className="flex items-center gap-3">
               <img src={logoImg} alt="D Royal Lounge Logo" className="h-16 w-auto object-contain shrink-0" />
-              <span className="font-display text-[1.05rem] tracking-[0.22em] text-foreground">
+              <span className="font-display text-[1.05rem] tracking-[0.22em] text-white">
                 ROYAL LOUNGE
               </span>
             </div>
-            <p className="mt-5 max-w-[18rem] text-[0.9rem] leading-relaxed text-muted-foreground">
+            <p className="mt-5 max-w-[18rem] text-[0.9rem] leading-relaxed text-[#B9AFA2]">
               Bar, kitchen, shisha and photo experiences. Asaba&rsquo;s late room.
             </p>
           </div>
@@ -25,7 +25,7 @@ export function Footer() {
                 <li key={c.id}>
                   <a
                     href={`#${c.id}`}
-                    className="link-underline text-[0.9rem] text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                    className="link-underline text-[0.9rem] text-[#B9AFA2] transition-colors duration-200 hover:text-white"
                   >
                     {c.title}
                   </a>
@@ -36,17 +36,17 @@ export function Footer() {
 
           <div>
             <h3 className="label-track text-[0.65rem] font-semibold text-gold">Contact</h3>
-            <ul className="mt-5 grid gap-2.5 text-[0.9rem] text-muted-foreground">
+            <ul className="mt-5 grid gap-2.5 text-[0.9rem] text-[#B9AFA2]">
               <li>Coka Junction, Asaba, Delta State</li>
               <li>
-                <a href="tel:+2348000000000" className="link-underline hover:text-foreground">
+                <a href="tel:+2348000000000" className="link-underline hover:text-white transition-colors duration-200">
                   +234 800 000 0000
                 </a>
               </li>
               <li>
                 <a
                   href="mailto:hello@royalloungeasaba.com"
-                  className="link-underline hover:text-foreground"
+                  className="link-underline hover:text-white transition-colors duration-200"
                 >
                   hello@royalloungeasaba.com
                 </a>
@@ -56,7 +56,7 @@ export function Footer() {
                   <a
                     key={s}
                     href="#reserve"
-                    className="link-underline label-track text-[0.65rem] font-semibold text-gold"
+                    className="link-underline label-track text-[0.65rem] font-semibold text-gold hover:text-white transition-colors duration-200"
                   >
                     {s}
                   </a>
@@ -67,7 +67,7 @@ export function Footer() {
 
           <div>
             <h3 className="label-track text-[0.65rem] font-semibold text-gold">Hours</h3>
-            <ul className="mt-5 grid gap-2.5 text-[0.9rem] text-muted-foreground">
+            <ul className="mt-5 grid gap-2.5 text-[0.9rem] text-[#B9AFA2]">
               <li>Mon — Thu · 4PM — 1AM</li>
               <li>Fri — Sat · 4PM — 4AM</li>
               <li>Sunday · 2PM — 12AM</li>
@@ -77,7 +77,7 @@ export function Footer() {
 
         <div className="rule-gold mt-14" />
         <div className="mt-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-          <p className="text-[0.78rem] text-muted-foreground">
+          <p className="text-[0.78rem] text-[#B9AFA2]">
             © {new Date().getFullYear()} Royal Lounge, Asaba. Menu prices subject to change.
           </p>
           <img src={logoImg} alt="" className="h-10 w-auto object-contain opacity-70" />

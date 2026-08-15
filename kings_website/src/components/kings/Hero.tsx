@@ -189,7 +189,7 @@ export function Hero() {
               className="reveal max-w-[20rem] text-[clamp(0.9rem,1.1vw,1rem)] leading-[1.72] tracking-[0.005em] text-[var(--hero-ink-muted)]"
               style={{ animationDelay: "940ms" }}
             >
-              A bar, a kitchen and a shisha lounge built for long evenings — rare pours, slow smoke,
+              A bar, a kitchen and a shisha lounge built for long evenings rare pours, slow smoke,
               and a room lit for the camera.
             </p>
           </div>
