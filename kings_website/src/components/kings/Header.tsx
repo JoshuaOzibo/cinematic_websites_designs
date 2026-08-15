@@ -209,18 +209,18 @@ export function Header({ mode = "home" }: HeaderProps) {
           mode === "menu" || scrolled ? "kl-header--dark" : "kl-header--cream"
         }`}
       >
-        <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+        <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 sm:gap-4 sm:px-8 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
           {mode === "home" ? (
-            <a href="#top" className="flex min-w-0 items-center gap-3">
-              <img src={logoImg} alt="D Royal Lounge Logo" className="h-9 w-auto object-contain shrink-0" />
-              <span className="font-display mt-4 truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
+            <a href="#top" className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <img src={logoImg} alt="D Royal Lounge Logo" className="h-8 w-auto shrink-0 object-contain sm:h-9" />
+              <span className="font-display mt-4 truncate text-[0.85rem] leading-none tracking-[0.08em] text-[var(--hdr-ink)] sm:text-[1.15rem] sm:tracking-[0.22em]">
                 ROYAL LOUNGE
               </span>
             </a>
           ) : (
-            <Link to="/" className="flex min-w-0 items-center gap-3">
-              <img src={logoImg} alt="D Royal Lounge Logo" className="h-9 w-auto object-contain shrink-0" />
-              <span className="font-display mt-4 truncate text-[1.15rem] leading-none tracking-[0.22em] text-[var(--hdr-ink)]">
+            <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <img src={logoImg} alt="D Royal Lounge Logo" className="h-8 w-auto shrink-0 object-contain sm:h-9" />
+              <span className="font-display mt-4 truncate text-[0.85rem] leading-none tracking-[0.08em] text-[var(--hdr-ink)] sm:text-[1.15rem] sm:tracking-[0.22em]">
                 ROYAL LOUNGE
               </span>
             </Link>
@@ -231,12 +231,12 @@ export function Header({ mode = "home" }: HeaderProps) {
             {mode === "menu" && <SearchMenu onSelect={() => {}} />}
           </div>
 
-          <div className="flex items-center justify-end gap-5">
+          <div className="flex items-center justify-end gap-2.5 sm:gap-5">
             {/* Theme switcher */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="grid h-10 w-10 place-items-center rounded-[5px] border border-border text-[var(--hdr-ink)] hover:bg-gold/10 hover:border-gold transition-colors duration-200"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-[5px] border border-border text-[var(--hdr-ink)] hover:bg-gold/10 hover:border-gold transition-colors duration-200 sm:h-10 sm:w-10"
               aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
             >
               {theme === "light" ? (
@@ -254,7 +254,7 @@ export function Header({ mode = "home" }: HeaderProps) {
             </button>
 
             {mode === "home" ? (
-              <Link to="/menu" className="btn-theme-invert">
+              <Link to="/menu" className="btn-theme-invert !min-h-9 !px-4 text-[0.72rem] sm:!min-h-[48px] sm:!px-7 sm:text-[0.8125rem]">
                 Menu
               </Link>
             ) : (

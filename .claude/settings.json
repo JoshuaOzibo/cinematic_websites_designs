@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scroll_shots.mjs shots http://localhost:5173/ 390 verify390)",
+      "Bash(node scroll_shots.mjs shots http://localhost:5173/menu 390 verifymenu390)",
+      "Bash(node shot.mjs shots http://localhost:5173/ 1440 desktop1440)",
+      "Bash(node shot.mjs shots http://localhost:5173/ 1024 desktop1024)"
+    ]
+  }
+}

@@ -735,6 +735,18 @@
     --bottle-h: clamp(24rem, 50vw, 34rem);
     --arch-h: calc(var(--bottle-h) * 0.72);
     --arch-w: clamp(8rem, 24vw, 16rem);
+    /* .hero-light is `flex` (row by default). That's harmless above 900px,
+       where the arch and bottle are position: absolute and never
+       participate in flex layout — the content div is the row's only real
+       item. Below 900px the arch becomes an in-flow item (see .hero-arch
+       below), so without this the content div and the arch would share one
+       row: the browser shrinks the full-width content block to make room,
+       crushing the wordmark, and the arch gets squeezed to a sliver and
+       clipped by overflow-hidden. Column restores the intended stack —
+       content, then arch below it — and items-center still centers each
+       (now full-width) item horizontally, so nothing else here relies on
+       row's cross-axis vertical-centering trick at this width. */
+    flex-direction: column;
   }
   /* Arch leaves the word and sits below it; the bottle flanks rather than
      bisects. Below this width the arch is an in-flow box, so there is nothing
@@ -768,6 +780,29 @@
   }
   .hero-stage {
     min-height: 0;
+  }
+}
+
+/* 600–899px sat on the desktop word-size formula (clamp(..., 27vw, ...)),
+   which is tuned for a wordmark that shares the viewport with an absolutely
+   positioned, non-flow bottle — fine above 900px, where --hero-expand pins
+   the two into a deliberate overlap. Below 900px the bottle is a flanking
+   element instead (see --arch-x/.hero-bottle above), and 27vw renders the
+   nowrap wordmark at nearly full viewport width with nothing left for the
+   bottle to flank without sitting on top of the letters. Below 600px this
+   was already caught by its own word-size override; this fills the gap. */
+@media (min-width: 600px) and (max-width: 899px) {
+  .hero-light {
+    --hero-word-size: clamp(4.5rem, 13vw, 8rem);
+  }
+  .hero-bottle {
+    left: auto;
+    right: -8%;
+    top: 44%;
+    translate: 0 -50%;
+    height: clamp(20rem, 46vw, 28rem);
+    opacity: 0.35;
+    z-index: 0;
   }
 }
 
