@@ -14,13 +14,13 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ${
         scrolled ? 'bg-cream/80 shadow-[0_1px_0_rgba(122,90,64,0.15)] backdrop-blur-md' : 'bg-transparent'
       }`}
     >
       <nav
         aria-label="Primary"
-        className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-5 py-5 sm:px-8 lg:px-14"
+        className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-5 py-3.5 sm:px-8 sm:py-4 lg:px-14 lg:py-5"
       >
         <a
           href="#home"
