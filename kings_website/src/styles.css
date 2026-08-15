@@ -727,82 +727,102 @@
      opaque, so there is essentially nothing left to see through and blur. */
 }
 
-/* ---- responsive: the overlap stops working below 900px ---- */
+/* ---- responsive: below 900px the aperture opens into its own frame,
+   not the whole viewport ----
+ *
+ * Above 900px the arch/bottle are absolute against .hero-light itself, so
+ * the aperture expands to fill the entire pinned section — the text sits on
+ * top of a full-bleed photo once open. Below 900px that would mean the photo
+ * covering the wordmark too, so .hero-frame is inserted as a second
+ * containing block: a box that absorbs whatever vertical space the text
+ * block above it doesn't use (flex: 1 in the column layout below), sitting
+ * under the text rather than behind it. The arch and bottle move inside it
+ * (Hero.tsx) and their percentages/insets resolve against *that* box, so
+ * "the aperture opens to fill the section" now means filling .hero-frame,
+ * not the viewport — the text above never moves or gets covered.
+ *
+ * .hero-frame is left at its initial `position: static` above 900px, so it
+ * takes no part in this — the arch/bottle's containing block stays
+ * .hero-light, same as before this element existed.
+ */
 
 @media (max-width: 899px) {
   .hero-light {
-    --arch-x: 50%;
-    --bottle-h: clamp(24rem, 50vw, 34rem);
-    --arch-h: calc(var(--bottle-h) * 0.72);
-    --arch-w: clamp(8rem, 24vw, 16rem);
-    /* .hero-light is `flex` (row by default). That's harmless above 900px,
-       where the arch and bottle are position: absolute and never
-       participate in flex layout — the content div is the row's only real
-       item. Below 900px the arch becomes an in-flow item (see .hero-arch
-       below), so without this the content div and the arch would share one
-       row: the browser shrinks the full-width content block to make room,
-       crushing the wordmark, and the arch gets squeezed to a sliver and
-       clipped by overflow-hidden. Column restores the intended stack —
-       content, then arch below it — and items-center still centers each
-       (now full-width) item horizontally, so nothing else here relies on
-       row's cross-axis vertical-centering trick at this width. */
+    --bottle-h: clamp(14rem, 46vw, 22rem);
+    --arch-h: calc(var(--bottle-h) * 0.86);
+    --arch-w: clamp(7rem, 30vw, 12rem);
+    /* .hero-frame is now a real flex item (flex: 1), so — unlike above
+       900px, where it's the row's only in-flow item and direction is moot —
+       column is load-bearing here: it's what stacks text above frame
+       instead of sitting them side by side and splitting the row's width
+       between them. */
     flex-direction: column;
   }
-  /* Arch leaves the word and sits below it; the bottle flanks rather than
-     bisects. Below this width the arch is an in-flow box, so there is nothing
-     for an aperture to open into — the pin does not run here (see Hero.tsx)
-     and the panel reverts to a plain bordered frame. */
-  .hero-arch {
+
+  /* Fills whatever height the text block above leaves inside the
+     min-h-[100svh] section — i.e. exactly the blank space this replaces. */
+  .hero-frame {
     position: relative;
-    inset: auto;
-    left: auto;
-    top: auto;
-    translate: none;
-    width: clamp(9rem, 26vw, 14rem);
-    height: var(--arch-h);
-    margin-inline: auto;
-    clip-path: none;
-    background: none;
-    border: 1px solid var(--hero-gold-line);
-    border-radius: calc(var(--arch-w) / 2) calc(var(--arch-w) / 2) 4px 4px;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 15rem;
+  }
+
+  /* Same k-driven interpolation as the base rule above, but sized against
+     .hero-frame (100%) instead of computed from --nav-h against the whole
+     section: at rest (k=1) a domed frame sized by --arch-w/--arch-h,
+     centred in the box; at k=0 its width/height both resolve to 100% and it
+     is edge-to-edge within .hero-frame. Centring via left/top 50% +
+     translate -50% means that width/height sweep from a fixed size to 100%
+     without the box ever drifting off-centre. */
+  .hero-arch {
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    width: calc(var(--arch-w) * var(--arch-k) + 100% * (1 - var(--arch-k)));
+    height: calc(var(--arch-h) * var(--arch-k) + 100% * (1 - var(--arch-k)));
     overflow: hidden;
+    background: none;
+    /* Border does the framing job clip-path did above 900px — cheaper, and
+       .hero-arch's own overflow: hidden clips the photo without needing the
+       inner span's separate 1px-in cut. Fades out as the photo takes over. */
+    border: 1px solid
+      color-mix(in oklab, transparent calc(var(--hero-expand) * 100%), var(--hero-gold-line));
+    border-radius:
+      calc(var(--arch-w) / 2 * var(--arch-k)) calc(var(--arch-w) / 2 * var(--arch-k))
+      calc(4px * var(--arch-k)) calc(4px * var(--arch-k));
+    clip-path: none;
   }
   .hero-arch__inner {
     clip-path: none;
   }
   .hero-arch__inner > img {
-    /* framing was tuned for the narrow in-flow box, not the bleed frame */
-    object-position: 23% 40%;
-    scale: 1;
+    /* framing was tuned for the full-bleed frame, not this smaller box */
+    object-position: 30% 38%;
   }
+
+  /* Simple centring, not the nav-h/expand formula above 900px — .hero-frame
+     already tracks how much room is left, so the bottle just sits in its
+     middle at every value of --hero-expand rather than travelling. */
   .hero-bottle {
-    left: 78%;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
   }
+
   .hero-stage {
     min-height: 0;
   }
 }
 
 /* 600–899px sat on the desktop word-size formula (clamp(..., 27vw, ...)),
-   which is tuned for a wordmark that shares the viewport with an absolutely
-   positioned, non-flow bottle — fine above 900px, where --hero-expand pins
-   the two into a deliberate overlap. Below 900px the bottle is a flanking
-   element instead (see --arch-x/.hero-bottle above), and 27vw renders the
-   nowrap wordmark at nearly full viewport width with nothing left for the
-   bottle to flank without sitting on top of the letters. Below 600px this
-   was already caught by its own word-size override; this fills the gap. */
+   which renders the nowrap wordmark at nearly full viewport width — much
+   wider than .hero-frame needs it to be now that the frame sits below the
+   text rather than behind it. Below 600px this was already caught by its
+   own word-size override; this fills the gap. */
 @media (min-width: 600px) and (max-width: 899px) {
   .hero-light {
     --hero-word-size: clamp(4.5rem, 13vw, 8rem);
-  }
-  .hero-bottle {
-    left: auto;
-    right: -8%;
-    top: 44%;
-    translate: 0 -50%;
-    height: clamp(20rem, 46vw, 28rem);
-    opacity: 0.35;
-    z-index: 0;
   }
 }
 
@@ -813,16 +833,6 @@
   }
   .hero-cap {
     letter-spacing: 0.3em;
-  }
-  /* Fully stacked — the bottle becomes a quiet right-edge bleed behind it. */
-  .hero-bottle {
-    left: auto;
-    right: -14%;
-    top: 46%;
-    translate: 0 -50%;
-    height: clamp(15rem, 62vw, 20rem);
-    opacity: 0.3;
-    z-index: 0;
   }
 }
 

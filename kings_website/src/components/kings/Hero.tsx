@@ -49,11 +49,13 @@ export function Hero() {
     // stack a second pinned trigger on the same section.
     const mm = gsap.matchMedia();
 
-    // Under 900px the arch is an in-flow box, so there is no aperture to
-    // open. The reduce query has to be here rather than in the stylesheet:
-    // a scrubbed timeline is not a CSS animation, so the reduced-motion
-    // block in styles.css would never see it.
-    mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
+    // Runs at every width now — the arch and bottle stay absolutely
+    // positioned down to the smallest phone (styles.css), so there is
+    // always an aperture for this to open. The reduce query has to be here
+    // rather than in the stylesheet: a scrubbed timeline is not a CSS
+    // animation, so the reduced-motion block in styles.css would never see
+    // it.
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
       // The header only cares about one bit, but onUpdate runs on every
       // scrubbed frame — so write the attribute on the transition, not on the
       // frame. Each write to <html> is a document-level attribute mutation and
