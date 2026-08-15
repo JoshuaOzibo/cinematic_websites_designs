@@ -195,41 +195,47 @@ export function Hero() {
           </div>
         </div>
 
-        {/* arch and bottle are siblings of the content div so they position
-            relative to the section (100svh), not the stage inner height.
-            This lets us pin their tops flush to the navbar bottom.
+        {/* .hero-frame is a plain, layout-neutral wrapper above 900px (see
+            styles.css) — the arch and bottle inside it still position
+            relative to the section itself there, flush to the navbar bottom.
+            Below 900px it becomes their containing block instead: a box that
+            fills whatever space the text above it leaves, so the aperture
+            opens into that space rather than over the text.
 
             The figure is a full-bleed plate cut down to the arch; __inner is the
             same cut 1px in, which is what leaves the gold showing as a hairline
-            that follows the shape as it opens. */}
-        <figure
-          data-visible="true"
-          className="arch-open hero-arch m-0"
-          style={{ animationDelay: "220ms" }}
-        >
-          <span className="hero-arch__inner">
-            <img
-              src={archImage}
-              alt="A bartender pouring whisky from a cut-glass decanter at Royal Lounge, Asaba"
-              width={1920}
-              height={1280}
-              loading="eager"
-              fetchPriority="high"
-            />
-          </span>
-        </figure>
+            that follows the shape as it opens (above 900px — below it the
+            border lives on .hero-arch itself). */}
+        <div className="hero-frame">
+          <figure
+            data-visible="true"
+            className="arch-open hero-arch m-0"
+            style={{ animationDelay: "220ms" }}
+          >
+            <span className="hero-arch__inner">
+              <img
+                src={archImage}
+                alt="A bartender pouring whisky from a cut-glass decanter at Royal Lounge, Asaba"
+                width={1920}
+                height={1280}
+                loading="eager"
+                fetchPriority="high"
+              />
+            </span>
+          </figure>
 
-        <img
-          src={bottleImage}
-          alt=""
-          aria-hidden="true"
-          width={284}
-          height={943}
-          data-visible="true"
-          className="rise hero-bottle"
-          style={{ animationDelay: "640ms" }}
-          draggable={false}
-        />
+          <img
+            src={bottleImage}
+            alt=""
+            aria-hidden="true"
+            width={284}
+            height={943}
+            data-visible="true"
+            className="rise hero-bottle"
+            style={{ animationDelay: "640ms" }}
+            draggable={false}
+          />
+        </div>
 
         <div aria-hidden className="hero-grain" />
       </section>

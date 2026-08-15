@@ -475,6 +475,15 @@
   min-height: calc(var(--hero-word-size) * 0.78);
 }
 
+/* Left at the initial `position: static` here — above 900px it takes no
+   part in layout and the arch/bottle inside it keep .hero-light as their
+   containing block, same as if this wrapper didn't exist. Below 900px it
+   becomes `position: relative` (see the responsive block) and takes over as
+   that containing block instead. */
+.hero-frame {
+  position: static;
+}
+
 /* ---- the arch, as an aperture ---- */
 .hero-arch {
   position: absolute;
