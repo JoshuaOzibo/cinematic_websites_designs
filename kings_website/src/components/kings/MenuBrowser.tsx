@@ -82,20 +82,17 @@ function ItemCard({
   );
 }
 
-function gridClass(tier: MenuCategory["tier"]) {
-  if (tier === "premium") return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
-  if (tier === "compact") return "grid-cols-2 lg:grid-cols-4";
-  return "grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3";
-}
-
-export function MenuBrowser() {
+/* ─── the sticky category chips ───────────────────────────────
+ *
+ * Its own component purely so the scroll spy's state stays here. `active`
+ * changes every time you scroll across a category boundary, and it is read
+ * nowhere but this row — held in MenuBrowser it re-rendered the entire menu
+ * (174 ItemCards, each with a Reveal, an inline SVG and an image) on every
+ * one of those crossings, mid-scroll. Now the reconciliation is 12 anchors.
+ */
+function CategoryChips() {
   const active = useScrollSpy(categoryIds, 260);
   const chipRow = useRef<HTMLDivElement>(null);
-
-  // Filter & view states
-  const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeId>("all");
-  const [sortOrder, setSortOrder] = useState<"default" | "asc" | "desc">("default");
-  const [viewMode, setViewMode] = useState<"grid" | "text">("grid");
 
   // Keep chip scroll non-blocking and instant to eliminate scroll hanging
   useEffect(() => {
@@ -106,6 +103,42 @@ export function MenuBrowser() {
       row.scrollTo({ left: Math.max(0, target), behavior: "auto" });
     }
   }, [active]);
+
+  return (
+    <div
+      ref={chipRow}
+      className="flex gap-2 overflow-x-auto px-4 py-2.5 sm:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-border/40"
+      role="navigation"
+      aria-label="Menu categories"
+    >
+      {menu.map((c) => (
+        <a
+          key={c.id}
+          href={`#${c.id}`}
+          data-chip={c.id}
+          data-active={active === c.id}
+          className="label-track relative shrink-0 rounded-[5px] border border-transparent px-3.5 py-2 text-[0.68rem] font-semibold whitespace-nowrap text-muted-foreground transition-[color,background-color,border-color] duration-200 ease-in-out hover:text-foreground data-[active=true]:border-gold/45 data-[active=true]:bg-gold/12 data-[active=true]:text-gold"
+        >
+          {c.title}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function gridClass(tier: MenuCategory["tier"]) {
+  if (tier === "premium") return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+  if (tier === "compact") return "grid-cols-2 lg:grid-cols-4";
+  return "grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3";
+}
+
+export function MenuBrowser() {
+  // Filter & view states. Deliberately the only state in this component — the
+  // scroll spy lives in CategoryChips so that scrolling cannot re-render the
+  // menu itself; nothing here changes until the reader touches a control.
+  const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeId>("all");
+  const [sortOrder, setSortOrder] = useState<"default" | "asc" | "desc">("default");
+  const [viewMode, setViewMode] = useState<"grid" | "text">("grid");
 
   // Price match helper
   const matchesPrice = (price: number, range: PriceRangeId) => {
@@ -151,27 +184,14 @@ export function MenuBrowser() {
   return (
     <div id="menu" className="grain relative bg-background">
       {/* STICKY CONTROL BAR */}
-      <div className="sticky top-[76px] z-40 border-y border-border bg-background/95 backdrop-blur-md shadow-md">
+      {/* Sticky and full-width for the entire length of the menu, so a
+          backdrop-filter here means blurring a strip of the page on every
+          scrolled frame from the first category to the last. The bar is 95%
+          opaque, so the blur was doing no visible work for that cost. */}
+      <div className="sticky top-[76px] z-40 border-y border-border bg-background/95 shadow-md">
         <div className="relative mx-auto max-w-[1280px]">
           {/* Category Chips Scroll Row */}
-          <div
-            ref={chipRow}
-            className="flex gap-2 overflow-x-auto px-4 py-2.5 sm:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-border/40"
-            role="navigation"
-            aria-label="Menu categories"
-          >
-            {menu.map((c) => (
-              <a
-                key={c.id}
-                href={`#${c.id}`}
-                data-chip={c.id}
-                data-active={active === c.id}
-                className="label-track relative shrink-0 rounded-[5px] border border-transparent px-3.5 py-2 text-[0.68rem] font-semibold whitespace-nowrap text-muted-foreground transition-[color,background-color,border-color] duration-200 ease-in-out hover:text-foreground data-[active=true]:border-gold/45 data-[active=true]:bg-gold/12 data-[active=true]:text-gold"
-              >
-                {c.title}
-              </a>
-            ))}
-          </div>
+          <CategoryChips />
 
           {/* Controls Row: Left View Mode Switch, Right Filter Controls */}
           <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-8">

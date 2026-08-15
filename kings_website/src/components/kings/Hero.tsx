@@ -54,8 +54,11 @@ export function Hero() {
     // a scrubbed timeline is not a CSS animation, so the reduced-motion
     // block in styles.css would never see it.
     mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
-      // Prevent lag spikes during screen recording or rapid scrolling
-      gsap.ticker.lagSmoothing(1000, 16);
+      // The header only cares about one bit, but onUpdate runs on every
+      // scrubbed frame — so write the attribute on the transition, not on the
+      // frame. Each write to <html> is a document-level attribute mutation and
+      // wakes Header's scroll listener; 60 of them a second buys nothing.
+      let heroDark: boolean | null = null;
 
       gsap
         .timeline({
@@ -78,8 +81,10 @@ export function Hero() {
               // The header runs charcoal-on-cream until the photo takes the
               // room. Its old fixed scroll depth is wrong now that the pin
               // has moved where that moment happens.
-              document.documentElement.dataset["heroDark"] =
-                self.progress > 0.45 ? "true" : "false";
+              const next = self.progress > 0.45;
+              if (next === heroDark) return;
+              heroDark = next;
+              document.documentElement.dataset["heroDark"] = next ? "true" : "false";
             },
           },
         })

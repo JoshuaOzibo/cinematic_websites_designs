@@ -59,7 +59,12 @@ export function Reserve() {
 
             <div className="relative overflow-hidden rounded-[8px] border border-border h-full min-h-[350px] lg:min-h-[450px] shadow-lg transition-all duration-500 group-hover:border-[#C9A24B]/60">
               {/* Floating Location Badge */}
-              <div className="absolute top-4 left-4 z-10 flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-[#0E0D0C]/85 backdrop-blur-md border border-[#C9A24B]/40 shadow-xl text-[0.7rem] font-bold tracking-widest text-[#F4EDE4] uppercase animate-float-gentle">
+              {/* No backdrop-blur: this badge floats forever on an infinite
+                  animation AND sits directly over the live map iframe, so a
+                  blur would re-sample the busiest surface on the page every
+                  frame. It is 85% opaque, so nothing readable was showing
+                  through it to blur in the first place. */}
+              <div className="absolute top-4 left-4 z-10 flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-[#0E0D0C]/85 border border-[#C9A24B]/40 shadow-xl text-[0.7rem] font-bold tracking-widest text-[#F4EDE4] uppercase animate-float-gentle">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C9A24B] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#C9A24B]" />

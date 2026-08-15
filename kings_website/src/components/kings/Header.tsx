@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import logoImg from "@/assets/logo.png";
 import { useScrollSpy } from "./useScrollSpy";
@@ -145,10 +145,14 @@ export function Header({ mode = "home" }: HeaderProps) {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   
-  const active = useScrollSpy(
-    mode === "menu" ? NAV.map((n) => n.id) : [],
-    220,
-  );
+  // Must be a stable reference. useScrollSpy keys its effect on this array, and
+  // a fresh literal every render tears the scroll listener down and rebuilds it
+  // — re-running the spy's initial pass, which reads body.offsetHeight and six
+  // getBoundingClientRect()s. That is a forced synchronous layout on every
+  // render of a component that re-renders from scroll.
+  const spyIds = useMemo(() => (mode === "menu" ? NAV.map((n) => n.id) : []), [mode]);
+
+  const active = useScrollSpy(spyIds, 220);
 
   // Sync initial theme on mount
   useEffect(() => {

@@ -112,7 +112,11 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    /* No overflow-x here on purpose. `html` already sets it, and overflow on
+       the root element propagates to the viewport — so a second declaration
+       on body does not clip anything extra, it just turns body into its own
+       scroll container. That costs an extra clip + layer on every frame and
+       is a documented source of ScrollTrigger pin jitter. */
     transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
   }
 
@@ -481,9 +485,6 @@
   translate: none;
   z-index: 0;
   background: var(--hero-gold-line);
-  will-change: clip-path, transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 
   /* Raised 2rem above the navbar-anchored rest position so the arch+bottle
      sit higher in the hero at rest, giving more breathing room above them. */
@@ -510,9 +511,6 @@
   inset: 0;
   isolation: isolate;
   background: oklch(0.14 0.01 55);
-  will-change: clip-path, transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 
   clip-path: inset(
     calc((var(--arch-t) + 1px) * var(--arch-k)) calc((var(--arch-i) + 1px) * var(--arch-k))
@@ -538,9 +536,6 @@
   filter: grayscale(1) sepia(0.5) saturate(1.6) contrast(0.94) brightness(1.72);
   transform-origin: 50% 34%;
   scale: calc(var(--arch-zoom-rest) - (var(--arch-zoom-rest) - 1) * var(--hero-expand));
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 /* Two jobs, and only the first one exists at rest: the radial keeps the gold
@@ -565,10 +560,25 @@
 
 /* Promoted only while the pin is live. A permanently promoted full-screen
    image layer costs memory for the whole session to buy smoothness during
-   about two seconds of it. */
+   about two seconds of it — and, worse, a `transform: translateZ(0)` left on
+   the base rule keeps four full-viewport layers alive for every scroll of
+   every section below the hero, which is where most of the jank came from.
+   The promotion belongs here, gated on the pin, and nowhere else. */
 .hero-light[data-aperture="active"] .hero-arch,
 .hero-light[data-aperture="active"] .hero-arch__inner {
   will-change: clip-path;
+}
+
+/* The photo carries a five-function filter chain. Given its own layer for the
+   duration of the scrub, that chain is rasterised once and the per-frame
+   `scale` is a compositor resample; without it, every frame re-filters a
+   full-bleed 1920×1280 image on the main thread. */
+.hero-light[data-aperture="active"] .hero-arch__inner > img {
+  will-change: scale;
+}
+
+.hero-light[data-aperture="active"] .hero-bottle {
+  will-change: translate, scale;
 }
 
 /* ---- the wordmark ---- */
@@ -629,9 +639,6 @@
   z-index: 40;
   pointer-events: none;
   filter: drop-shadow(0 30px 46px oklch(0.42 0.06 60 / 0.28));
-  will-change: transform, scale;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 
   /* transform-origin at 50% 50% (element centre) so scale shrinks the bottle
      around its own midpoint. Combined with top:50% + translateY:-50%, the
@@ -713,7 +720,11 @@
   background: color-mix(in oklab, var(--background) 95%, transparent);
   border-bottom-color: var(--border);
   box-shadow: 0 10px 30px -24px rgb(0 0 0 / 0.9);
-  backdrop-filter: blur(12px);
+  /* No backdrop-filter. This bar is fixed, full-width and on screen for the
+     entire session, so a blur here re-samples and re-blurs a 76px-tall strip
+     of the page on every single scrolled frame — the most expensive thing on
+     the site per unit of visible effect. The ground behind it is already 95%
+     opaque, so there is essentially nothing left to see through and blur. */
 }
 
 /* ---- responsive: the overlap stops working below 900px ---- */
@@ -1127,8 +1138,13 @@
   transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
 }
 
+/* A CSS filter over a live cross-origin iframe forces the whole map into its
+   own render surface and re-runs the filter every time that surface is drawn —
+   and the Google Maps embed drives its own animation loop, so that is every
+   frame, scrolling or not. grayscale(0.1) contrast(0.95) was buying almost no
+   visible tint for that, so light mode now goes unfiltered. Dark mode keeps
+   its chain because there the filter IS the effect: it inverts a white map. */
 iframe {
-  filter: grayscale(0.1) contrast(0.95);
   transition: filter 300ms ease;
 }
 .dark iframe {
@@ -1148,7 +1164,9 @@ iframe {
 .animate-marquee-banner {
   display: flex;
   width: max-content;
-  will-change: transform;
+  /* No will-change: a CSS transform animation is auto-composited while it is
+     running, so this only served to hold the layer open for the whole session
+     — including the long stretches where Story is nowhere near the viewport. */
   animation: marquee-banner 16s linear infinite;
 }
 

@@ -139,7 +139,12 @@ export function Story() {
                 />
 
                 {/* Floating Experience Badge */}
-                <div className="absolute top-6 right-6 z-10 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0E0D0C]/80 backdrop-blur-md border border-[#C9A24B]/40 text-[0.65rem] font-bold tracking-widest text-foreground uppercase animate-float-gentle">
+                {/* No backdrop-blur here: the badge floats on an infinite
+                    animation, so a blur would have to re-sample and re-blur
+                    what is behind it on every frame for as long as the page is
+                    open. At 80% opaque over a dark photo there was nothing
+                    legible showing through it anyway. */}
+                <div className="absolute top-6 right-6 z-10 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0E0D0C]/80 border border-[#C9A24B]/40 text-[0.65rem] font-bold tracking-widest text-foreground uppercase animate-float-gentle">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#C9A24B] animate-ping" />
                   <span>LUXURY REFINED</span>
                 </div>
@@ -148,7 +153,11 @@ export function Story() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none" />
 
                 {/* Bottom Dark Overlay Banner with Infinite Marquee */}
-                <div className="absolute bottom-0 inset-x-0 bg-[#0D0B0A]/90 backdrop-blur-md py-3.5 border-t border-white/10 text-white overflow-hidden pointer-events-auto">
+                {/* Same reason as the badge above, one step worse: the marquee
+                    inside this bar never stops, so the bar repaints forever and
+                    a backdrop-filter would be re-composited alongside it every
+                    frame. 90% opaque over a dark photo — nothing to see. */}
+                <div className="absolute bottom-0 inset-x-0 bg-[#0D0B0A]/90 py-3.5 border-t border-white/10 text-white overflow-hidden pointer-events-auto">
                   <div className="animate-marquee-banner flex items-center whitespace-nowrap">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="flex items-center gap-4 px-6 shrink-0">
