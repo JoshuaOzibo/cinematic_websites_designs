@@ -160,16 +160,19 @@ body {
 
   --cup-h: clamp(250px, min(53vh, 34vw), 580px);
   --cup-gap: 26vw; /* centre-to-centre spacing of the cups */
-  --cup-drop: 26px; /* how much lower the side cups sit */
-  --cup-sink: clamp(8px, 2vh, 24px); /* how far cup bases dip into the cream */
+  --cup-drop: 16px; /* how much lower the side cups sit */
+  /* How far the cups sink behind the cream arc. The arc paints *over* the cups,
+     so this is literally how much of each cup the curve hides — enough that the
+     cups read as standing in the cream rather than on top of it. */
+  --cup-sink: clamp(24px, 5.5vh, 64px);
 
   /* The wordmark box *is* the type design: the glyphs are stretched to fill it,
      so its ~2.5:1 ratio is what condenses Anton into the reference's tall
      editorial letterforms. Widening the box thickens the strokes; heightening it
      thins them. Don't tune these two independently. */
   --word-top: clamp(66px, 11vh, 132px);
-  --word-h: clamp(150px, 53vh, 520px);
-  --word-w: min(1200px, 82vw);
+  --word-h: clamp(140px, 49vh, 480px);
+  --word-w: min(1130px, 76vw);
 
   --arc-h: clamp(44px, 7.5vh, 100px);
 
@@ -200,10 +203,12 @@ body {
 }
 
 /* The zone above the cream: wordmark, beans and cups. Flex-1 so the cream base
-   can size to its own content (which is how mobile stacking stays honest). */
+   can size to its own content (which is how mobile stacking stays honest).
+   It sits *below* .hero-base in z, so cups that overflow its bottom edge are
+   cut by the arc. */
 .hero-stage {
   position: relative;
-  z-index: 40;
+  z-index: 20;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -273,9 +278,11 @@ body {
 }
 
 /* ── Cream base: arc + information panel ──────────────────────────────────*/
+/* Above the stage: the arc crops the bottom of every cup, so the cups appear to
+   rise out of the cream rather than to stand in front of it. */
 .hero-base {
   position: relative;
-  z-index: 20;
+  z-index: 40;
   flex: 0 0 auto;
 }
 
@@ -401,10 +408,10 @@ body {
        *width* here, or a gap opens up between the wordmark and the cups. */
     --cup-h: clamp(220px, min(46vh, 55vw), 460px);
     --cup-gap: 31vw;
-    --cup-drop: 22px;
+    --cup-drop: 14px;
     --word-top: clamp(70px, 12vh, 130px);
-    --word-h: clamp(104px, 28vh, 340px);
-    --word-w: 92vw;
+    --word-h: clamp(104px, 26vh, 320px);
+    --word-w: 88vw;
   }
 
   .hero-panel-inner {
@@ -433,10 +440,10 @@ body {
        peek in at the edges. */
     --cup-h: clamp(180px, min(40vh, 80vw), 340px);
     --cup-gap: 42vw;
-    --cup-drop: 14px;
+    --cup-drop: 10px;
     --word-top: clamp(60px, 12vh, 104px);
-    --word-h: clamp(72px, 28vh, 240px);
-    --word-w: 92vw;
+    --word-h: clamp(72px, 26vh, 225px);
+    --word-w: 88vw;
     --arc-h: clamp(30px, 5vh, 56px);
   }
 

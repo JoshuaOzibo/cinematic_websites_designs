@@ -21,7 +21,7 @@ import { clamp } from './colorUtils'
 export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } = {}) {
   const storeRef = useRef(null)
   if (!storeRef.current) {
-    storeRef.current = { target: 0, pos: 0, subs: new Set(), frame: 0 }
+    storeRef.current = { target: 0, pos: 0, subs: new Set(), frame: 0, last: 0 }
   }
 
   /** Register a per-frame reader. Called immediately with the current value. */
@@ -53,7 +53,7 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } =
       store.target = distance > 0 ? clamp(scrolled / distance, 0, 1) * steps : 0
     }
 
-    const tick = () => {
+    const tick = (now) => {
       const diff = store.target - store.pos
       if (Math.abs(diff) < 0.0004) {
         store.pos = store.target
@@ -61,13 +61,21 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } =
         emit()
         return
       }
-      store.pos += diff * ease
+      // Time-based decay rather than a flat per-frame fraction, so the glide
+      // lasts the same ~900ms on a 60Hz screen, a 120Hz screen and a throttled
+      // background tab. dt is capped so a long stall can't teleport the cups.
+      const dt = Math.min(now - store.last, 64)
+      store.last = now
+      store.pos += diff * (1 - (1 - ease) ** (dt / 16.667))
       emit()
       store.frame = requestAnimationFrame(tick)
     }
 
     const start = () => {
-      if (!store.frame) store.frame = requestAnimationFrame(tick)
+      if (!store.frame) {
+        store.last = performance.now()
+        store.frame = requestAnimationFrame(tick)
+      }
     }
 
     const onScroll = () => {

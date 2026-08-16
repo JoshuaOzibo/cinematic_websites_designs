@@ -29,15 +29,18 @@ export function focusFor(slot) {
 }
 
 /**
- * Fades a cup out over the last stretch of the ring, past the side slots. This
- * is the curtain the wrap-around hides behind, so it must reach 0 *before*
- * |slot| hits count/2.
+ * Fades a cup out over the very end of the ring. This is the curtain the
+ * wrap-around hides behind, so it must reach 0 *before* |slot| hits count/2,
+ * where the slot flips sign.
+ *
+ * The fade is kept late and short on purpose: the third cup stays visible out
+ * at the edge of frame for most of a step, and re-enters from the opposite edge
+ * as the next one takes the centre, so the composition never drops to two cups.
  */
 export function opacityFor(slot, count) {
   const dist = Math.abs(slot)
-  if (dist <= 1) return 1
-  // 0.8 of the remaining ring, so the cup is fully invisible for a moment
-  // either side of the wrap rather than blinking out exactly on it.
-  const span = (count / 2 - 1) * 0.8
-  return span > 0 ? Math.max(0, 1 - (dist - 1) / span) : 1
+  const end = count / 2 - 0.02
+  const start = count / 2 - 0.2
+  if (dist <= start) return 1
+  return Math.max(0, 1 - (dist - start) / (end - start))
 }
