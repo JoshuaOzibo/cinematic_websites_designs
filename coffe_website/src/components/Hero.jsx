@@ -71,7 +71,7 @@ export default function Hero() {
         className="relative w-full flex items-end justify-center"
         style={{
           zIndex: 10,
-          paddingTop: 'clamp(5.5rem, 11vw, 9rem)',
+          paddingTop: 'clamp(6rem, 14vw, 12rem)',
           paddingBottom: 0,
         }}
         aria-hidden="true"
@@ -92,78 +92,74 @@ export default function Hero() {
         </span>
       </div>
 
-      {/* ── Side cups + arch + center cup ───────────────────── */}
+      {/* ── Cups + arch + bottom content ────────────────────── */}
       {/*
-       * Strategy:
-       *  • The cream arch + cream bottom are rendered first as a block that
-       *    sits below the wordmark.
-       *  • The CENTER cup is absolutely positioned so its bottom 45% is hidden
-       *    behind the cream arch and its top 55% floats in the amber zone.
-       *  • Side cups sit in normal flow, aligned to the bottom of the amber zone.
+       * All three cups absolutely positioned, extending below the
+       * container so the cream arch (z-30) covers their bottom half.
+       * Cups sit at z-20..24, arch at z-30 = arch hides cup bottoms.
        */}
-      <div
-        className="relative w-full flex-1"
-        style={{ zIndex: 20, minHeight: 0 }}
-      >
-        {/* Side cups — in normal flow, bottom of amber zone */}
+      <div className="relative w-full" style={{ zIndex: 20 }}>
+
+        {/* Cup composition area */}
         <div
-          className="relative mx-auto flex items-end justify-center w-full max-w-[1440px] px-4 sm:px-8 lg:px-14"
+          className="relative mx-auto w-full max-w-[1440px]"
           style={{
-            /* push them down so they align with the arch baseline */
-            paddingBottom: 'clamp(2.5rem, 5vw, 5rem)',
-            paddingTop: 'clamp(0.5rem, 1vw, 1.5rem)',
+            height: 'clamp(180px, 28vw, 380px)',
           }}
         >
-          {/* Left cup (matcha) */}
+          {/* ── Left cup (matcha/green) ──────────────────────── */}
           <div
-            className="flex-shrink-0 relative"
+            className="absolute"
             style={{
-              width: 'clamp(110px, 17vw, 230px)',
-              zIndex: 21,
-              marginRight: 'clamp(30px, 6vw, 100px)',
-              alignSelf: 'flex-end',
+              width: 'clamp(130px, 20vw, 270px)',
+              left: 'clamp(40px, 12vw, 200px)',
+              bottom: 'clamp(-120px, -18vw, -80px)',
+              zIndex: 22,
             }}
           >
             <img
               src="/images/coffee_green.webp"
               alt="Matcha iced latte"
               className="w-full"
-              style={{ filter: 'none' }}
             />
           </div>
 
-          {/* Center placeholder — same width as the real cup so layout is preserved */}
+          {/* ── Center cup (brown/coffee) — dominant ─────────── */}
           <div
+            className="absolute left-1/2 -translate-x-1/2"
             style={{
-              width: 'clamp(170px, 26vw, 360px)',
-              flexShrink: 0,
-              visibility: 'hidden',  /* space-holder only; real cup is absolute */
+              width: 'clamp(240px, 36vw, 480px)',
+              bottom: 'clamp(-110px, -16vw, -70px)',
+              zIndex: 24,
             }}
-            aria-hidden="true"
-          />
+          >
+            <img
+              src="/images/coffee_brown.webp"
+              alt="A tall iced coffee cold brew — the signature coffeelo drink"
+              className="w-full"
+            />
+          </div>
 
-          {/* Right cup (berry) */}
+          {/* ── Right cup (berry/pink) ───────────────────────── */}
           <div
-            className="flex-shrink-0 relative"
+            className="absolute"
             style={{
-              width: 'clamp(110px, 17vw, 230px)',
-              zIndex: 21,
-              marginLeft: 'clamp(30px, 6vw, 100px)',
-              alignSelf: 'flex-end',
+              width: 'clamp(130px, 20vw, 270px)',
+              right: 'clamp(40px, 12vw, 200px)',
+              bottom: 'clamp(-120px, -18vw, -80px)',
+              zIndex: 22,
             }}
           >
             <img
               src="/images/coffee_pink.webp"
               alt="Berry iced drink"
               className="w-full"
-              style={{ filter: 'none' }}
             />
           </div>
         </div>
 
-        {/* ── Cream arch + bottom content ─────────────────────── */}
-        <div className="relative" style={{ zIndex: 30 }}>
-          {/* Upward-arch SVG — peaks at center, dips on edges */}
+        {/* ── Cream arch (curves upward at center) ────────────── */}
+        <div className="relative" style={{ zIndex: 30, marginTop: '-1px' }}>
           <svg
             viewBox="0 0 1440 120"
             preserveAspectRatio="none"
@@ -172,15 +168,6 @@ export default function Hero() {
             fill="none"
             aria-hidden="true"
           >
-            {/*
-             * Arch path:
-             *  Start at bottom-left (0, 120)
-             *  Rise up to the left shoulder  (300, 80)
-             *  Peak at center top            (720, 0)
-             *  Drop to the right shoulder   (1140, 80)
-             *  End at bottom-right          (1440, 120)
-             *  Fill the rectangle below to seal the bottom.
-             */}
             <path
               d="M0 120 C 300 120, 300 0, 720 0 C 1140 0, 1140 120, 1440 120 L1440 120 L0 120 Z"
               fill="#f5edd6"
@@ -253,32 +240,6 @@ export default function Hero() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* ── CENTER CUP — absolutely positioned to straddle the arch peak ── */}
-        {/*
-         * The cup is centred horizontally.
-         * Its bottom is placed ~55% of the arch SVG height below where the
-         * arch SVG starts, so ~45% of the cup is buried in the cream and
-         * ~55% floats up into the amber zone above.
-         * The arch height is clamp(80px…120px) → we translate by -60% of cup height.
-         */}
-        <div
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-          style={{
-            /* Sit the cup bottom at the arch baseline */
-            bottom: 'calc(100% - clamp(80px, 10vw, 120px) + clamp(85px, 14vw, 190px))',
-            width: 'clamp(170px, 26vw, 360px)',
-            zIndex: 40,
-            pointerEvents: 'auto',
-          }}
-        >
-          <img
-            src="/images/coffee_brown.webp"
-            alt="A tall iced coffee cold brew — the signature coffeelo drink"
-            className="w-full"
-            style={{ filter: 'none' }}
-          />
         </div>
       </div>
     </section>
