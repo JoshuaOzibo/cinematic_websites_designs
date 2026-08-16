@@ -1,9 +1,17 @@
+import { useId } from 'react'
+
 /**
- * A single coffee bean. Purely decorative — the hero scatters ~14 of these
- * around the cup, each with its own drift distance, duration and delay so they
- * never fall into lockstep.
+ * A single coffee bean. Purely decorative — FloatingBeans scatters a dozen of
+ * these across two parallax planes, each with its own drift distance, duration
+ * and delay so they never fall into lockstep.
+ *
+ * The gradient id is namespaced with useId() because the hero paints many beans
+ * at once and duplicate ids would make all of them resolve to whichever <defs>
+ * rendered first.
  */
 export default function Bean({ size = 34, rotate = 0, className = '', style }) {
+  const gradientId = `${useId().replace(/:/g, '')}-bean`
+
   return (
     <svg
       width={size}
@@ -12,17 +20,17 @@ export default function Bean({ size = 34, rotate = 0, className = '', style }) {
       fill="none"
       aria-hidden="true"
       className={className}
-      style={{ ...style, '--bean-rot': `${rotate}deg` }}
+      style={style}
     >
       <defs>
-        <radialGradient id={`bean-${rotate}-${size}`} cx="35%" cy="28%" r="78%">
+        <radialGradient id={gradientId} cx="35%" cy="28%" r="78%">
           <stop offset="0%" stopColor="#7a4419" />
           <stop offset="55%" stopColor="#4d2409" />
           <stop offset="100%" stopColor="#2b1204" />
         </radialGradient>
       </defs>
       <g transform={`rotate(${rotate} 20 20)`}>
-        <ellipse cx="20" cy="20" rx="12.5" ry="16.5" fill={`url(#bean-${rotate}-${size})`} />
+        <ellipse cx="20" cy="20" rx="12.5" ry="16.5" fill={`url(#${gradientId})`} />
         <path
           d="M20 4.5c-4.6 6.4-4.6 24.6 0 31"
           stroke="#f0d9b0"

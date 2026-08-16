@@ -29,7 +29,9 @@ body {
   background-color: var(--color-cream);
   color: var(--color-espresso);
   margin: 0;
-  overflow-x: hidden;
+  /* clip, not hidden: `hidden` would turn <body> into a scroll container and
+     break the hero's position: sticky viewport. */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -140,15 +142,365 @@ body {
   animation: marquee 28s linear infinite;
 }
 
-/* ── Utilities ─────────────────────────────────────────────────────────────*/
+/* ── Hero ──────────────────────────────────────────────────────────────────
+   The hero is one tall scroll track containing a sticky 100svh viewport. Every
+   number that decides the composition lives in the token block below, so the
+   three breakpoints re-proportion the whole thing by overriding tokens rather
+   than by restating layout.
 
-/* Hero wordmark — the giant "COFFEE" text spanning the amber zone */
-.hero-wordmark {
-  text-shadow:
-    0 4px 32px rgba(0, 0, 0, 0.22),
-    0 1px 0 rgba(255, 255, 255, 0.08);
-  opacity: 1;
+   --hero-bg / --hero-deep / --hero-lift are written per frame by
+   DynamicBackground.jsx; the values here are only what paints before the first
+   frame lands. */
+.hero-root {
+  --hero-bg: hsl(30 58% 30%);
+  --hero-deep: hsl(30 62% 14%);
+  --hero-lift: hsl(30 54% 41%);
+
+  --hero-step: 88vh; /* scroll distance per product change */
+
+  --cup-h: clamp(250px, min(53vh, 34vw), 580px);
+  --cup-gap: 26vw; /* centre-to-centre spacing of the cups */
+  --cup-drop: 26px; /* how much lower the side cups sit */
+  --cup-sink: clamp(8px, 2vh, 24px); /* how far cup bases dip into the cream */
+
+  /* The wordmark box *is* the type design: the glyphs are stretched to fill it,
+     so its ~2.5:1 ratio is what condenses Anton into the reference's tall
+     editorial letterforms. Widening the box thickens the strokes; heightening it
+     thins them. Don't tune these two independently. */
+  --word-top: clamp(66px, 11vh, 132px);
+  --word-h: clamp(150px, 53vh, 520px);
+  --word-w: min(1200px, 82vw);
+
+  --arc-h: clamp(44px, 7.5vh, 100px);
+
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background-color: var(--hero-deep);
 }
+
+.hero-viewport {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  overflow: clip;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Kept close to flat — the reference reads as one solid, saturated field of
+     colour. The lift is only enough to put a little light behind the cups. */
+  background:
+    radial-gradient(120% 74% at 50% 30%, var(--hero-lift), transparent 68%),
+    linear-gradient(176deg, var(--hero-bg) 0%, var(--hero-bg) 58%, var(--hero-deep) 128%);
+}
+
+/* The zone above the cream: wordmark, beans and cups. Flex-1 so the cream base
+   can size to its own content (which is how mobile stacking stays honest). */
+.hero-stage {
+  position: relative;
+  z-index: 40;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.hero-bean-plane {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ── Giant COFFEE wordmark ────────────────────────────────────────────────*/
+.hero-wordmark {
+  position: absolute;
+  top: var(--word-top);
+  left: 50%;
+  z-index: 10;
+  width: var(--word-w);
+  height: var(--word-h);
+  transform: translateX(-50%);
+  color: rgb(250 243 225 / 0.95);
+  pointer-events: none;
+}
+
+.hero-wordmark-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: "Anton", "Bebas Neue", var(--font-display);
+  font-weight: 400;
+}
+
+/* ── Cups ─────────────────────────────────────────────────────────────────*/
+.hero-cups {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* Anchored to the stage's baseline and scaled from the bottom, so all three
+   cups keep standing on the same surface however large they grow. */
+.hero-cup {
+  position: absolute;
+  left: 50%;
+  bottom: calc(-1 * var(--cup-sink));
+  transform-origin: 50% 100%;
+  will-change: transform, opacity, filter;
+}
+
+.hero-cup-img {
+  display: block;
+  width: auto;
+  max-width: none;
+  user-select: none;
+}
+
+.hero-cup-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 78%;
+  height: 9%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(26 10 2 / 0.34), transparent 72%);
+}
+
+/* ── Cream base: arc + information panel ──────────────────────────────────*/
+.hero-base {
+  position: relative;
+  z-index: 20;
+  flex: 0 0 auto;
+}
+
+.hero-arc {
+  display: block;
+  width: 100%;
+  height: var(--arc-h);
+  /* Kills the hairline seam between the arc and the panel below it. */
+  margin-bottom: -1px;
+}
+
+.hero-panel {
+  background-color: var(--color-cream);
+  padding: 1.25rem 1.25rem 2rem;
+}
+
+.hero-panel-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0 auto;
+  max-width: 1440px;
+}
+
+.hero-panel-copy {
+  max-width: 40ch;
+  margin: 0;
+  font-size: clamp(0.68rem, 0.78vw, 0.82rem);
+  font-weight: 600;
+  line-height: 1.65;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(61 31 10 / 0.72);
+}
+
+.hero-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.hero-pill {
+  border-radius: 999px;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+
+.hero-pill:hover {
+  transform: translateY(-2px);
+}
+
+/* Both pill styles read the live accent, so the panel re-tints with the cup. */
+.hero-pill-solid {
+  background-color: var(--hero-deep);
+  color: var(--color-cream);
+}
+
+.hero-pill-light {
+  background-color: #fffdf7;
+  color: var(--hero-deep);
+  box-shadow: inset 0 0 0 1.5px rgb(61 31 10 / 0.14);
+}
+
+.hero-pill-light:hover {
+  background-color: var(--hero-deep);
+  color: var(--color-cream);
+}
+
+.hero-badges {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid rgb(61 31 10 / 0.14);
+  border-radius: 1rem;
+  justify-self: end;
+}
+
+.hero-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 6.5rem;
+  padding: 0.6rem 0.9rem;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(61 31 10 / 0.72);
+}
+
+.hero-badge + .hero-badge {
+  border-left: 1px solid rgb(61 31 10 / 0.12);
+}
+
+.hero-badge-figure {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-espresso);
+}
+
+/* ── Hero: tablet ─────────────────────────────────────────────────────────*/
+@media (max-width: 1024px) {
+  .hero-root {
+    --hero-step: 76vh;
+    /* Portrait tablets are tall: the cup has to be allowed to grow with the
+       *width* here, or a gap opens up between the wordmark and the cups. */
+    --cup-h: clamp(220px, min(46vh, 55vw), 460px);
+    --cup-gap: 31vw;
+    --cup-drop: 22px;
+    --word-top: clamp(70px, 12vh, 130px);
+    --word-h: clamp(104px, 28vh, 340px);
+    --word-w: 92vw;
+  }
+
+  .hero-panel-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem;
+  }
+
+  .hero-panel-copy {
+    grid-column: 1 / -1;
+    order: 3;
+    max-width: none;
+    text-align: center;
+    justify-self: center;
+  }
+
+  .hero-panel-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ── Hero: mobile ─────────────────────────────────────────────────────────*/
+@media (max-width: 640px) {
+  .hero-root {
+    --hero-step: 64vh;
+    /* The centred cup is the whole story here; the side cups only need to
+       peek in at the edges. */
+    --cup-h: clamp(180px, min(40vh, 80vw), 340px);
+    --cup-gap: 42vw;
+    --cup-drop: 14px;
+    --word-top: clamp(60px, 12vh, 104px);
+    --word-h: clamp(72px, 28vh, 240px);
+    --word-w: 92vw;
+    --arc-h: clamp(30px, 5vh, 56px);
+  }
+
+  .hero-panel {
+    padding: 0.25rem 1rem 1.1rem;
+  }
+
+  .hero-panel-inner {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    justify-items: center;
+  }
+
+  .hero-panel-copy {
+    order: 2;
+    font-size: 0.62rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .hero-panel-actions {
+    order: 1;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .hero-pill {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.7rem;
+  }
+
+  .hero-badges {
+    order: 3;
+    justify-self: center;
+    width: 100%;
+  }
+
+  .hero-badge {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.5rem 0.4rem;
+    font-size: 0.6rem;
+  }
+
+  .hero-badge svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .hero-badge-figure {
+    font-size: 1.05rem;
+  }
+}
+
+/* Short landscape viewports: keep the cups off the wordmark's throat. */
+@media (max-height: 640px) and (min-width: 641px) {
+  .hero-root {
+    --cup-h: clamp(190px, 52vh, 380px);
+    --word-h: clamp(90px, 26vh, 190px);
+    --word-top: clamp(58px, 11vh, 96px);
+  }
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────────*/
 
 .link-underline {
   background-image: linear-gradient(currentColor, currentColor);
