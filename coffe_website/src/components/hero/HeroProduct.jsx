@@ -6,6 +6,25 @@ import Bean from './Bean'
 const PHOTO_SRC = '/hero-cup.png'
 
 /**
+ * Three flavours, one cup drawing (see CoffeeCup's `variant`).
+ *
+ * The box this component is handed IS the cold-brew cup — it keeps `w-full`
+ * and normal flow, so the hero's negative-margin math and the bean
+ * constellation below are unchanged. The matcha and strawberry cups are
+ * absolutely positioned siblings that hang off either side.
+ *
+ * The side offsets aren't arbitrary. Inside the 520-wide viewBox the glass
+ * only spans x 116→404, i.e. 22.3%→77.7% of the box, so a flanking cup of
+ * width w has its glass right edge at `left + 0.777w`. Landing that a little
+ * inside the centre cup's left edge (22.3%) is what makes them overlap:
+ *
+ *   left = 0.28 − 0.777 × 0.70 ≈ −26%      (and mirrored for the right)
+ *
+ * Change a flanker's width and you have to re-run that line, or the cups
+ * either drift apart or swallow each other.
+ */
+
+/**
  * Beans scattered around the cup. Percentages are relative to the product
  * box, so the whole constellation scales with the cup instead of drifting off
  * it on small screens.
@@ -44,13 +63,26 @@ export default function HeroProduct({ className = '' }) {
       />
 
       {!hasPhoto && (
-        <CoffeeCup className="w-full drop-shadow-[0_28px_50px_rgba(61,31,10,0.18)]" />
+        <>
+          {/* Matcha, tucked in behind on the left */}
+          <CoffeeCup
+            variant="matcha"
+            className="absolute bottom-[-2%] left-[-26%] z-0 w-[70%] drop-shadow-[0_20px_38px_rgba(61,31,10,0.14)]"
+          />
+          {/* Strawberry, behind on the right */}
+          <CoffeeCup
+            variant="strawberry"
+            className="absolute right-[-28%] bottom-[-4%] z-0 w-[73%] drop-shadow-[0_20px_38px_rgba(61,31,10,0.14)]"
+          />
+          {/* Cold brew — the hero cup, untouched and in front */}
+          <CoffeeCup className="relative z-10 w-full drop-shadow-[0_28px_50px_rgba(61,31,10,0.18)]" />
+        </>
       )}
 
       {BEANS.map((bean, i) => (
         <span
           key={i}
-          className="animate-float-bean pointer-events-none absolute drop-shadow-[0_6px_10px_rgba(61,31,10,0.28)]"
+          className="animate-float-bean pointer-events-none absolute z-20 drop-shadow-[0_6px_10px_rgba(61,31,10,0.28)]"
           style={{
             top: bean.top,
             left: bean.left,

@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 /**
  * Iced cold-brew in a clear takeaway cup, drawn as one inline SVG.
  *
@@ -8,8 +10,57 @@
  *
  * This is the stand-in for a photographic cutout: drop a transparent PNG at
  * public/hero-cup.png and HeroProduct swaps to it automatically.
+ *
+ * The drawing is one shape, three flavours: `variant` only swaps the colours
+ * of the drink, foam, splash and droplets — the glass, ice and roundel stay
+ * neutral so all three cups read as the same cup. `coldBrew` is the original
+ * palette and the default, so the centre cup is untouched.
+ *
+ * Every gradient id is namespaced with useId() because the hero paints three
+ * of these at once and duplicate ids would make all of them pick up whichever
+ * <defs> happened to render first.
  */
-export default function CoffeeCup({ className = '' }) {
+const PALETTES = {
+  coldBrew: {
+    label: 'iced single-origin cold brew',
+    // Dark at the base, lighter where the milk cuts through
+    brew: ['#c99e6a', '#8d5a2b', '#5a300f', '#3d1f0a', '#2a1305'],
+    swirl: '#e9cda2',
+    foam: ['#fbf1dc', '#e2c193'],
+    splash: ['#fdf6e6', '#d9b47f'],
+    drops: { light: '#f0d7ad', mid: '#e8c795', deep: '#dcb47c' },
+  },
+  matcha: {
+    label: 'iced matcha latte',
+    brew: ['#eef5ce', '#c3dc8a', '#8dba4c', '#5f9130', '#3f661c'],
+    swirl: '#f4f9dc',
+    foam: ['#f7fce7', '#cfe1a2'],
+    splash: ['#f5fbe1', '#bad682'],
+    drops: { light: '#e8f4c2', mid: '#d2e79d', deep: '#b6d37b' },
+  },
+  strawberry: {
+    label: 'iced strawberry cream',
+    brew: ['#ffe4e9', '#ffb6c5', '#f4879e', '#d95c7a', '#ae3d5b'],
+    swirl: '#ffe9ef',
+    foam: ['#fff3f6', '#f7c5d2'],
+    splash: ['#fff5f8', '#f2aabc'],
+    drops: { light: '#ffdbe4', mid: '#f9bcca', deep: '#efa2b6' },
+  },
+}
+
+export default function CoffeeCup({ className = '', variant = 'coldBrew' }) {
+  const palette = PALETTES[variant] ?? PALETTES.coldBrew
+
+  // useId() emits colons, which are fine in url(#…) but break if anyone ever
+  // reaches for these with a CSS selector — strip them and keep it readable.
+  const uid = useId().replace(/:/g, '')
+  const brewId = `${uid}-brew`
+  const glassId = `${uid}-glass`
+  const creamId = `${uid}-cream`
+  const splashId = `${uid}-splash`
+  const shadowId = `${uid}-shadow`
+  const clipId = `${uid}-interior`
+
   return (
     <svg
       viewBox="0 0 520 780"
@@ -17,20 +68,20 @@ export default function CoffeeCup({ className = '' }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
-      aria-label="A tall clear cup of iced single-origin cold brew, mid-splash, surrounded by flying coffee beans"
+      aria-label={`A tall clear cup of ${palette.label}, mid-splash`}
     >
       <defs>
-        {/* Cold brew: dark at the base, lighter where the milk cuts through */}
-        <linearGradient id="cup-brew" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c99e6a" />
-          <stop offset="14%" stopColor="#8d5a2b" />
-          <stop offset="42%" stopColor="#5a300f" />
-          <stop offset="78%" stopColor="#3d1f0a" />
-          <stop offset="100%" stopColor="#2a1305" />
+        {/* The drink itself — light at the surface, deepest at the base */}
+        <linearGradient id={brewId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={palette.brew[0]} />
+          <stop offset="14%" stopColor={palette.brew[1]} />
+          <stop offset="42%" stopColor={palette.brew[2]} />
+          <stop offset="78%" stopColor={palette.brew[3]} />
+          <stop offset="100%" stopColor={palette.brew[4]} />
         </linearGradient>
 
         {/* The plastic itself — barely there, just enough to read as glass */}
-        <linearGradient id="cup-glass" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={glassId} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
           <stop offset="18%" stopColor="#ffffff" stopOpacity="0.12" />
           <stop offset="52%" stopColor="#ffffff" stopOpacity="0.04" />
@@ -38,62 +89,62 @@ export default function CoffeeCup({ className = '' }) {
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0.5" />
         </linearGradient>
 
-        <linearGradient id="cup-cream" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fbf1dc" />
-          <stop offset="100%" stopColor="#e2c193" />
+        <linearGradient id={creamId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={palette.foam[0]} />
+          <stop offset="100%" stopColor={palette.foam[1]} />
         </linearGradient>
 
-        <linearGradient id="splash-cream" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fdf6e6" />
-          <stop offset="100%" stopColor="#d9b47f" />
+        <linearGradient id={splashId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={palette.splash[0]} />
+          <stop offset="100%" stopColor={palette.splash[1]} />
         </linearGradient>
 
-        <radialGradient id="cup-shadow" cx="50%" cy="50%" r="50%">
+        <radialGradient id={shadowId} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#7a5a40" stopOpacity="0.32" />
           <stop offset="100%" stopColor="#7a5a40" stopOpacity="0" />
         </radialGradient>
 
         {/* Keeps the brew, ice and inner highlights inside the cup walls */}
-        <clipPath id="cup-interior">
+        <clipPath id={clipId}>
           <path d="M116 244 L154 690 Q157 722 188 722 L332 722 Q363 722 366 690 L404 244 Z" />
         </clipPath>
       </defs>
 
       {/* Ground shadow */}
-      <ellipse cx="260" cy="726" rx="150" ry="30" fill="url(#cup-shadow)" />
+      <ellipse cx="260" cy="726" rx="150" ry="30" fill={`url(#${shadowId})`} />
 
       {/* ── Splash behind the cup ─────────────────────────────────────────── */}
       <g opacity="0.95">
         <path
           d="M128 250c-14-58 6-104 44-132 26-19 22 34 6 62-13 23-31 43-50 70Z"
-          fill="url(#splash-cream)"
+          fill={`url(#${splashId})`}
           opacity="0.9"
         />
         <path
           d="M392 252c22-52 12-102-20-136-24-25-26 28-14 58 10 26 24 46 34 78Z"
-          fill="url(#splash-cream)"
+          fill={`url(#${splashId})`}
           opacity="0.9"
         />
         <path
           d="M198 214c-24-48-26-104-4-146 14-27 34 12 32 46-2 32-14 60-28 100Z"
-          fill="url(#splash-cream)"
+          fill={`url(#${splashId})`}
           opacity="0.75"
         />
       </g>
 
       {/* ── Coffee body ───────────────────────────────────────────────────── */}
-      <g clipPath="url(#cup-interior)">
-        <rect x="100" y="286" width="320" height="450" fill="url(#cup-brew)" />
+      <g clipPath={`url(#${clipId})`}>
+        <rect x="100" y="286" width="320" height="450" fill={`url(#${brewId})`} />
 
         {/* Milk swirl folding through the brew */}
         <path
           d="M120 372c46 26 96-18 144 4s72 46 132 18l14-46-292-10Z"
-          fill="#e9cda2"
+          fill={palette.swirl}
           opacity="0.55"
         />
         <path
           d="M126 420c52 22 84-24 132-6s86 40 140 8"
-          stroke="#e9cda2"
+          stroke={palette.swirl}
           strokeOpacity="0.4"
           strokeWidth="10"
           strokeLinecap="round"
@@ -115,14 +166,14 @@ export default function CoffeeCup({ className = '' }) {
       </g>
 
       {/* Surface of the drink */}
-      <ellipse cx="260" cy="288" rx="145" ry="27" fill="url(#cup-cream)" />
+      <ellipse cx="260" cy="288" rx="145" ry="27" fill={`url(#${creamId})`} />
       <ellipse cx="260" cy="288" rx="145" ry="27" fill="#ffffff" fillOpacity="0.25" />
       <ellipse cx="238" cy="284" rx="52" ry="12" fill="#ffffff" fillOpacity="0.45" />
 
       {/* ── Glass shell ───────────────────────────────────────────────────── */}
       <path
         d="M116 244 L154 690 Q157 722 188 722 L332 722 Q363 722 366 690 L404 244 Z"
-        fill="url(#cup-glass)"
+        fill={`url(#${glassId})`}
       />
       <path
         d="M116 244 L154 690 Q157 722 188 722 L332 722 Q363 722 366 690 L404 244"
@@ -214,32 +265,60 @@ export default function CoffeeCup({ className = '' }) {
       <g>
         <path
           d="M232 240c-30-46-40-98-24-146 10-30 40-8 42 26 2 40-8 76-18 120Z"
-          fill="url(#splash-cream)"
+          fill={`url(#${splashId})`}
         />
         <path
           d="M300 244c26-40 44-86 38-132-4-32-38-18-44 14-7 38 0 76 6 118Z"
-          fill="url(#splash-cream)"
+          fill={`url(#${splashId})`}
         />
         <path
           d="M262 232c-10-52-6-108 14-150 12-24 30 8 26 42-5 40-24 70-40 108Z"
-          fill="#fdf6e6"
+          fill={palette.splash[0]}
           opacity="0.92"
         />
       </g>
 
       <g className="animate-splash" style={{ '--splash-dur': '3.2s' }}>
-        <ellipse cx="176" cy="112" rx="13" ry="17" fill="#e8c795" transform="rotate(-18 176 112)" />
-        <ellipse cx="368" cy="96" rx="11" ry="15" fill="#e8c795" transform="rotate(22 368 96)" />
+        <ellipse
+          cx="176"
+          cy="112"
+          rx="13"
+          ry="17"
+          fill={palette.drops.mid}
+          transform="rotate(-18 176 112)"
+        />
+        <ellipse
+          cx="368"
+          cy="96"
+          rx="11"
+          ry="15"
+          fill={palette.drops.mid}
+          transform="rotate(22 368 96)"
+        />
       </g>
       <g className="animate-splash" style={{ '--splash-dur': '4.1s', '--splash-delay': '0.6s' }}>
-        <ellipse cx="404" cy="176" rx="9" ry="12" fill="#dcb47c" transform="rotate(14 404 176)" />
-        <ellipse cx="132" cy="182" rx="8" ry="11" fill="#dcb47c" transform="rotate(-12 132 182)" />
-        <circle cx="300" cy="62" r="7" fill="#f0d7ad" />
+        <ellipse
+          cx="404"
+          cy="176"
+          rx="9"
+          ry="12"
+          fill={palette.drops.deep}
+          transform="rotate(14 404 176)"
+        />
+        <ellipse
+          cx="132"
+          cy="182"
+          rx="8"
+          ry="11"
+          fill={palette.drops.deep}
+          transform="rotate(-12 132 182)"
+        />
+        <circle cx="300" cy="62" r="7" fill={palette.drops.light} />
       </g>
       <g className="animate-splash" style={{ '--splash-dur': '3.7s', '--splash-delay': '1.2s' }}>
-        <circle cx="212" cy="52" r="6" fill="#f0d7ad" />
-        <circle cx="440" cy="240" r="5.5" fill="#dcb47c" />
-        <circle cx="94" cy="252" r="5" fill="#dcb47c" />
+        <circle cx="212" cy="52" r="6" fill={palette.drops.light} />
+        <circle cx="440" cy="240" r="5.5" fill={palette.drops.deep} />
+        <circle cx="94" cy="252" r="5" fill={palette.drops.deep} />
       </g>
     </svg>
   )
