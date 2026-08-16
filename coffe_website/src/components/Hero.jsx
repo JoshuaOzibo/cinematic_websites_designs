@@ -71,21 +71,21 @@ export default function Hero() {
         className="relative w-full flex items-end justify-center"
         style={{
           zIndex: 10,
-          paddingTop: 'clamp(6rem, 14vw, 12rem)',
+          paddingTop: 'clamp(5rem, 11vw, 9rem)',
           paddingBottom: 0,
         }}
         aria-hidden="true"
       >
         <span
-          className="pointer-events-none select-none font-black uppercase leading-none"
+          className="pointer-events-none select-none uppercase leading-none"
           style={{
-            color: 'rgba(255,245,220,0.90)',
-            fontSize: 'clamp(6.5rem, 23vw, 23rem)',
-            letterSpacing: '-0.01em',
-            fontFamily: '"DM Sans", sans-serif',
-            fontWeight: 900,
-            textShadow: 'none',
-            lineHeight: 0.82,
+            color: 'rgba(255, 245, 220, 0.92)',
+            fontSize: 'clamp(7.5rem, 26vw, 27rem)',
+            letterSpacing: '0.02em',
+            fontFamily: '"Bebas Neue", sans-serif',
+            lineHeight: 0.78,
+            transform: 'scaleY(1.12)',
+            transformOrigin: 'bottom center',
           }}
         >
           COFFEE
@@ -104,16 +104,16 @@ export default function Hero() {
         <div
           className="relative mx-auto w-full max-w-[1440px]"
           style={{
-            height: 'clamp(180px, 28vw, 380px)',
+            height: 'clamp(200px, 30vw, 440px)',
           }}
         >
           {/* ── Left cup (matcha/green) ──────────────────────── */}
           <div
             className="absolute"
             style={{
-              width: 'clamp(130px, 20vw, 270px)',
-              left: 'clamp(40px, 12vw, 200px)',
-              bottom: 'clamp(-120px, -18vw, -80px)',
+              width: 'clamp(130px, 20vw, 330px)',
+              left: 'clamp(30px, 10vw, 180px)',
+              bottom: 'clamp(-130px, -15vw, -70px)',
               zIndex: 22,
             }}
           >
@@ -128,8 +128,8 @@ export default function Hero() {
           <div
             className="absolute left-1/2 -translate-x-1/2"
             style={{
-              width: 'clamp(240px, 36vw, 480px)',
-              bottom: 'clamp(-110px, -16vw, -70px)',
+              width: 'clamp(240px, 34vw, 560px)',
+              bottom: 'clamp(-140px, -16vw, -80px)',
               zIndex: 24,
             }}
           >
@@ -144,9 +144,9 @@ export default function Hero() {
           <div
             className="absolute"
             style={{
-              width: 'clamp(130px, 20vw, 270px)',
-              right: 'clamp(40px, 12vw, 200px)',
-              bottom: 'clamp(-120px, -18vw, -80px)',
+              width: 'clamp(130px, 20vw, 330px)',
+              right: 'clamp(30px, 10vw, 180px)',
+              bottom: 'clamp(-130px, -15vw, -70px)',
               zIndex: 22,
             }}
           >
