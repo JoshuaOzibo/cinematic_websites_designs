@@ -17,6 +17,7 @@
   --color-tan: #dda15e;        /* accents on dark, borders   */
   --color-clay: #bc6c25;       /* article left border        */
   --color-bark: #7f4f24;       /* card borders               */
+  --color-amber-hero: #b07a2a; /* hero section background    */
 }
 
 html {
@@ -140,6 +141,15 @@ body {
 }
 
 /* ── Utilities ─────────────────────────────────────────────────────────────*/
+
+/* Hero wordmark — the giant "COFFEE" text spanning the amber zone */
+.hero-wordmark {
+  text-shadow:
+    0 4px 32px rgba(0, 0, 0, 0.22),
+    0 1px 0 rgba(255, 255, 255, 0.08);
+  opacity: 1;
+}
+
 .link-underline {
   background-image: linear-gradient(currentColor, currentColor);
   background-size: 0% 1.5px;
