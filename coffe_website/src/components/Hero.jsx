@@ -84,7 +84,7 @@ export default function Hero() {
             letterSpacing: '-0.01em',
             fontFamily: '"DM Sans", sans-serif',
             fontWeight: 900,
-            textShadow: '0 4px 40px rgba(0,0,0,0.20)',
+            textShadow: 'none',
             lineHeight: 0.82,
           }}
         >
@@ -128,7 +128,7 @@ export default function Hero() {
               src="/images/coffee_green.webp"
               alt="Matcha iced latte"
               className="w-full"
-              style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.38))' }}
+              style={{ filter: 'none' }}
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function Hero() {
               src="/images/coffee_pink.webp"
               alt="Berry iced drink"
               className="w-full"
-              style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.38))' }}
+              style={{ filter: 'none' }}
             />
           </div>
         </div>
@@ -277,7 +277,7 @@ export default function Hero() {
             src="/images/coffee_brown.webp"
             alt="A tall iced coffee cold brew — the signature coffeelo drink"
             className="w-full"
-            style={{ filter: 'drop-shadow(0 28px 55px rgba(0,0,0,0.45))' }}
+            style={{ filter: 'none' }}
           />
         </div>
       </div>
