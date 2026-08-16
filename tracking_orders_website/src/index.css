@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   Tailwind v4: the theme lives here, not in a tailwind.config.js. Every
+   --color-* below is usable as bg-*, text-*, border-* etc. */
+@theme {
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0b1220;       /* page background, dark surfaces */
+  --color-slate-panel: #131c2e; /* cards on the dark background */
+  --color-hairline: #223049;  /* borders                        */
+  --color-mist: #94a3b8;      /* secondary text                 */
+  --color-paper: #e8eef7;     /* primary text on dark           */
+  --color-signal: #38bdf8;    /* brand / in-transit accent      */
+  --color-go: #34d399;        /* delivered / complete           */
+  --color-warn: #fbbf24;      /* delayed / attention            */
+}
+
+html {
+  background-color: var(--color-ink);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+}
