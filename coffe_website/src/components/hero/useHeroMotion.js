@@ -63,10 +63,16 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } =
       }
       // Time-based decay rather than a flat per-frame fraction, so the glide
       // lasts the same ~900ms on a 60Hz screen, a 120Hz screen and a throttled
-      // background tab. dt is capped so a long stall can't teleport the cups.
-      const dt = Math.min(now - store.last, 64)
+      // background tab.
+      //
+      // dt is clamped at both ends: a long stall must not teleport the cups,
+      // and it must never go negative — rAF hands back the timestamp of the
+      // frame it is *servicing*, which can predate the performance.now() taken
+      // when the loop started. A negative exponent there sends the decay to
+      // Infinity and every transform to NaN.
+      const dt = Math.min(Math.max(now - store.last, 0), 64)
       store.last = now
-      store.pos += diff * (1 - (1 - ease) ** (dt / 16.667))
+      store.pos += diff * (ease >= 1 ? 1 : 1 - (1 - ease) ** (dt / 16.667))
       emit()
       store.frame = requestAnimationFrame(tick)
     }
