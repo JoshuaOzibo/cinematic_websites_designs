@@ -152,9 +152,9 @@ body {
    DynamicBackground.jsx; the values here are only what paints before the first
    frame lands. */
 .hero-root {
-  --hero-bg: hsl(30 58% 30%);
-  --hero-deep: hsl(30 62% 14%);
-  --hero-lift: hsl(30 54% 41%);
+  --hero-bg: hsl(30 58% 34%);
+  --hero-deep: hsl(30 58% 34%);
+  --hero-lift: hsl(30 58% 38%);
 
   --hero-step: 88vh; /* scroll distance per product change */
 
@@ -179,7 +179,7 @@ body {
   position: relative;
   isolation: isolate;
   overflow-x: clip;
-  background-color: var(--hero-deep);
+  background-color: var(--hero-bg);
 }
 
 .hero-viewport {
@@ -195,11 +195,29 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
-  /* Kept close to flat — the reference reads as one solid, saturated field of
-     colour. The lift is only enough to put a little light behind the cups. */
   background:
     radial-gradient(120% 74% at 50% 30%, var(--hero-lift), transparent 68%),
-    linear-gradient(176deg, var(--hero-bg) 0%, var(--hero-bg) 58%, var(--hero-deep) 128%);
+    var(--hero-bg);
+}
+
+/* Dot-grid texture concentrated at the edges of the hero — the same dot pattern
+   used by Highlight.jsx, but masked with a radial gradient so the centre stays
+   clean and only the perimeter has the subtle dot texture. */
+.hero-dot-edge {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    rgb(255 240 200 / 0.22) 1.2px,
+    transparent 1.3px
+  );
+  background-size: 20px 20px;
+  /* Radial mask: fully transparent in the center ellipse, fully opaque at the
+     edges — so dots only appear around the border of the hero. */
+  -webkit-mask-image: radial-gradient(ellipse 55% 50% at 50% 50%, transparent 60%, black 100%);
+  mask-image: radial-gradient(ellipse 55% 50% at 50% 50%, transparent 60%, black 100%);
 }
 
 /* The zone above the cream: wordmark, beans and cups. Flex-1 so the cream base

@@ -35,8 +35,8 @@ export default function DynamicBackground({ motion, products, palette, rootRef }
       )
 
       root.style.setProperty('--hero-bg', hslString(blend))
-      root.style.setProperty('--hero-deep', hslString(blend, 0.04, -0.16))
-      root.style.setProperty('--hero-lift', hslString(blend, -0.03, 0.06))
+      root.style.setProperty('--hero-deep', hslString(blend))
+      root.style.setProperty('--hero-lift', hslString(blend, 0, 0.04))
     })
   }, [motion, products, palette, rootRef])
 

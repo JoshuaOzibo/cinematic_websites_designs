@@ -53,6 +53,8 @@ export default function Hero() {
           rootRef={trackRef}
         />
 
+        {/* Dot-grid texture — visible around the edges, fades to nothing at center */}
+        <div className="hero-dot-edge" aria-hidden="true" />
         <h1 className="sr-only">coffeelo — iced coffee, matcha and berry blends</h1>
 
         <div className="hero-stage">
