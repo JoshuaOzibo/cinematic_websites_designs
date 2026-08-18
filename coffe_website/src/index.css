@@ -170,25 +170,25 @@ body {
   --hero-step: 88vh;
   /* scroll distance per product change */
 
-  --cup-h: clamp(250px, min(53vh, 34vw), 580px);
-  --cup-gap: 18vw;
+  --cup-h: clamp(270px, min(58vh, 37vw), 620px);
+  --cup-gap: 21vw;
   /* centre-to-centre spacing of the cups */
-  --cup-drop: 16px;
+  --cup-drop: clamp(44px, 6.5vh, 88px);
   /* how much lower the side cups sit */
   /* How far the cups sink behind the cream arc. The arc paints *over* the cups,
      so this is literally how much of each cup the curve hides — enough that the
      cups read as standing in the cream rather than on top of it. */
-  --cup-sink: clamp(24px, 5.5vh, 64px);
+  --cup-sink: clamp(28px, 6.5vh, 76px);
 
   /* The wordmark box *is* the type design: the glyphs are stretched to fill it,
      so its ~2.5:1 ratio is what condenses Anton into the reference's tall
      editorial letterforms. Widening the box thickens the strokes; heightening it
      thins them. Don't tune these two independently. */
-  --word-top: clamp(76px, 12vh, 140px);
-  --word-h: clamp(100px, 26vh, 280px);
-  --word-w: min(920px, 66vw);
+  --word-top: clamp(100px, 17vh, 196px);
+  --word-h: clamp(110px, 28vh, 310px);
+  --word-w: min(1000px, 72vw);
 
-  --arc-h: clamp(44px, 7.5vh, 100px);
+  --arc-h: clamp(52px, 9vh, 120px);
 
   position: relative;
   isolation: isolate;
@@ -434,11 +434,11 @@ body {
     --hero-step: 76vh;
     /* Portrait tablets are tall: the cup has to be allowed to grow with the
        *width* here, or a gap opens up between the wordmark and the cups. */
-    --cup-h: clamp(220px, min(46vh, 55vw), 460px);
-    --cup-gap: 22vw;
-    --cup-drop: 14px;
-    --word-top: clamp(70px, 12vh, 120px);
-    --word-h: clamp(80px, 18vh, 200px);
+    --cup-h: clamp(230px, min(50vh, 58vw), 490px);
+    --cup-gap: 24vw;
+    --cup-drop: clamp(28px, 4vh, 56px);
+    --word-top: clamp(80px, 14vh, 140px);
+    --word-h: clamp(90px, 22vh, 230px);
     --word-w: 78vw;
   }
 
@@ -466,13 +466,13 @@ body {
     --hero-step: 64vh;
     /* The centred cup is the whole story here; the side cups only need to
        peek in at the edges. */
-    --cup-h: clamp(180px, min(40vh, 80vw), 340px);
-    --cup-gap: 32vw;
-    --cup-drop: 10px;
-    --word-top: clamp(60px, 11vh, 96px);
-    --word-h: clamp(56px, 16vh, 140px);
-    --word-w: 78vw;
-    --arc-h: clamp(30px, 5vh, 56px);
+    --cup-h: clamp(190px, min(44vh, 80vw), 360px);
+    --cup-gap: 34vw;
+    --cup-drop: clamp(20px, 3vh, 40px);
+    --word-top: clamp(68px, 13vh, 110px);
+    --word-h: clamp(64px, 18vh, 160px);
+    --word-w: 80vw;
+    --arc-h: clamp(34px, 6vh, 64px);
   }
 
   .hero-panel {
@@ -529,9 +529,10 @@ body {
 /* Short landscape viewports: keep the cups off the wordmark's throat. */
 @media (max-height: 640px) and (min-width: 641px) {
   .hero-root {
-    --cup-h: clamp(190px, 52vh, 380px);
-    --word-h: clamp(90px, 26vh, 190px);
-    --word-top: clamp(58px, 11vh, 96px);
+    --cup-h: clamp(200px, 54vh, 400px);
+    --word-h: clamp(95px, 26vh, 200px);
+    --word-top: clamp(68px, 13vh, 110px);
+    --cup-drop: clamp(24px, 4vh, 48px);
   }
 }
 

@@ -1,8 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
 import { focusFor, opacityFor, slotFor } from './slotMath'
 
-/** How small a cup gets once it has fully left the centre slot. */
-const SIDE_SCALE = 0.66
+/** How small a cup gets once it has fully left the centre slot.
+ *  0.52 creates ~55-60% visual weight vs. the centre cup, matching the
+ *  reference's dominant-centre / supporting-sides hierarchy. */
+const SIDE_SCALE = 0.52
 
 /**
  * The three product cups on their circular track.
