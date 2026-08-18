@@ -7,17 +7,28 @@
   --font-display: "Fraunces", "Georgia", serif;
   --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --color-cream: #f5edd6;      /* page background            */
-  --color-espresso: #3d1f0a;   /* headings, giant hero type  */
-  --color-rust: #c04e1f;       /* primary brand              */
-  --color-mid: #7a5a40;        /* secondary text             */
-  --color-sand: #c8a970;       /* dot texture, hairlines     */
-  --color-dark: #582f0e;       /* dark section + footer bg   */
-  --color-parchment: #fefae0;  /* text on dark               */
-  --color-tan: #dda15e;        /* accents on dark, borders   */
-  --color-clay: #bc6c25;       /* article left border        */
-  --color-bark: #7f4f24;       /* card borders               */
-  --color-amber-hero: #b07a2a; /* hero section background    */
+  --color-cream: #f5edd6;
+  /* page background            */
+  --color-espresso: #3d1f0a;
+  /* headings, giant hero type  */
+  --color-rust: #c04e1f;
+  /* primary brand              */
+  --color-mid: #7a5a40;
+  /* secondary text             */
+  --color-sand: #c8a970;
+  /* dot texture, hairlines     */
+  --color-dark: #582f0e;
+  /* dark section + footer bg   */
+  --color-parchment: #fefae0;
+  /* text on dark               */
+  --color-tan: #dda15e;
+  /* accents on dark, borders   */
+  --color-clay: #bc6c25;
+  /* article left border        */
+  --color-bark: #7f4f24;
+  /* card borders               */
+  --color-amber-hero: #b07a2a;
+  /* hero section background    */
 }
 
 html {
@@ -58,20 +69,16 @@ body {
 /* ── Dot-grid texture ──────────────────────────────────────────────────────
    Subtle but visible: gives the flat cream ground some depth. */
 .dot-grid {
-  background-image: radial-gradient(
-    circle,
-    rgb(200 169 112 / 0.42) 1.5px,
-    transparent 1.6px
-  );
+  background-image: radial-gradient(circle,
+      rgb(200 169 112 / 0.42) 1.5px,
+      transparent 1.6px);
   background-size: 22px 22px;
 }
 
 .dot-grid-dark {
-  background-image: radial-gradient(
-    circle,
-    rgb(221 161 94 / 0.18) 1.5px,
-    transparent 1.6px
-  );
+  background-image: radial-gradient(circle,
+      rgb(221 161 94 / 0.18) 1.5px,
+      transparent 1.6px);
   background-size: 22px 22px;
 }
 
@@ -95,13 +102,14 @@ body {
 /* Floating hero beans — duration/delay are set per-bean inline so they drift
    out of sync with each other. */
 @keyframes float-bean {
+
   0%,
   100% {
     transform: translate3d(0, 0, 0) rotate(var(--bean-rot, 0deg));
   }
+
   50% {
-    transform: translate3d(var(--bean-x, 4px), var(--bean-y, -16px), 0)
-      rotate(calc(var(--bean-rot, 0deg) + 12deg));
+    transform: translate3d(var(--bean-x, 4px), var(--bean-y, -16px), 0) rotate(calc(var(--bean-rot, 0deg) + 12deg));
   }
 }
 
@@ -112,11 +120,13 @@ body {
 
 /* Splash droplets lifting off the cup */
 @keyframes splash-drift {
+
   0%,
   100% {
     transform: translateY(0) scale(1);
     opacity: 0.85;
   }
+
   50% {
     transform: translateY(-10px) scale(1.06);
     opacity: 1;
@@ -133,6 +143,7 @@ body {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
@@ -156,11 +167,14 @@ body {
   --hero-deep: hsl(30 58% 34%);
   --hero-lift: hsl(30 58% 38%);
 
-  --hero-step: 88vh; /* scroll distance per product change */
+  --hero-step: 88vh;
+  /* scroll distance per product change */
 
   --cup-h: clamp(250px, min(53vh, 34vw), 580px);
-  --cup-gap: 18vw; /* centre-to-centre spacing of the cups */
-  --cup-drop: 16px; /* how much lower the side cups sit */
+  --cup-gap: 18vw;
+  /* centre-to-centre spacing of the cups */
+  --cup-drop: 16px;
+  /* how much lower the side cups sit */
   /* How far the cups sink behind the cream arc. The arc paints *over* the cups,
      so this is literally how much of each cup the curve hides — enough that the
      cups read as standing in the cream rather than on top of it. */
@@ -208,16 +222,12 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background-image: radial-gradient(
-    circle,
-    rgb(255 240 200 / 0.22) 1.2px,
-    transparent 1.3px
-  );
+  background-image: radial-gradient(circle,
+      rgb(255 240 200 / 0.08) 1.2px,
+      transparent 1.3px);
   background-size: 20px 20px;
-  /* Radial mask: fully transparent in the center ellipse, fully opaque at the
-     edges — so dots only appear around the border of the hero. */
-  -webkit-mask-image: radial-gradient(ellipse 55% 50% at 50% 50%, transparent 60%, black 100%);
-  mask-image: radial-gradient(ellipse 55% 50% at 50% 50%, transparent 60%, black 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 80%, black 100%);
+  mask-image: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 80%, black 100%);
 }
 
 /* The zone above the cream: wordmark, beans and cups. Flex-1 so the cream base
@@ -407,7 +417,7 @@ body {
   color: rgb(61 31 10 / 0.72);
 }
 
-.hero-badge + .hero-badge {
+.hero-badge+.hero-badge {
   border-left: 1px solid rgb(61 31 10 / 0.12);
 }
 
