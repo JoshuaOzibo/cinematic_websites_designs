@@ -18,7 +18,7 @@ export default function Navbar() {
     // almost immediately. It only goes solid once the hero has scrolled past.
     const onScroll = () => {
       const hero = document.getElementById('home')
-      const threshold = hero ? hero.offsetHeight - 80 : 40
+      const threshold = hero ? hero.offsetHeight - window.innerHeight : 40
       setScrolled(window.scrollY > threshold)
     }
     onScroll()

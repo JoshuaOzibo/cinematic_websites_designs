@@ -171,7 +171,7 @@ body {
   /* scroll distance per product change */
 
   --cup-h: clamp(270px, min(58vh, 37vw), 620px);
-  --cup-gap: 21vw;
+  --cup-gap: 20vw;
   /* centre-to-centre spacing of the cups */
   --cup-drop: clamp(44px, 6.5vh, 88px);
   /* how much lower the side cups sit */
