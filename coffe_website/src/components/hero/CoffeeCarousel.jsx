@@ -22,10 +22,12 @@ const SIDE_SCALE = 0.52
  * a .hero-cup. The subscription below rewrites all four on every scroll event,
  * even once the ring has settled (useHeroMotion still emits on the frame it
  * stops), so an external tween is overwritten within a frame and reads as
- * flicker. The showcase handoff needs the side cups to fade, so opacity is
- * published as the custom property --cup-op and multiplied in CSS by
- * --cups-veil, which GSAP owns on the .hero-cups container. Two writers, two
- * properties, no collision.
+ * flicker. The showcase handoff needs to hide *only* the active cup at the
+ * instant its overlay takes over — never the side cups, which stay exactly
+ * where the ring left them for the whole scene — so opacity is published as
+ * the custom property --cup-op here and multiplied in CSS by --cup-swap,
+ * which the handoff sets directly on that one cup element only, never on the
+ * .hero-cups container. Two writers, two properties, no collision.
  */
 export default function CoffeeCarousel({ motion, products }) {
   const cupRefs = useRef([])

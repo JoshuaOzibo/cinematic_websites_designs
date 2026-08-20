@@ -53,10 +53,20 @@ function offsetWithin(el, ancestor) {
  * See the note in Showcase.jsx.
  *
  * ── What this may not touch ───────────────────────────────────────────────
- * Never .hero-cup. CoffeeCarousel rewrites transform, opacity, zIndex and
- * filter on those on every scroll event and would overwrite any tween within a
- * frame. Side cups are faded through --cups-veil on the .hero-cups container
- * instead; see the note in CoffeeCarousel.jsx.
+ * Never write transform, opacity, zIndex or filter directly on a .hero-cup.
+ * CoffeeCarousel rewrites all four on every scroll event and would overwrite
+ * any tween within a frame. The one exception is --cup-swap, a custom
+ * property CoffeeCarousel reads but never writes, set here on exactly the
+ * active cup at the instant its overlay takes over. Never .hero-bean-plane
+ * either, for the same reason: FloatingBeans owns its transform. The upward
+ * bean parallax below animates .hero-bean-parallax, one layer out, instead.
+ *
+ * ── Only the active cup moves ─────────────────────────────────────────────
+ * The two side cups are never referenced by this file at all: no tween, no
+ * property, nothing. CoffeeCarousel's own positioning already holds them
+ * still for the whole handoff (the carousel position is clamped at `steps`
+ * throughout), so leaving them alone is what keeps them "stationary" rather
+ * than something this scene has to enforce.
  */
 export default function useTransferScene({
   heroTrackRef,
@@ -84,7 +94,9 @@ export default function useTransferScene({
       const probe = heroTrack.querySelector('.hero-handoff-probe')
       const creamRise = heroTrack.querySelector('.hero-cream-rise')
       const wordmark = heroTrack.querySelector('.hero-wordmark')
-      const beanPlanes = heroTrack.querySelectorAll('.hero-bean-plane')
+      // The wrapper, not .hero-bean-plane: see the note at the top of this
+      // file and the one above FloatingBeans.jsx.
+      const beanPlanes = heroTrack.querySelectorAll('.hero-bean-parallax')
       const base = heroTrack.querySelector('.hero-base')
       if (!viewport || !cups || !probe || !creamRise) return undefined
 
@@ -96,6 +108,11 @@ export default function useTransferScene({
       // Frozen source box, in viewport coordinates as of the last refresh.
       const src = { x: 0, y: 0, w: 0, ready: false }
       const flight = { t: 0 }
+      // Which .hero-cup element is currently making the trip. Mutable rather
+      // than a value closed over at timeline-build time, because the swap
+      // tween below is built once but has to hide whichever cup turns out to
+      // be active whenever the flight actually arms.
+      const activeCupElRef = { current: null }
 
       const measure = () => {
         src.ready = false
@@ -133,10 +150,12 @@ export default function useTransferScene({
         src.w = w
         src.ready = true
 
-        // Exempt the active cup from the veil that fades its two neighbours, so
-        // it stays fully opaque right up to its own invisible swap.
-        cupEls.forEach((el) => el.style.removeProperty('--cups-veil'))
-        cupEl.style.setProperty('--cups-veil', '1')
+        // Reset every cup's swap opacity to visible first. A cup that was
+        // active on a previous pass through this scene, with a different
+        // product centred, must not be left hidden if it is not the one
+        // travelling this time.
+        cupEls.forEach((el) => el.style.removeProperty('--cup-swap'))
+        activeCupElRef.current = cupEl
       }
 
       const paint = (t) => {
@@ -175,41 +194,64 @@ export default function useTransferScene({
       // GSAP as `--name` targets, for the same reason plus one more: GSAP would
       // have to round-trip them through getComputedStyle and infer they are
       // numbers. A proxy plus setProperty is unambiguous.
-      const veil = { v: 1 }
+      const swap = { v: 1 }
       const clip = { v: 1 }
 
       // The hero dissolves. Cream first, because the rising curve is what the
       // rest of the exit reads against.
       // -50 of a 200svh slab is one viewport of travel. See .hero-cream-rise.
       tl.fromTo(creamRise, { yPercent: 0 }, { yPercent: -50, duration: 0.34 }, 0)
-      tl.fromTo(
-        veil,
-        { v: 1 },
-        {
-          v: 0,
-          duration: 0.18,
-          onUpdate: () => cups.style.setProperty('--cups-veil', veil.v.toFixed(4)),
-        },
-        0.02,
-      )
+
+      // Opposing motion: the hero's own content rises while the active cup is
+      // about to fall. yPercent rather than a px or vh amount, so the distance
+      // is relative to each element's own box — which is already the thing
+      // the --word-h / bean-plane sizing tunes per breakpoint — instead of a
+      // second, disconnected distance this file would have to keep in sync.
       if (wordmark) {
-        tl.fromTo(wordmark, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.2 }, 0.04)
+        tl.fromTo(
+          wordmark,
+          { yPercent: 0, autoAlpha: 1 },
+          { yPercent: -70, autoAlpha: 0, duration: 0.32 },
+          0.02,
+        )
       }
+      // Layered by depth, same values FloatingBeans already uses for its own
+      // pointer parallax (far 0.45, near 1), read off the wrapper rather than
+      // duplicated here, so the two can't drift apart. No fade: beans are
+      // meant to drift through the scene and clip against the viewport edge
+      // as they go, never blink out.
       if (beanPlanes.length) {
-        tl.fromTo(beanPlanes, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.2 }, 0.06)
+        tl.fromTo(
+          beanPlanes,
+          { y: 0 },
+          {
+            y: (_i, target) => -80 * parseFloat(target.dataset.depth || '1'),
+            duration: 0.4,
+          },
+          0,
+        )
       }
       if (base) {
         tl.fromTo(base, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.18 }, 0.1)
       }
 
       // The swap, in three ordered beats. The overlay appears while the hero
-      // cup is still there and still exactly beneath it, the hero cups then go
-      // out, and only after that does the flight start moving. Overlapping them
-      // the other way round would put two copies of the cup on screen in two
-      // different places. The side cups are already at veil 0 by 0.19, so
-      // hiding the container does not pop them.
+      // cup is still there and still exactly beneath it, then that one cup
+      // (never its neighbours, never the container) goes out, and only after
+      // that does the flight start moving. Overlapping them the other way
+      // round would put two copies of the cup on screen in two different
+      // places.
       tl.fromTo(layer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001 }, 0.14)
-      tl.fromTo(cups, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.001 }, 0.19)
+      tl.fromTo(
+        swap,
+        { v: 1 },
+        {
+          v: 0,
+          duration: 0.001,
+          onUpdate: () => activeCupElRef.current?.style.setProperty('--cup-swap', swap.v.toFixed(4)),
+        },
+        0.19,
+      )
 
       // The flight. A proxy tween rather than reading the timeline's own
       // progress, so it can carry its own ease and its own sub-range.
@@ -292,10 +334,10 @@ export default function useTransferScene({
 
       // Re-measuring as the flight arms is what keeps the source box honest.
       // The carousel can change which product is centred at any point before
-      // this, and measure() both records that cup's geometry and exempts it
-      // from the veil that fades its neighbours. Doing it here rather than on
-      // every index change is enough, because the latch above means the
-      // product cannot change again once we are past this point.
+      // this, and measure() both records that cup's geometry and points the
+      // swap tween at it. Doing it here rather than on every index change is
+      // enough, because the latch above means the product cannot change again
+      // once we are past this point.
       const arm = (self) => {
         setLock(self)
         measure()
@@ -343,11 +385,10 @@ export default function useTransferScene({
         st.kill()
         tl.kill()
         // matchMedia reverts what GSAP animated; these are hand-written and so
-        // are ours to undo, or a StrictMode remount leaves the hero veiled.
-        cups.style.removeProperty('--cups-veil')
+        // are ours to undo, or a StrictMode remount leaves a cup hidden.
         cups
           .querySelectorAll('.hero-cup')
-          .forEach((el) => el.style.removeProperty('--cups-veil'))
+          .forEach((el) => el.style.removeProperty('--cup-swap'))
         cropEl.style.removeProperty('--cup-clip')
         cup.style.removeProperty('transform')
         tilt.style.removeProperty('transform')

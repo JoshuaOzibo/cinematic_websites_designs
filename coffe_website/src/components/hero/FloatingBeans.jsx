@@ -21,6 +21,17 @@ const NUT_IMAGES = [
  *
  * Positions deliberately avoid the middle band where the cups stand — the beans
  * are atmosphere around the composition, not confetti over it.
+ *
+ * Each plane is wrapped in an extra .hero-bean-parallax div that this
+ * component never writes to. That is deliberate: the paint() below already
+ * writes `transform` on the inner .hero-bean-plane on every pointer move and
+ * every scroll event (via motion.subscribe), so it is not safe ground for
+ * anything else to animate. The showcase handoff drives its own upward
+ * parallax on the wrapper instead, one layer out, where the two writers can
+ * never collide. z-index moves to the wrapper for the same reason: once GSAP
+ * puts a transform on it, it becomes the stacking context, and the plane's
+ * z5/z15 position relative to the wordmark (10) and cups (30) has to live on
+ * whichever element actually holds that context.
  */
 const PLANES = [
   {
@@ -116,35 +127,41 @@ export default function FloatingBeans({ motion }) {
       {PLANES.map((plane, i) => (
         <div
           key={plane.id}
-          ref={(el) => {
-            planeRefs.current[i] = el
-          }}
-          className="hero-bean-plane"
-          style={{ zIndex: plane.zIndex, opacity: plane.opacity }}
+          className="hero-bean-parallax"
+          style={{ zIndex: plane.zIndex }}
+          data-depth={plane.depth}
           aria-hidden="true"
         >
-          {plane.beans.map((bean, j) => (
-            <span
-              key={`${plane.id}-${j}`}
-              className="animate-float-bean absolute"
-              style={{
-                top: bean.top,
-                left: bean.left,
-                '--bean-rot': `${bean.rotate}deg`,
-                '--bean-dur': bean.dur,
-                '--bean-delay': bean.delay,
-                '--bean-y': bean.y,
-                '--bean-x': bean.x,
-                // Kept per-bean rather than on the plane so the plane's own
-                // transform stays compositor-only while you move the pointer.
-                filter: `blur(${plane.blur}) drop-shadow(0 6px 12px rgba(24, 10, 2, 0.32))`,
-              }}
-            >
-              {/* Rotation lives on the wrapper so the float keyframes can add
-                  a little rotational drift to it. */}
-              <Bean size={bean.size} image={NUT_IMAGES[(i * 2 + j) % NUT_IMAGES.length]} />
-            </span>
-          ))}
+          <div
+            ref={(el) => {
+              planeRefs.current[i] = el
+            }}
+            className="hero-bean-plane"
+            style={{ opacity: plane.opacity }}
+          >
+            {plane.beans.map((bean, j) => (
+              <span
+                key={`${plane.id}-${j}`}
+                className="animate-float-bean absolute"
+                style={{
+                  top: bean.top,
+                  left: bean.left,
+                  '--bean-rot': `${bean.rotate}deg`,
+                  '--bean-dur': bean.dur,
+                  '--bean-delay': bean.delay,
+                  '--bean-y': bean.y,
+                  '--bean-x': bean.x,
+                  // Kept per-bean rather than on the plane so the plane's own
+                  // transform stays compositor-only while you move the pointer.
+                  filter: `blur(${plane.blur}) drop-shadow(0 6px 12px rgba(24, 10, 2, 0.32))`,
+                }}
+              >
+                {/* Rotation lives on the wrapper so the float keyframes can add
+                    a little rotational drift to it. */}
+                <Bean size={bean.size} image={NUT_IMAGES[(i * 2 + j) % NUT_IMAGES.length]} />
+              </span>
+            ))}
+          </div>
         </div>
       ))}
     </>

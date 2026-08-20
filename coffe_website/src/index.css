@@ -282,6 +282,18 @@ body {
   min-height: 0;
 }
 
+/* One layer out from .hero-bean-plane. The plane already has its own
+   scroll/pointer transform (see FloatingBeans.jsx); the showcase handoff
+   drives its upward parallax on this wrapper instead, so the two writers
+   never touch the same element. z-index lives here rather than on the plane
+   because a GSAP-driven transform makes this the stacking context. */
+.hero-bean-parallax {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
 .hero-bean-plane {
   position: absolute;
   inset: 0;
@@ -316,23 +328,23 @@ body {
   inset: 0;
   z-index: 30;
   pointer-events: none;
-
-  /* GSAP's half of the cup opacity, used by the handoff to fade the two side
-     cups out. Multiplied below by --cup-op, which CoffeeCarousel writes per
-     cup on every scroll event. Two writers on two properties is what keeps
-     them from overwriting one another. The centre cup opts out by setting
-     --cups-veil: 1 on itself. */
-  --cups-veil: 1;
 }
 
 /* Anchored to the stage's baseline and scaled from the bottom, so all three
-   cups keep standing on the same surface however large they grow. */
+   cups keep standing on the same surface however large they grow.
+
+   Opacity is two writers on two properties, never the same one: --cup-op is
+   CoffeeCarousel's, rewritten on every scroll event for every cup. --cup-swap
+   is the showcase handoff's, and it is set on exactly one cup element at a
+   time, the one whose overlay is about to take over, never on this class or
+   on .hero-cups. The other two cups never have it set at all, so they read
+   the default of 1 for the whole scene and never move, fade or scale. */
 .hero-cup {
   position: absolute;
   left: 50%;
   bottom: calc(-1 * var(--cup-sink));
   transform-origin: 50% 100%;
-  opacity: calc(var(--cup-op, 1) * var(--cups-veil, 1));
+  opacity: calc(var(--cup-op, 1) * var(--cup-swap, 1));
   will-change: transform, opacity, filter;
 }
 
