@@ -68,7 +68,7 @@ export default function Hero({ motion, trackRef, handoffRef }) {
           <CoffeeCarousel motion={motion} products={COFFEE_PRODUCTS} />
         </div>
 
-        <BottomInfo />
+        <BottomInfo motion={motion} />
       </div>
 
       {/* Sized in CSS, measured in JS: this is how the carousel and the handoff

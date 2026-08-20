@@ -438,11 +438,9 @@ body {
    so the side cups appear to rise out of the cream rather than to stand in
    front of it.
 
-   The showcase handoff fades this whole block out over the first tenth of its
-   scene. That is safe — and leaves no gap of hero background behind it —
-   because .hero-cream-rise is parked directly underneath with the same curve
-   and the same fill, so at the instant the fade starts the two are pixel
-   identical and from then on the rising cream is the only cream. */
+   The block itself never moves or fades. Only .hero-panel-inner leaves, and the
+   showcase handoff is what sends it: see the note beside that tween in
+   useTransferScene.js. */
 .hero-base {
   position: relative;
   z-index: 40;
@@ -459,11 +457,11 @@ body {
 
 /* The cream block itself never moves — it is the bottom of the hero's cream
    base, and the maroon hero background shows through the moment it does. Only
-   its contents travel: BottomInfo slides .hero-panel-inner down and out at page
-   speed, so the copy, buttons and badges leave like ordinary content instead of
-   riding the sticky viewport. `clip` is what bounds that slide, and because
-   this box's bottom edge is also the bottom of the viewport, the content is cut
-   by the edge of the screen rather than by any visible line. */
+   its contents travel: the handoff slides .hero-panel-inner down and out once
+   the ring has finished turning, so the note, buttons and badges leave like
+   content rather than dissolving in place. `clip` is what bounds that slide,
+   and because this box's bottom edge is also the bottom of the viewport, the
+   content is cut by the edge of the screen rather than by any visible line. */
 .hero-panel {
   background-color: var(--color-cream);
   padding: 1.25rem 1.25rem 2rem;
@@ -479,9 +477,24 @@ body {
   max-width: 1440px;
 }
 
-.hero-panel-copy {
+/* The three product notes share one grid cell. Stacking them rather than
+   swapping one element's text is what keeps the panel a fixed height while they
+   change: the cell is as tall as the longest note whichever one is showing.
+
+   That is load bearing, not tidiness. .hero-panel's height sets .hero-base's,
+   which sets .hero-stage's, which is where the cups stand and what the showcase
+   handoff freezes as its source box. A note that reflowed the panel would shunt
+   the cups mid-scroll and invalidate a measurement the flight has already
+   taken. */
+.hero-panel-notes {
+  display: grid;
   max-width: 40ch;
+}
+
+.hero-panel-copy {
+  grid-area: 1 / 1;
   margin: 0;
+  will-change: opacity, transform;
   font-size: clamp(0.68rem, 0.78vw, 0.82rem);
   font-weight: 600;
   line-height: 1.65;
@@ -595,12 +608,17 @@ body {
     gap: 1rem 1.5rem;
   }
 
-  .hero-panel-copy {
+  /* The stack is the grid item now, so the placement lives on it; only the type
+     treatment stays on the paragraphs. */
+  .hero-panel-notes {
     grid-column: 1 / -1;
     order: 3;
     max-width: none;
-    text-align: center;
     justify-self: center;
+  }
+
+  .hero-panel-copy {
+    text-align: center;
   }
 
   .hero-panel-actions {
@@ -638,8 +656,11 @@ body {
     justify-items: center;
   }
 
-  .hero-panel-copy {
+  .hero-panel-notes {
     order: 2;
+  }
+
+  .hero-panel-copy {
     font-size: 0.62rem;
     line-height: 1.55;
     text-align: center;

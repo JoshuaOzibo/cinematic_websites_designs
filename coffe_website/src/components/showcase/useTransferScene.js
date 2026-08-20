@@ -104,7 +104,8 @@ export default function useTransferScene({
       const probe = heroTrack.querySelector('.hero-handoff-probe')
       const creamRise = heroTrack.querySelector('.hero-cream-rise')
       const wordmark = heroTrack.querySelector('.hero-wordmark')
-      const heroBase = heroTrack.querySelector('.hero-base')
+      const panel = heroTrack.querySelector('.hero-panel')
+      const panelInner = heroTrack.querySelector('.hero-panel-inner')
       // The wrapper, not .hero-bean-plane: see the note at the top of this
       // file and the one above FloatingBeans.jsx.
       const beanPlanes = heroTrack.querySelectorAll('.hero-bean-parallax')
@@ -283,34 +284,38 @@ export default function useTransferScene({
         )
       }
 
-      // .hero-base — the arc plus the cream panel under it carrying the intro
-      // copy, the three CTAs and the badge row — retires as the flight arms, so
-      // the cup crosses an unbroken field of cream instead of sliding over a
-      // strip that is visibly still the hero's.
+      // The hero panel leaves: the note, the three CTAs and the badge row slide
+      // down and out through .hero-panel's clip, so the cup crosses an unbroken
+      // field of cream instead of passing over a strip that is visibly still
+      // the hero's.
       //
-      // Belt and braces rather than duplication: BottomInfo already slides that
-      // copy out of .hero-panel's clip in the first couple of hundred pixels of
-      // the page, so by the time this runs there is normally nothing left to
-      // hide. Normally. That slide is a separate ScrollTrigger measured against
-      // the panel's own height, and anything that leaves it short — a refresh
-      // landing badly, a font reflow changing the height after the tween has
-      // already resolved it — strands the buttons on screen for the rest of the
-      // hero, which is exactly where they must not be. This does not care how
-      // the panel got here; from the first frame of the scene it is gone.
+      // This scene is where that exit belongs, even though the panel is
+      // BottomInfo's. The panel is a live caption on the carousel now — its
+      // note changes with the centred product — so it has to survive the whole
+      // ring and leave the moment the ring is finished with it. That moment is
+      // this trigger's start, by construction: the scene arms on the frame the
+      // carousel stops turning, with the last product settled and centred. So
+      // "the panel goes off when the ring reaches its last product" and
+      // "progress 0 of the handoff" are the same instant, and putting the tween
+      // here means it is scrubbed by the same clock as everything else in the
+      // flight rather than racing a second trigger to the same seam.
       //
-      // Two things keep it a clean cut rather than the half-transparent mess an
-      // earlier version produced. power2.in holds the panel solid and then drops
-      // it, over an eighth of the scene, instead of spending a quarter of the
-      // flight at 50% and reading as a rendering fault. And it fades onto an
-      // identical surface: .hero-cream-rise is parked directly underneath with
-      // the same arc path in the same place and the same fill, so the curve does
-      // not blink out — the rising copy of it simply becomes the one you are
-      // looking at, and no frame of this shows hero background.
+      // Travel is the panel's own height, resolved on refresh, which is more
+      // than enough to clear a box whose bottom edge is the bottom of the
+      // screen. Fading it instead was tried and looked broken: a quarter of the
+      // flight spent with the buttons hanging at 50% reads as a rendering
+      // fault, where sliding them off the bottom of the window reads as content
+      // leaving. power2.in over an eighth of the scene keeps it decisive.
       //
-      // Opacity only. BottomInfo owns `y` on .hero-panel-inner inside this box
-      // and will keep writing it; the two never touch the same property.
-      if (heroBase) {
-        tl.fromTo(heroBase, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.12, ease: 'power2.in' }, 0)
+      // Nothing else writes y on this element — BottomInfo drives only the
+      // notes inside it, and only their opacity and drift.
+      if (panel && panelInner) {
+        tl.fromTo(
+          panelInner,
+          { y: 0 },
+          { y: () => panel.offsetHeight, duration: 0.12, ease: 'power2.in' },
+          0,
+        )
       }
 
       // The swap: overlay layer appears while hero active cup disappears.

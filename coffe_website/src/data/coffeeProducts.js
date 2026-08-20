@@ -16,6 +16,13 @@
  * is centred when the handoff begins is the one that flies into the showcase,
  * so its copy travels with it.
  *
+ * `note` is the hero's own one-liner, shown in the cream panel under the arc
+ * and swapped by BottomInfo as the ring turns. Deliberately a tighter retelling
+ * of `description` rather than the same sentences: the panel sets it in spaced
+ * uppercase at around 40 characters a line, where anything longer stops being
+ * skimmable. Keep all three within a few words of each other — they share one
+ * grid cell, so the longest of them is what sets the panel's height.
+ *
  * `width`/`height` are the photos' true intrinsic pixel sizes. They are load
  * bearing twice over: they give the browser an aspect ratio before the WebP
  * decodes (so nothing shifts), and the handoff measures the cup's laid-out
@@ -34,6 +41,7 @@ export const COFFEE_PRODUCTS = [
     // Per-photo height trim: the cups are shot at different crops, so this is
     // what makes all three read as the same physical cup on screen.
     sizeFactor: 0.97,
+    note: 'Uji leaf, stone ground the morning it ships and whisked thin over ice with oat milk. Grassy and sweet, never chalky.',
     tagline: 'Stone milled at dawn, whisked to cloud',
     description:
       'Ceremonial grade leaf from Uji, ground on granite the morning it ships. Whisked thin over ice with oat milk, so it stays grassy and sweet instead of turning chalky.',
@@ -48,6 +56,7 @@ export const COFFEE_PRODUCTS = [
     accent: { h: 30, s: 0.58, l: 0.3 },
     lightness: 0.3,
     sizeFactor: 1,
+    note: 'Kiamugumo steeped eighteen hours at cellar temperature, then pressed once. Cocoa and blackcurrant, with nothing added to hide behind.',
     tagline: 'Eighteen hours in cold water, nothing else',
     description:
       'Coarse ground Kiamugumo steeped overnight at cellar temperature, then pressed once. No heat, no dilution, nothing added to hide behind. Cocoa, blackcurrant, a long clean finish.',
@@ -62,6 +71,7 @@ export const COFFEE_PRODUCTS = [
     accent: { h: 338, s: 0.5, l: 0.33 },
     lightness: 0.33,
     sizeFactor: 0.97,
+    note: 'Washed Gesha shaken with hibiscus and white peach, then floated with lightly sweetened cream. Tart on top, round underneath.',
     tagline: 'Hibiscus, stone fruit and cream',
     description:
       'A washed Gesha shaken with hibiscus and white peach, then floated with lightly sweetened cream. Tart at the top, round underneath, and pink the whole way down.',
