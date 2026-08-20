@@ -197,51 +197,42 @@ export default function useTransferScene({
       const swap = { v: 1 }
       const clip = { v: 1 }
 
-      // The hero dissolves. Cream first, because the rising curve is what the
-      // rest of the exit reads against.
-      // -50 of a 200svh slab is one viewport of travel. See .hero-cream-rise.
-      tl.fromTo(creamRise, { yPercent: 0 }, { yPercent: -50, duration: 0.34 }, 0)
+      // The hero dissolves. Cream rises across the transition to swallow the hero.
+      tl.fromTo(creamRise, { yPercent: 0 }, { yPercent: -50, duration: 0.7, ease: 'power1.inOut' }, 0)
 
-      // Opposing motion: the hero's own content rises while the active cup is
-      // about to fall. yPercent rather than a px or vh amount, so the distance
-      // is relative to each element's own box — which is already the thing
-      // the --word-h / bean-plane sizing tunes per breakpoint — instead of a
-      // second, disconnected distance this file would have to keep in sync.
+      // Opposing motion: the hero's "COFFEE" typography moves UP out of the viewport
+      // while the active coffee moves DOWN into the showcase.
       if (wordmark) {
         tl.fromTo(
           wordmark,
           { yPercent: 0, autoAlpha: 1 },
-          { yPercent: -70, autoAlpha: 0, duration: 0.32 },
+          { yPercent: -200, autoAlpha: 0, duration: 0.65, ease: 'power1.in' },
           0.02,
         )
       }
-      // Layered by depth, same values FloatingBeans already uses for its own
-      // pointer parallax (far 0.45, near 1), read off the wrapper rather than
-      // duplicated here, so the two can't drift apart. No fade: beans are
-      // meant to drift through the scene and clip against the viewport edge
-      // as they go, never blink out.
+
+      // Layered depth parallax: floating beans move UPWARD through the hero.
+      // Foreground beans move faster (-240px * 1 = -240px), background beans move slower (-240px * 0.45 = -108px).
+      // They do not fade, remaining visible as they float up through the scene.
       if (beanPlanes.length) {
         tl.fromTo(
           beanPlanes,
           { y: 0 },
           {
-            y: (_i, target) => -80 * parseFloat(target.dataset.depth || '1'),
-            duration: 0.4,
+            y: (_i, target) => -240 * parseFloat(target.dataset.depth || '1'),
+            duration: 0.7,
+            ease: 'power1.out',
           },
           0,
         )
       }
       if (base) {
-        tl.fromTo(base, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.18 }, 0.1)
+        tl.fromTo(base, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25 }, 0.08)
       }
 
-      // The swap, in three ordered beats. The overlay appears while the hero
-      // cup is still there and still exactly beneath it, then that one cup
-      // (never its neighbours, never the container) goes out, and only after
-      // that does the flight start moving. Overlapping them the other way
-      // round would put two copies of the cup on screen in two different
-      // places.
-      tl.fromTo(layer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001 }, 0.14)
+      // The swap: overlay layer appears while hero active cup disappears.
+      // Left and right side cups are untouched and stay in their hero positions (z-index 20, behind CreamRise).
+      tl.fromTo(layer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001 }, 0.12)
       tl.fromTo(
         swap,
         { v: 1 },
@@ -250,62 +241,56 @@ export default function useTransferScene({
           duration: 0.001,
           onUpdate: () => activeCupElRef.current?.style.setProperty('--cup-swap', swap.v.toFixed(4)),
         },
-        0.19,
+        0.15,
       )
 
-      // The flight. A proxy tween rather than reading the timeline's own
-      // progress, so it can carry its own ease and its own sub-range.
+      // The flight: active center coffee travels DOWN and LEFT into showcase.
       tl.fromTo(
         flight,
         { t: 0 },
-        { t: 1, duration: 0.72, ease: 'power2.inOut', onUpdate: () => paint(flight.t) },
-        0.2,
+        { t: 1, duration: 0.75, ease: 'power2.inOut', onUpdate: () => paint(flight.t) },
+        0.15,
       )
 
-      // The cup arrives at 0.92, but the showcase's sticky pin does not engage
-      // until 1.0, so for that last stretch the destination is still scrolling
-      // upward. Without something to keep repainting, the cup would sit frozen
-      // in viewport coordinates and visibly drift off the slot by 4% of the
-      // flight length, which is 69px on a 1080p screen. This holds it glued.
+      // Hold destination position to prevent scroll drift near seam.
       const hold = { v: 0 }
       tl.fromTo(
         hold,
         { v: 0 },
         { v: 1, duration: 0.08, onUpdate: () => paint(1) },
-        0.92,
+        0.9,
       )
-      // Release the crop that was hiding the cup's base behind the cream arc,
-      // as the cup lifts clear of it.
+      // Release crop as cup lifts clear of cream arc.
       const cropEl = transferRefs.crop.current
       tl.fromTo(
         clip,
         { v: 1 },
         {
           v: 0,
-          duration: 0.1,
+          duration: 0.12,
           onUpdate: () => cropEl.style.setProperty('--cup-clip', clip.v.toFixed(4)),
         },
-        0.2,
+        0.15,
       )
-      // A contact shadow on an airborne cup reads as a mistake.
+      // Contact shadow fade during flight.
       if (transferRefs.shadow.current) {
-        tl.fromTo(transferRefs.shadow.current, { opacity: 1 }, { opacity: 0, duration: 0.24 }, 0.2)
+        tl.fromTo(transferRefs.shadow.current, { opacity: 1 }, { opacity: 0, duration: 0.25 }, 0.15)
       }
 
-      // The showcase writes itself while the cup is still arriving.
+      // The showcase copy reveals on the right as active coffee arrives on the left.
       const copyItems = copyRef.current?.children
       if (copyItems?.length) {
         tl.fromTo(
           copyItems,
-          { autoAlpha: 0, y: 30 },
+          { autoAlpha: 0, y: 35 },
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.3,
+            duration: 0.35,
             ease: 'power2.out',
-            stagger: 0.05,
+            stagger: 0.06,
           },
-          0.55,
+          0.5,
         )
       }
 

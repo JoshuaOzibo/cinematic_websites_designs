@@ -54,8 +54,9 @@ export default function CoffeeCarousel({ motion, products }) {
           ` scale(${scale.toFixed(4)})`
         // Not el.style.opacity — see the note above the component.
         el.style.setProperty('--cup-op', opacityFor(slot, count).toFixed(3))
-        // Closer to centre = closer to the viewer.
-        el.style.zIndex = String(30 + Math.round(focus * 10))
+        // Side cups (focus = 0) get zIndex 20 (behind CreamRise at 25), while
+        // active center cup (focus = 1) gets zIndex 40 (above CreamRise at 25).
+        el.style.zIndex = String(20 + Math.round(focus * 20))
         el.style.filter = reduced
           ? 'none'
           : `brightness(${(0.82 + 0.18 * focus).toFixed(3)})` +

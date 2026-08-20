@@ -200,7 +200,7 @@ body {
      is finished and still and the showcase handoff plays out. The carousel
      subtracts it by measuring .hero-handoff-probe, so this stays the single
      place the length is written. */
-  --hero-handoff: 60svh;
+  --hero-handoff: 85svh;
 
   --cup-gap: 20vw;
   /* centre-to-centre spacing of the cups */
@@ -536,7 +536,7 @@ body {
 
   .hero-root {
     --hero-step: 76vh;
-    --hero-handoff: 55svh;
+    --hero-handoff: 75svh;
     --cup-gap: 24vw;
     --cup-drop: clamp(28px, 4vh, 56px);
     --word-top: clamp(80px, 14vh, 140px);
