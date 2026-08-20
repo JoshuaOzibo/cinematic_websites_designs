@@ -67,6 +67,16 @@ function offsetWithin(el, ancestor) {
  * still for the whole handoff (the carousel position is clamped at `steps`
  * throughout), so leaving them alone is what keeps them "stationary" rather
  * than something this scene has to enforce.
+ *
+ * Holding still is not the same as staying put on screen, though. The cream
+ * tween below is what actually retires them: they sit at z-index 20, the
+ * cream slab at 25, so the rise passes in front of them and they are covered
+ * a few hundred pixels of scroll before .hero-viewport reaches the end of its
+ * sticky range and starts scrolling away. That ordering only works because
+ * .hero-cups has no z-index of its own — see the note above it in index.css.
+ * Give .hero-cups a z-index and it becomes a stacking context, the cream can
+ * no longer come between the two cup layers, and the side cups ride visibly
+ * up the screen at the tail of this scene.
  */
 export default function useTransferScene({
   heroTrackRef,
@@ -114,6 +124,17 @@ export default function useTransferScene({
       // be active whenever the flight actually arms.
       const activeCupElRef = { current: null }
 
+      // The hero cup's half of the overlay handover, 1 visible → 0 hidden.
+      // Declared up here rather than beside the tween that drives it because
+      // measure() has to be able to re-publish it; see applySwap below.
+      const swap = { v: 1 }
+
+      // Single writer for --cup-swap. Publishing through one function is what
+      // keeps the tween and measure() from disagreeing about which cup is
+      // hidden and how far.
+      const applySwap = () =>
+        activeCupElRef.current?.style.setProperty('--cup-swap', swap.v.toFixed(4))
+
       const measure = () => {
         src.ready = false
 
@@ -156,6 +177,18 @@ export default function useTransferScene({
         // travelling this time.
         cupEls.forEach((el) => el.style.removeProperty('--cup-swap'))
         activeCupElRef.current = cupEl
+
+        // Then immediately re-publish whatever the timeline is currently
+        // holding. The reset above is only meant to clear *stale* cups, but on
+        // its own it also wipes the live one: measure() runs from arm(), and
+        // arm() runs on onRefresh as well as on enter. The swap tween is
+        // duration 0.001, so its onUpdate will not fire again unless the scrub
+        // happens to cross that sliver — meaning a ScrollTrigger.refresh()
+        // landing mid-flight (the fonts.ready and img.decode refreshes at the
+        // bottom of this file, or any resize) would leave the hero cup at full
+        // opacity underneath the travelling overlay, and the product renders in
+        // two places until the timeline next crosses 0.15.
+        applySwap()
       }
 
       const paint = (t) => {
@@ -194,7 +227,6 @@ export default function useTransferScene({
       // GSAP as `--name` targets, for the same reason plus one more: GSAP would
       // have to round-trip them through getComputedStyle and infer they are
       // numbers. A proxy plus setProperty is unambiguous.
-      const swap = { v: 1 }
       const clip = { v: 1 }
 
       // The hero dissolves. Cream rises across the transition to swallow the hero.
@@ -236,11 +268,7 @@ export default function useTransferScene({
       tl.fromTo(
         swap,
         { v: 1 },
-        {
-          v: 0,
-          duration: 0.001,
-          onUpdate: () => activeCupElRef.current?.style.setProperty('--cup-swap', swap.v.toFixed(4)),
-        },
+        { v: 0, duration: 0.001, onUpdate: applySwap },
         0.15,
       )
 

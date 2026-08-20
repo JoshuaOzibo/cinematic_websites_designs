@@ -323,10 +323,23 @@ body {
 }
 
 /* ── Cups ─────────────────────────────────────────────────────────────────*/
+/* No z-index here, deliberately — leave it `auto`.
+
+   A positioned element with a z-index creates a stacking context, and that
+   would trap the per-cup z-index CoffeeCarousel writes (20 for the side cups,
+   40 for the centred one) inside this box, where it could only order the three
+   cups against each other. .hero-cream-rise sits at 25 as a *sibling* of this
+   element, so a stacking context here means the cream can never come between
+   them: it passes underneath all three cups. The side cups then stay painted
+   on top of the rising cream for the whole exit, and once .hero-viewport
+   unsticks near the end of the handoff they visibly slide away with it.
+
+   Left at `auto`, the cups' own 20/40 compete directly with the cream's 25
+   inside .hero-stage, which is what makes "side cups behind the cream, centred
+   cup in front of it" actually true rather than merely intended. */
 .hero-cups {
   position: absolute;
   inset: 0;
-  z-index: 30;
   pointer-events: none;
 }
 
@@ -376,8 +389,11 @@ body {
    measured in JavaScript.
 
    z-index 25 is inside .hero-stage's own stacking context: above the beans (5,
-   15) and the wordmark (10), below the cups (30 to 40). The centred cup keeps
-   standing in front of the cream as it rises, which is the entire illusion. */
+   15) and the wordmark (10), and *between* the two cup layers — the side cups
+   at 20 pass behind this slab as it rises, while the centred cup at 40 keeps
+   standing in front of it, which is the entire illusion. That interleaving is
+   only possible because .hero-cups deliberately has no z-index of its own; see
+   the note there before adding one. */
 .hero-cream-rise {
   position: absolute;
   inset-inline: 0;
