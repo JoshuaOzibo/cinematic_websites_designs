@@ -251,7 +251,6 @@ export default function useTransferScene({
       // GSAP as `--name` targets, for the same reason plus one more: GSAP would
       // have to round-trip them through getComputedStyle and infer they are
       // numbers. A proxy plus setProperty is unambiguous.
-      const clip = { v: 1 }
 
       // The hero dissolves. Cream rises across the transition to swallow the hero.
       tl.fromTo(creamRise, { yPercent: 0 }, { yPercent: -50, duration: 0.7, ease: 'power1.inOut' }, 0)
@@ -315,21 +314,6 @@ export default function useTransferScene({
         0.15,
       )
 
-      // Release the base crop as the cup lifts clear of the cream arc. Kept
-      // short: it only exists to match the arc's crop on the frame the overlay
-      // takes over, and the cup should read as a whole product for as much of
-      // the trip as possible.
-      const cropEl = transferRefs.crop.current
-      tl.fromTo(
-        clip,
-        { v: 1 },
-        {
-          v: 0,
-          duration: 0.07,
-          onUpdate: () => cropEl.style.setProperty('--cup-clip', clip.v.toFixed(4)),
-        },
-        0.15,
-      )
       // Contact shadow fade during flight.
       if (transferRefs.shadow.current) {
         tl.fromTo(transferRefs.shadow.current, { opacity: 1 }, { opacity: 0, duration: 0.25 }, 0.15)
@@ -442,7 +426,6 @@ export default function useTransferScene({
         cups
           .querySelectorAll('.hero-cup')
           .forEach((el) => el.style.removeProperty('--cup-swap'))
-        cropEl.style.removeProperty('--cup-clip')
         cup.style.removeProperty('transform')
         tilt.style.removeProperty('transform')
       }

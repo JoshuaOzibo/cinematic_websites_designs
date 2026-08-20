@@ -48,13 +48,6 @@
   --cup-sink: clamp(28px, 6.5vh, 76px);
 
   --arc-h: clamp(52px, 9vh, 120px);
-
-  /* How much of the cup the arc is hiding at the centre of the screen, where
-     the crest of the curve sits ARC_PEAK (6%) down from the top of the arc box.
-     The travelling cup clips itself by this much at the moment it takes over,
-     so its base does not pop into existence, then releases as it lifts clear.
-     Keep the 0.06 in step with ARC_PEAK in hero/arcPath.js. */
-  --cup-clip-max: max(0px, calc(var(--cup-sink) - 0.06 * var(--arc-h)));
 }
 
 html {
@@ -435,9 +428,17 @@ body {
   margin-bottom: -1px;
 }
 
+/* The cream block itself never moves — it is the bottom of the hero's cream
+   base, and the maroon hero background shows through the moment it does. Only
+   its contents travel: BottomInfo slides .hero-panel-inner down and out at page
+   speed, so the copy, buttons and badges leave like ordinary content instead of
+   riding the sticky viewport. `clip` is what bounds that slide, and because
+   this box's bottom edge is also the bottom of the viewport, the content is cut
+   by the edge of the screen rather than by any visible line. */
 .hero-panel {
   background-color: var(--color-cream);
   padding: 1.25rem 1.25rem 2rem;
+  overflow: clip;
 }
 
 .hero-panel-inner {
@@ -699,10 +700,17 @@ body {
   transform-origin: 50% 100%;
 }
 
+/* Deliberately no clip-path. This used to inset the cup's base to match the
+   amount the cream arc was hiding at the instant the overlay took over, on the
+   theory that the base would otherwise pop into existence. It does not work,
+   because the two crops are not the same shape and do not sit in the same
+   layer: the arc cuts the hero cup along a curve and from *behind*, while this
+   layer paints above the arc at z-index 45, so an inset renders as a hard
+   straight edge floating on top of the cream — the cup visibly sliced off flat
+   across its bottom while the side cups beside it still end on the curve.
+   Showing the whole product is both correct and what the design wants. */
 .transfer-cup-crop {
-  --cup-clip: 1;
   position: relative;
-  clip-path: inset(0 0 calc(var(--cup-clip) * var(--cup-clip-max)) 0);
 }
 
 .transfer-cup-img {
