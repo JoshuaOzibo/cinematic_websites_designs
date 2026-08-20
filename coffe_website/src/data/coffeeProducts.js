@@ -11,6 +11,15 @@
  * replaces hue + saturation with the drink's real dominant colour. Lightness is
  * always pinned to `lightness` below so no state can drift pale — the cream
  * wordmark has to stay readable on every one of them.
+ *
+ * `tagline` and `description` are the showcase's editorial copy. Whichever cup
+ * is centred when the handoff begins is the one that flies into the showcase,
+ * so its copy travels with it.
+ *
+ * `width`/`height` are the photos' true intrinsic pixel sizes. They are load
+ * bearing twice over: they give the browser an aspect ratio before the WebP
+ * decodes (so nothing shifts), and the handoff measures the cup's laid-out
+ * width to work out its flight scale, which reads 0 on an undecoded image.
  */
 export const COFFEE_PRODUCTS = [
   {
@@ -18,31 +27,60 @@ export const COFFEE_PRODUCTS = [
     name: 'Matcha Cloud',
     image: '/images/coffee_green.webp',
     alt: 'Iced matcha latte in a clear coffeelo cup',
+    width: 1023,
+    height: 1537,
     accent: { h: 82, s: 0.5, l: 0.29 },
     lightness: 0.29,
     // Per-photo height trim: the cups are shot at different crops, so this is
     // what makes all three read as the same physical cup on screen.
     sizeFactor: 0.97,
+    tagline: 'Stone milled at dawn, whisked to cloud',
+    description:
+      'Ceremonial grade leaf from Uji, ground on granite the morning it ships. Whisked thin over ice with oat milk, so it stays grassy and sweet instead of turning chalky.',
   },
   {
     id: 'brown',
     name: 'Signature Cold Brew',
     image: '/images/coffee_brown.webp',
-    alt: 'Iced cold brew coffee in a clear coffeelo cup — the signature drink',
+    alt: 'Iced cold brew coffee in a clear coffeelo cup, the signature drink',
+    width: 1122,
+    height: 1402,
     accent: { h: 30, s: 0.58, l: 0.3 },
     lightness: 0.3,
     sizeFactor: 1,
+    tagline: 'Eighteen hours in cold water, nothing else',
+    description:
+      'Coarse ground Kiamugumo steeped overnight at cellar temperature, then pressed once. No heat, no dilution, nothing added to hide behind. Cocoa, blackcurrant, a long clean finish.',
   },
   {
     id: 'pink',
     name: 'Berry Cream',
     image: '/images/coffee_pink.webp',
     alt: 'Iced berry cream drink in a clear coffeelo cup',
+    width: 1023,
+    height: 1537,
     accent: { h: 338, s: 0.5, l: 0.33 },
     lightness: 0.33,
     sizeFactor: 0.97,
+    tagline: 'Hibiscus, stone fruit and cream',
+    description:
+      'A washed Gesha shaken with hibiscus and white peach, then floated with lightly sweetened cream. Tart at the top, round underneath, and pink the whole way down.',
   },
 ]
 
 /** Which product is centred at scroll position 0. */
 export const INITIAL_INDEX = COFFEE_PRODUCTS.findIndex((p) => p.id === 'brown')
+
+/**
+ * Which product is centred at a given carousel position.
+ *
+ * The inverse of `slotFor`: that function asks "where is product i?", this asks
+ * "which product is at slot 0?". Closed form rather than scanning all three for
+ * the highest focus, so the handoff can name the active product on any frame.
+ *
+ *   pos 0 → brown, pos 1 → green, pos 2 → pink
+ */
+export function activeIndexFor(pos) {
+  const count = COFFEE_PRODUCTS.length
+  return (((INITIAL_INDEX - Math.round(pos)) % count) + count) % count
+}

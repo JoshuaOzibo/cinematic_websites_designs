@@ -17,6 +17,15 @@ const SIDE_SCALE = 0.52
  *
  * All of it is written straight to the DOM from the motion subscription; this
  * component never re-renders while scrolling.
+ *
+ * ⚠ Nothing outside this file may write transform, opacity, zIndex or filter on
+ * a .hero-cup. The subscription below rewrites all four on every scroll event,
+ * even once the ring has settled (useHeroMotion still emits on the frame it
+ * stops), so an external tween is overwritten within a frame and reads as
+ * flicker. The showcase handoff needs the side cups to fade, so opacity is
+ * published as the custom property --cup-op and multiplied in CSS by
+ * --cups-veil, which GSAP owns on the .hero-cups container. Two writers, two
+ * properties, no collision.
  */
 export default function CoffeeCarousel({ motion, products }) {
   const cupRefs = useRef([])
@@ -41,7 +50,8 @@ export default function CoffeeCarousel({ motion, products }) {
           `translate3d(calc(-50% + ${slot.toFixed(4)} * var(--cup-gap)),` +
           ` calc(${drop.toFixed(3)} * var(--cup-drop)), 0)` +
           ` scale(${scale.toFixed(4)})`
-        el.style.opacity = opacityFor(slot, count).toFixed(3)
+        // Not el.style.opacity — see the note above the component.
+        el.style.setProperty('--cup-op', opacityFor(slot, count).toFixed(3))
         // Closer to centre = closer to the viewer.
         el.style.zIndex = String(30 + Math.round(focus * 10))
         el.style.filter = reduced
@@ -65,10 +75,15 @@ export default function CoffeeCarousel({ motion, products }) {
         >
           {/* Contact shadow — scales with the cup, so it stays believable. */}
           <span className="hero-cup-shadow" />
+          {/* width/height are the photo's true pixel size: they give the box an
+              aspect ratio before the WebP decodes, which stops both a layout
+              shift and the handoff measuring a zero-width cup. */}
           <img
             src={product.image}
             alt={product.alt}
             className="hero-cup-img"
+            width={product.width}
+            height={product.height}
             style={{ height: `calc(var(--cup-h) * ${product.sizeFactor})` }}
             draggable="false"
             fetchPriority={i === 1 ? 'high' : 'auto'}

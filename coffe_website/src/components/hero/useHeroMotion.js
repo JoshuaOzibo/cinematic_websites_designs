@@ -2,6 +2,19 @@ import { useCallback, useLayoutEffect, useRef } from 'react'
 import { clamp } from './colorUtils'
 
 /**
+ * Carousel position implied by the current scroll, 0 to `steps`.
+ *
+ * Pure and cheap, so it can be called on demand rather than only from the
+ * scroll handler. That matters: it means no other listener has to care whether
+ * it runs before or after this hook's own.
+ */
+function computeTarget(track, handoffPx, steps) {
+  const distance = track.offsetHeight - window.innerHeight - handoffPx
+  const scrolled = -track.getBoundingClientRect().top
+  return distance > 0 ? clamp(scrolled / distance, 0, 1) * steps : 0
+}
+
+/**
  * The single clock the whole hero runs on.
  *
  * Scroll position over the hero track is mapped to a continuous carousel
@@ -14,11 +27,18 @@ import { clamp } from './colorUtils'
  * DOM themselves. Nothing re-renders React while you scroll, which is what
  * keeps three 1000px cup images, a blur and a gradient at 60fps.
  *
- * (GSAP/ScrollTrigger would be the obvious tool here, but it isn't installed
- * and this project ships zero runtime dependencies beyond React — the ~30 lines
- * below are the part of ScrollTrigger the hero actually needs.)
+ * (GSAP drives the showcase handoff further down the page, but the carousel
+ * stays on these ~30 lines: the damped glide *is* the hero's feel, and the two
+ * run on disjoint scroll ranges so they never fight. See useTransferScene.)
+ *
+ * `handoffRef` points at a zero-width probe element sized in CSS to the length
+ * of the handoff that follows the carousel. Its height is subtracted from the
+ * usable track, so the ring finishes turning exactly when the handoff begins
+ * and the centred product is settled and stationary for the whole flight.
+ * Measuring a probe rather than computing a number in JS is what keeps the
+ * svh/vh unit choice where it belongs, in the stylesheet.
  */
-export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } = {}) {
+export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085, handoffRef } = {}) {
   const storeRef = useRef(null)
   if (!storeRef.current) {
     storeRef.current = { target: 0, pos: 0, subs: new Set(), frame: 0, last: 0 }
@@ -31,6 +51,26 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } =
     fn(store.pos)
     return () => store.subs.delete(fn)
   }, [])
+
+  /**
+   * Where the carousel is *heading*, undamped, computed fresh from the scroll.
+   *
+   * `pos` is the eased value and is the right thing to draw with, but it is the
+   * wrong thing to make a decision from: for most of a second after a jump it
+   * still reports the product you are gliding away from. Anything that has to
+   * name the centred product rather than draw it, like the showcase handoff
+   * deciding which cup is about to fly, wants this instead.
+   *
+   * Recomputed rather than reading the stored target, so a caller that happens
+   * to run before this hook's scroll listener on the same event still gets the
+   * post-scroll answer. ScrollTrigger is exactly such a caller, and which of
+   * the two listeners runs first depends on React effect ordering.
+   */
+  const getTarget = useCallback(() => {
+    const track = trackRef.current
+    if (!track) return storeRef.current.target
+    return computeTarget(track, handoffRef?.current?.offsetHeight ?? 0, steps)
+  }, [trackRef, handoffRef, steps])
 
   // Layout effect so a reload at a mid-hero scroll position paints the right
   // frame straight away, with no visible jump from position 0.
@@ -48,9 +88,7 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } =
     }
 
     const measure = () => {
-      const distance = track.offsetHeight - window.innerHeight
-      const scrolled = -track.getBoundingClientRect().top
-      store.target = distance > 0 ? clamp(scrolled / distance, 0, 1) * steps : 0
+      store.target = computeTarget(track, handoffRef?.current?.offsetHeight ?? 0, steps)
     }
 
     const tick = (now) => {
@@ -104,7 +142,7 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085 } =
       if (store.frame) cancelAnimationFrame(store.frame)
       store.frame = 0
     }
-  }, [trackRef, steps, damping])
+  }, [trackRef, steps, damping, handoffRef])
 
-  return { subscribe }
+  return { subscribe, getTarget }
 }

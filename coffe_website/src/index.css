@@ -31,6 +31,32 @@
   /* hero section background    */
 }
 
+/* ── Cup geometry ──────────────────────────────────────────────────────────
+   These three live on :root rather than on .hero-root because the showcase
+   handoff renders its travelling cup in a layer portaled to <body>, outside the
+   hero entirely. That layer has to size and clip itself to exactly the same
+   numbers the hero cup is using, or the two do not line up at the swap.
+
+   The breakpoint overrides further down are on :root for the same reason.
+   Everything else about the hero's proportions stays on .hero-root. */
+:root {
+  --cup-h: clamp(270px, min(58vh, 37vw), 620px);
+
+  /* How far the cups sink behind the cream arc. The arc paints *over* the cups,
+     so this is literally how much of each cup the curve hides — enough that the
+     cups read as standing in the cream rather than on top of it. */
+  --cup-sink: clamp(28px, 6.5vh, 76px);
+
+  --arc-h: clamp(52px, 9vh, 120px);
+
+  /* How much of the cup the arc is hiding at the centre of the screen, where
+     the crest of the curve sits ARC_PEAK (6%) down from the top of the arc box.
+     The travelling cup clips itself by this much at the moment it takes over,
+     so its base does not pop into existence, then releases as it lifts clear.
+     Keep the 0.06 in step with ARC_PEAK in hero/arcPath.js. */
+  --cup-clip-max: max(0px, calc(var(--cup-sink) - 0.06 * var(--arc-h)));
+}
+
 html {
   background-color: var(--color-cream);
 }
@@ -170,15 +196,16 @@ body {
   --hero-step: 88vh;
   /* scroll distance per product change */
 
-  --cup-h: clamp(270px, min(58vh, 37vw), 620px);
+  /* Scroll length appended after the last product change, during which the ring
+     is finished and still and the showcase handoff plays out. The carousel
+     subtracts it by measuring .hero-handoff-probe, so this stays the single
+     place the length is written. */
+  --hero-handoff: 60svh;
+
   --cup-gap: 20vw;
   /* centre-to-centre spacing of the cups */
   --cup-drop: clamp(44px, 6.5vh, 88px);
   /* how much lower the side cups sit */
-  /* How far the cups sink behind the cream arc. The arc paints *over* the cups,
-     so this is literally how much of each cup the curve hides — enough that the
-     cups read as standing in the cream rather than on top of it. */
-  --cup-sink: clamp(28px, 6.5vh, 76px);
 
   /* The wordmark box *is* the type design: the glyphs are stretched to fill it,
      so its ~2.5:1 ratio is what condenses Anton into the reference's tall
@@ -188,12 +215,26 @@ body {
   --word-h: clamp(110px, 28vh, 310px);
   --word-w: min(1000px, 72vw);
 
-  --arc-h: clamp(52px, 9vh, 120px);
-
   position: relative;
   isolation: isolate;
   overflow-x: clip;
+  /* Do not add transform, filter, will-change or contain here. Any of them
+     would make this a containing block for fixed descendants, and the handoff's
+     travelling cup depends on `position: fixed` meaning the viewport. */
   background-color: var(--hero-bg);
+}
+
+/* Zero-width, zero-visibility, and load bearing: its height is the only
+   statement of how long the handoff runs, and useHeroMotion measures it rather
+   than recomputing svh in JavaScript. */
+.hero-handoff-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: var(--hero-handoff);
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .hero-viewport {
@@ -275,6 +316,13 @@ body {
   inset: 0;
   z-index: 30;
   pointer-events: none;
+
+  /* GSAP's half of the cup opacity, used by the handoff to fade the two side
+     cups out. Multiplied below by --cup-op, which CoffeeCarousel writes per
+     cup on every scroll event. Two writers on two properties is what keeps
+     them from overwriting one another. The centre cup opts out by setting
+     --cups-veil: 1 on itself. */
+  --cups-veil: 1;
 }
 
 /* Anchored to the stage's baseline and scaled from the bottom, so all three
@@ -284,6 +332,7 @@ body {
   left: 50%;
   bottom: calc(-1 * var(--cup-sink));
   transform-origin: 50% 100%;
+  opacity: calc(var(--cup-op, 1) * var(--cups-veil, 1));
   will-change: transform, opacity, filter;
 }
 
@@ -303,6 +352,42 @@ body {
   transform: translateX(-50%);
   border-radius: 50%;
   background: radial-gradient(closest-side, rgb(26 10 2 / 0.34), transparent 72%);
+}
+
+/* ── Rising cream (the hero's exit) ───────────────────────────────────────
+   Parked one stage-height down and tweened upward by the handoff, so the cream
+   arc grows and floods the hero rather than the background crossfading to it.
+
+   top: 100% is the whole trick. .hero-stage is flex: 1 with .hero-base directly
+   beneath it, so the stage's bottom edge *is* the static arc's top edge, and
+   the two curves are pixel co-located at rest at every breakpoint with nothing
+   measured in JavaScript.
+
+   z-index 25 is inside .hero-stage's own stacking context: above the beans (5,
+   15) and the wordmark (10), below the cups (30 to 40). The centred cup keeps
+   standing in front of the cream as it rises, which is the entire illusion. */
+.hero-cream-rise {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  /* Two viewports tall, translated by half of itself, so the slab covers a full
+     viewport *above* its arc and a full viewport below it. The lower half is
+     what matters: the strip between the stage's bottom edge and the bottom of
+     the screen belongs to .hero-base, which fades out during the exit, and a
+     one-viewport slab would leave the hero's background showing through there
+     as a band across the page. Everything outside is clipped by
+     .hero-viewport's overflow. */
+  height: 200svh;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hero-cream-fill {
+  flex: 1 1 auto;
+  background-color: var(--color-cream);
 }
 
 /* ── Cream base: arc + information panel ──────────────────────────────────*/
@@ -430,11 +515,16 @@ body {
 
 /* ── Hero: tablet ─────────────────────────────────────────────────────────*/
 @media (max-width: 1024px) {
+
+  /* Portrait tablets are tall: the cup has to be allowed to grow with the
+     *width* here, or a gap opens up between the wordmark and the cups. */
+  :root {
+    --cup-h: clamp(230px, min(50vh, 58vw), 490px);
+  }
+
   .hero-root {
     --hero-step: 76vh;
-    /* Portrait tablets are tall: the cup has to be allowed to grow with the
-       *width* here, or a gap opens up between the wordmark and the cups. */
-    --cup-h: clamp(230px, min(50vh, 58vw), 490px);
+    --hero-handoff: 55svh;
     --cup-gap: 24vw;
     --cup-drop: clamp(28px, 4vh, 56px);
     --word-top: clamp(80px, 14vh, 140px);
@@ -462,17 +552,22 @@ body {
 
 /* ── Hero: mobile ─────────────────────────────────────────────────────────*/
 @media (max-width: 640px) {
+
+  /* The centred cup is the whole story here; the side cups only need to
+     peek in at the edges. */
+  :root {
+    --cup-h: clamp(190px, min(44vh, 80vw), 360px);
+    --arc-h: clamp(34px, 6vh, 64px);
+  }
+
   .hero-root {
     --hero-step: 64vh;
-    /* The centred cup is the whole story here; the side cups only need to
-       peek in at the edges. */
-    --cup-h: clamp(190px, min(44vh, 80vw), 360px);
+    --hero-handoff: 50svh;
     --cup-gap: 34vw;
     --cup-drop: clamp(20px, 3vh, 40px);
     --word-top: clamp(68px, 13vh, 110px);
     --word-h: clamp(64px, 18vh, 160px);
     --word-w: 80vw;
-    --arc-h: clamp(34px, 6vh, 64px);
   }
 
   .hero-panel {
@@ -528,11 +623,224 @@ body {
 
 /* Short landscape viewports: keep the cups off the wordmark's throat. */
 @media (max-height: 640px) and (min-width: 641px) {
-  .hero-root {
+  :root {
     --cup-h: clamp(200px, 54vh, 400px);
+  }
+
+  .hero-root {
     --word-h: clamp(95px, 26vh, 200px);
     --word-top: clamp(68px, 13vh, 110px);
     --cup-drop: clamp(24px, 4vh, 48px);
+  }
+}
+
+/* ── The travelling cup ───────────────────────────────────────────────────
+   A fixed layer above both sections, holding the cup while it crosses between
+   them. Hidden except during the flight, so it is not composited the rest of
+   the time. z-index 45 puts it over the hero and the showcase but under the
+   navbar at 50, which is where a product passing behind the chrome belongs.
+
+   Three nested elements because the flight needs three transform origins: the
+   outer box maps a lerped rect straight onto the viewport, the tilt rocks the
+   cup on its foot, and the crop hides as much of the base as the hero's cream
+   arc was hiding at the instant of the handover. */
+.transfer-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  overflow: clip;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* will-change lives on the cup rather than the layer: promoting a cup-sized box
+   is cheap, promoting a full-viewport fixed layer is not. The layer itself is
+   visibility: hidden whenever the flight is not running, so nothing here is
+   composited the rest of the time. */
+.transfer-cup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* Matches .hero-cup's origin, so the cup pivots on its base rather than
+   swinging around its lid and leaving the interpolated path. */
+.transfer-cup-tilt {
+  transform-origin: 50% 100%;
+}
+
+.transfer-cup-crop {
+  --cup-clip: 1;
+  position: relative;
+  clip-path: inset(0 0 calc(var(--cup-clip) * var(--cup-clip-max)) 0);
+}
+
+.transfer-cup-img {
+  display: block;
+  width: auto;
+  max-width: none;
+  user-select: none;
+}
+
+.transfer-cup-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 78%;
+  height: 9%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(26 10 2 / 0.34), transparent 72%);
+}
+
+/* ── Showcase ─────────────────────────────────────────────────────────────
+   The second half of the handoff. Same shape as the hero: a tall track with a
+   sticky viewport, so both pinned sections rasterise the same way where they
+   meet. Deliberately not ScrollTrigger's pin — see the note in Showcase.jsx. */
+.showcase-root {
+  --showcase-pin: 90svh;
+  --showcase-cup-h: clamp(300px, min(62vh, 34vw), 640px);
+
+  position: relative;
+  /* clip, not hidden: `hidden` would make this a scroll container and the
+     sticky child below would silently stop sticking. */
+  overflow-x: clip;
+  background-color: var(--color-cream);
+}
+
+/* svh, not dvh: the track above is measured in svh, and a viewport that can
+   grow taller than the track it sticks inside eats its own pin distance. The
+   composition is sized off vh below so it always fits inside this box. */
+.showcase-viewport {
+  position: sticky;
+  top: 0;
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  overflow: clip;
+  padding-block: 5.5rem 3rem;
+}
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-inline: clamp(1.25rem, 3.5vw, 3.5rem);
+}
+
+/* Shrink-wraps the cup so the contact shadow can be sized against the product
+   rather than against the column. This box is the flight's destination: it is
+   measured live every frame, which is why the image inside is faded rather
+   than removed, and never display: none. */
+.showcase-slot {
+  position: relative;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.showcase-cup-img {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: var(--showcase-cup-h);
+  user-select: none;
+}
+
+.showcase-cup-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 1%;
+  width: 74%;
+  height: 7%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(61 31 10 / 0.22), transparent 72%);
+}
+
+/* Direct children only: the handoff staggers them in that order. */
+.showcase-copy>* {
+  will-change: transform, opacity;
+}
+
+.showcase-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 2.25rem;
+  border-radius: 999px;
+  padding: 0.85rem 1.6rem;
+  background-color: var(--color-espresso);
+  color: var(--color-cream);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease;
+}
+
+.showcase-cta:hover {
+  transform: translateY(-2px);
+  background-color: var(--color-rust);
+}
+
+.showcase-cta svg {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.showcase-cta:hover svg {
+  transform: translateX(3px);
+}
+
+/* Tablet and below: the cup goes over the copy rather than beside it. The
+   flight needs no changes for this — it reads the slot's live rect, so it
+   simply lands wherever the grid puts it. */
+@media (max-width: 1024px) {
+  /* Stacked, so the cup's height now competes with the copy for the same
+     viewport. 34vh is what leaves room for four lines of editorial under it on
+     a 768px-tall tablet without the section outgrowing its own pin. */
+  .showcase-root {
+    --showcase-pin: 80svh;
+    --showcase-cup-h: clamp(180px, min(34vh, 44vw), 380px);
+  }
+
+  .showcase-viewport {
+    padding-block: 4.5rem 2rem;
+  }
+
+  .showcase-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(1.75rem, 4vh, 3rem);
+    justify-items: center;
+  }
+
+  .showcase-copy {
+    max-width: 46rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .showcase-root {
+    --showcase-pin: 70svh;
+    --showcase-cup-h: clamp(160px, min(30vh, 58vw), 300px);
+  }
+
+  .showcase-viewport {
+    padding-block: 4.25rem 1.75rem;
+  }
+
+  .showcase-cta {
+    margin-top: 1.75rem;
+    padding: 0.75rem 1.3rem;
+    font-size: 0.72rem;
   }
 }
 
@@ -571,5 +879,22 @@ body {
 
   html {
     scroll-behavior: auto;
+  }
+
+  /* No handoff at all: useTransferScene builds nothing under this query, so
+     both scroll tracks collapse to their sticky viewport and the hero simply
+     scrolls past the showcase. The cup never leaves the hero and the showcase
+     image is visible from the start, which is also the graceful failure mode
+     if the scene never initialises for any other reason. */
+  .hero-root {
+    --hero-handoff: 0px;
+  }
+
+  .showcase-root {
+    --showcase-pin: 0px;
+  }
+
+  .transfer-layer {
+    display: none;
   }
 }

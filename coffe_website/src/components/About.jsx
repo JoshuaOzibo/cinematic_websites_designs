@@ -9,7 +9,7 @@ export default function About() {
         style={{ fontSize: 'clamp(11rem, 26vw, 26rem)', lineHeight: 0.8 }}
         aria-hidden="true"
       >
-        01
+        02
       </span>
 
       <div className="relative mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-14">
@@ -36,8 +36,8 @@ export default function About() {
               <p>
                 Every lot we buy is traced to a single farm, a single washing station, a single
                 harvest window. We pay well above the commodity market and we publish what we
-                paid — because a coffee that tastes this specific cannot come from an anonymous
-                supply chain.
+                paid. A coffee that tastes this specific cannot come from an anonymous supply
+                chain.
               </p>
               <p>
                 Green beans land in Lagos and are roasted to order in 12kg batches, then rested

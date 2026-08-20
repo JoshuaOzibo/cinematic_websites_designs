@@ -1,3 +1,5 @@
+import { ARC_PATH, ARC_VIEWBOX } from './arcPath'
+
 /**
  * The cream base of the hero: a wide arc, then the information panel.
  *
@@ -14,15 +16,12 @@ export default function BottomInfo() {
     <div className="hero-base">
       <svg
         className="hero-arc"
-        viewBox="0 0 1440 100"
+        viewBox={ARC_VIEWBOX}
         preserveAspectRatio="none"
         aria-hidden="true"
         focusable="false"
       >
-        <path
-          d="M0 100 L0 82 C 300 82 402 6 720 6 C 1038 6 1140 82 1440 82 L1440 100 Z"
-          fill="var(--color-cream)"
-        />
+        <path d={ARC_PATH} fill="var(--color-cream)" />
       </svg>
 
       <div className="hero-panel">

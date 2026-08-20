@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const LINKS = [
   { label: 'Home', href: '#home' },
   { label: 'Flavors', href: '#collections' },
-  { label: 'Our Product', href: '#about' },
+  { label: 'Our Product', href: '#showcase' },
   { label: 'About', href: '#about' },
   { label: 'Contact', href: '#locations' },
 ]
@@ -12,22 +16,29 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  useEffect(() => {
-    // The bar stays transparent for the whole of the hero — the hero is a tall
-    // scroll track, so a fixed 40px threshold would drop a dark slab over it
-    // almost immediately. It only goes solid once the hero has scrolled past.
-    const onScroll = () => {
-      const hero = document.getElementById('home')
-      const threshold = hero ? hero.offsetHeight - window.innerHeight : 40
-      setScrolled(window.scrollY > threshold)
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-    }
+  useLayoutEffect(() => {
+    // The bar is cream-on-transparent, which only works over the hero's amber.
+    // The handoff floods the hero with cream partway through, and every section
+    // below it is cream or dark, so the bar has to have taken its solid plate
+    // before that flood lands.
+    //
+    // Anchored to the showcase rather than to a scroll offset: the hero's track
+    // height changes with the breakpoint, and a measured number went stale the
+    // moment the handoff was added to it. `bottom+=20%` puts the switch a fifth
+    // of a viewport before the showcase appears, which is about a quarter of
+    // the way through the flight and comfortably ahead of the cream.
+    const target = document.getElementById('showcase')
+    if (!target) return undefined
+
+    const sync = (self) => setScrolled(self.isActive)
+    const st = ScrollTrigger.create({
+      trigger: target,
+      start: 'top bottom+=20%',
+      end: 'max',
+      onToggle: sync,
+      onRefresh: sync,
+    })
+    return () => st.kill()
   }, [])
 
   return (
