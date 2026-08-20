@@ -18,16 +18,15 @@ import { createPortal } from 'react-dom'
  *   .transfer-cup-tilt  rotate, from the base, matching .hero-cup's
  *                       transform-origin so the cup rocks on its foot instead
  *                       of swinging around its lid
- *   .transfer-cup-crop  clip-path, hiding exactly as much of the cup's base as
- *                       the hero's cream arc is hiding at the moment of the
- *                       handover, then releasing as the cup lifts clear
+ *   .transfer-cup-crop  the box the image is measured in — no clipping any
+ *                       more, since the hero cup it takes over from is itself
+ *                       uncropped; see the note on the class in index.css
  *
- * Only the active product is mounted. The other two would need identical box
- * metrics to share the crop, and their photos are cropped to different aspect
- * ratios, so stacking all three would size the crop box to the tallest and
- * throw the base clip off by a few percent of cup height. Swapping the mounted
- * image is safe because it only ever happens while the layer is hidden: once
- * the flight arms, the active product is latched.
+ * Only the active product is mounted. The three photos are cropped to different
+ * aspect ratios, so stacking all of them would size this box to the tallest and
+ * throw the flight's scale off by a few percent of cup height. Swapping the
+ * mounted image is safe because it only ever happens while the layer is hidden:
+ * once the flight arms, the active product is latched.
  *
  * Portaled to <body> so no future transform, filter or containment on a
  * wrapping element can quietly turn `position: fixed` into `absolute`.

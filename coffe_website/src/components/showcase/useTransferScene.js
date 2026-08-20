@@ -104,6 +104,7 @@ export default function useTransferScene({
       const probe = heroTrack.querySelector('.hero-handoff-probe')
       const creamRise = heroTrack.querySelector('.hero-cream-rise')
       const wordmark = heroTrack.querySelector('.hero-wordmark')
+      const heroBase = heroTrack.querySelector('.hero-base')
       // The wrapper, not .hero-bean-plane: see the note at the top of this
       // file and the one above FloatingBeans.jsx.
       const beanPlanes = heroTrack.querySelectorAll('.hero-bean-parallax')
@@ -281,15 +282,36 @@ export default function useTransferScene({
           0,
         )
       }
-      // .hero-base — the cream panel carrying the intro copy, the three CTAs
-      // and the badge row — is deliberately NOT animated here. It used to fade
-      // to nothing over the first quarter of the scene, which left the copy and
-      // buttons hanging half transparent for most of the flight and read as a
-      // rendering fault rather than a transition. It now stays fully opaque and
-      // the cup simply travels over it: the overlay is a fixed layer at z-index
-      // 45, above .hero-base's 40, so the product passes in front of the panel
-      // with nothing needing to get out of its way. The panel leaves the screen
-      // only when the hero itself does, carried by the page scroll.
+
+      // .hero-base — the arc plus the cream panel under it carrying the intro
+      // copy, the three CTAs and the badge row — retires as the flight arms, so
+      // the cup crosses an unbroken field of cream instead of sliding over a
+      // strip that is visibly still the hero's.
+      //
+      // Belt and braces rather than duplication: BottomInfo already slides that
+      // copy out of .hero-panel's clip in the first couple of hundred pixels of
+      // the page, so by the time this runs there is normally nothing left to
+      // hide. Normally. That slide is a separate ScrollTrigger measured against
+      // the panel's own height, and anything that leaves it short — a refresh
+      // landing badly, a font reflow changing the height after the tween has
+      // already resolved it — strands the buttons on screen for the rest of the
+      // hero, which is exactly where they must not be. This does not care how
+      // the panel got here; from the first frame of the scene it is gone.
+      //
+      // Two things keep it a clean cut rather than the half-transparent mess an
+      // earlier version produced. power2.in holds the panel solid and then drops
+      // it, over an eighth of the scene, instead of spending a quarter of the
+      // flight at 50% and reading as a rendering fault. And it fades onto an
+      // identical surface: .hero-cream-rise is parked directly underneath with
+      // the same arc path in the same place and the same fill, so the curve does
+      // not blink out — the rising copy of it simply becomes the one you are
+      // looking at, and no frame of this shows hero background.
+      //
+      // Opacity only. BottomInfo owns `y` on .hero-panel-inner inside this box
+      // and will keep writing it; the two never touch the same property.
+      if (heroBase) {
+        tl.fromTo(heroBase, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.12, ease: 'power2.in' }, 0)
+      }
 
       // The swap: overlay layer appears while hero active cup disappears.
       // Left and right side cups are untouched and stay in their hero positions (z-index 20, behind CreamRise).

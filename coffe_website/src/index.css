@@ -42,12 +42,29 @@
 :root {
   --cup-h: clamp(270px, min(58vh, 37vw), 620px);
 
-  /* How far the cups sink behind the cream arc. The arc paints *over* the cups,
-     so this is literally how much of each cup the curve hides — enough that the
-     cups read as standing in the cream rather than on top of it. */
-  --cup-sink: clamp(28px, 6.5vh, 76px);
-
   --arc-h: clamp(52px, 9vh, 120px);
+
+  /* Where the arc's crest sits inside its own box, as a fraction of --arc-h.
+     Mirrors ARC_PEAK in hero/arcPath.js: the path peaks at y=6 of a 100-unit
+     viewBox, so retune the two together or the cups stop meeting the cream. */
+  --arc-peak: 0.06;
+
+  /* How far a cup's baseline sits below the stage's bottom edge, which is also
+     the top edge of the arc's box. The arc paints *over* the cups, so anything
+     past the crest is hidden.
+
+     This is deliberately one pixel *short* of the crest. The centred cup gets
+     no other vertical offset, so its base lands exactly on the cream with not a
+     pixel of it cut away — which is what the showcase handoff needs. The
+     travelling overlay is never cropped, so if the hero cup were sunk the cup's
+     base would pop into existence on the frame the overlay took over. Matching
+     the two makes that swap invisible.
+
+     The side cups still stand *in* the cream: --cup-drop below pushes them down
+     past the crest, and because that is a transform driven by the carousel's
+     focus value, the amount of base the arc hides changes smoothly as the ring
+     turns instead of appearing all at once. */
+  --cup-sink: calc(var(--arc-h) * var(--arc-peak) - 1px);
 }
 
 html {
@@ -197,8 +214,11 @@ body {
 
   --cup-gap: 20vw;
   /* centre-to-centre spacing of the cups */
-  --cup-drop: clamp(44px, 6.5vh, 88px);
-  /* how much lower the side cups sit */
+  --cup-drop: clamp(72px, 13vh, 164px);
+  /* How much lower the side cups sit — and, since --cup-sink now only just
+     reaches the arc's crest, the whole of how deep they stand in the cream.
+     It carries what used to be split between the two, so the side cups look
+     exactly as they did while the centred cup rises clear of the curve. */
 
   /* The wordmark box *is* the type design: the glyphs are stretched to fill it,
      so its ~2.5:1 ratio is what condenses Anton into the reference's tall
@@ -266,8 +286,10 @@ body {
 
 /* The zone above the cream: wordmark, beans and cups. Flex-1 so the cream base
    can size to its own content (which is how mobile stacking stays honest).
-   It sits *below* .hero-base in z, so cups that overflow its bottom edge are
-   cut by the arc. */
+   It sits *below* .hero-base in z, so anything that overflows its bottom edge
+   is cut by the arc — which is how the side cups come to stand in the cream.
+   The centred cup is not sunk that far (see --cup-sink) and so never meets the
+   curve at all. */
 .hero-stage {
   position: relative;
   z-index: 20;
@@ -412,8 +434,15 @@ body {
 }
 
 /* ── Cream base: arc + information panel ──────────────────────────────────*/
-/* Above the stage: the arc crops the bottom of every cup, so the cups appear to
-   rise out of the cream rather than to stand in front of it. */
+/* Above the stage: the arc crops whatever hangs below the stage's bottom edge,
+   so the side cups appear to rise out of the cream rather than to stand in
+   front of it.
+
+   The showcase handoff fades this whole block out over the first tenth of its
+   scene. That is safe — and leaves no gap of hero background behind it —
+   because .hero-cream-rise is parked directly underneath with the same curve
+   and the same fill, so at the instant the fade starts the two are pixel
+   identical and from then on the rising cream is the only cream. */
 .hero-base {
   position: relative;
   z-index: 40;
@@ -555,7 +584,7 @@ body {
     --hero-step: 76vh;
     --hero-handoff: 75svh;
     --cup-gap: 24vw;
-    --cup-drop: clamp(28px, 4vh, 56px);
+    --cup-drop: clamp(56px, 10.5vh, 132px);
     --word-top: clamp(80px, 14vh, 140px);
     --word-h: clamp(90px, 22vh, 230px);
     --word-w: 78vw;
@@ -593,7 +622,7 @@ body {
     --hero-step: 64vh;
     --hero-handoff: 50svh;
     --cup-gap: 34vw;
-    --cup-drop: clamp(20px, 3vh, 40px);
+    --cup-drop: clamp(48px, 9.5vh, 116px);
     --word-top: clamp(68px, 13vh, 110px);
     --word-h: clamp(64px, 18vh, 160px);
     --word-w: 80vw;
@@ -659,7 +688,7 @@ body {
   .hero-root {
     --word-h: clamp(95px, 26vh, 200px);
     --word-top: clamp(68px, 13vh, 110px);
-    --cup-drop: clamp(24px, 4vh, 48px);
+    --cup-drop: clamp(52px, 10.5vh, 124px);
   }
 }
 
@@ -669,10 +698,9 @@ body {
    the time. z-index 45 puts it over the hero and the showcase but under the
    navbar at 50, which is where a product passing behind the chrome belongs.
 
-   Three nested elements because the flight needs three transform origins: the
+   Three nested elements because the flight needs its own transform origins: the
    outer box maps a lerped rect straight onto the viewport, the tilt rocks the
-   cup on its foot, and the crop hides as much of the base as the hero's cream
-   arc was hiding at the instant of the handover. */
+   cup on its foot, and the crop is the plain box the photo is measured in. */
 .transfer-layer {
   position: fixed;
   inset: 0;
@@ -700,15 +728,18 @@ body {
   transform-origin: 50% 100%;
 }
 
-/* Deliberately no clip-path. This used to inset the cup's base to match the
-   amount the cream arc was hiding at the instant the overlay took over, on the
-   theory that the base would otherwise pop into existence. It does not work,
-   because the two crops are not the same shape and do not sit in the same
-   layer: the arc cuts the hero cup along a curve and from *behind*, while this
-   layer paints above the arc at z-index 45, so an inset renders as a hard
-   straight edge floating on top of the cream — the cup visibly sliced off flat
-   across its bottom while the side cups beside it still end on the curve.
-   Showing the whole product is both correct and what the design wants. */
+/* Deliberately no clip-path, and nothing to match any more. This used to inset
+   the cup's base by however much the cream arc was hiding at the instant the
+   overlay took over, because the base would otherwise pop into existence. It
+   never worked: the arc cuts the hero cup along a curve and from *behind*,
+   while this layer paints above the arc at z-index 45, so an inset rendered as
+   a hard straight edge floating on the cream — the cup sliced off flat across
+   its bottom while the side cups beside it still ended on the curve.
+
+   The pop is fixed at the other end instead. --cup-sink stops one pixel short
+   of the arc's crest, so the centred hero cup is already whole when the swap
+   happens and the two images are identical. Keep them that way: sink the
+   centred cup again and this crop is not the place to compensate. */
 .transfer-cup-crop {
   position: relative;
 }
