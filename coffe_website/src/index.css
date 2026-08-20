@@ -730,6 +730,9 @@ body {
 .showcase-root {
   --showcase-pin: 90svh;
   --showcase-cup-h: clamp(300px, min(62vh, 34vw), 640px);
+  /* How far the cup stops short of the gap between the two columns. See
+     .showcase-slot. Zero would pin it against the headline. */
+  --showcase-slot-inset: clamp(0.5rem, 2vw, 2.5rem);
 
   position: relative;
   /* clip, not hidden: `hidden` would make this a scroll container and the
@@ -763,13 +766,21 @@ body {
 }
 
 /* Shrink-wraps the cup so the contact shadow can be sized against the product
-   rather than against the column. This box is the flight's destination: it is
-   measured live every frame, which is why the image inside is faded rather
-   than removed, and never display: none. */
+   rather than against the column. This box is the flight's destination: the
+   handoff measures its laid-out offset on every refresh, which is why the image
+   inside is faded rather than removed, and never display: none — either would
+   report a zero box and land the cup in the corner. */
 .showcase-slot {
   position: relative;
   width: fit-content;
-  margin-inline: auto;
+  /* Nudged off its column's centre, toward the copy.
+
+     Centred, the cup sat at roughly 24% of the viewport width: far enough left
+     that the flight ended in the corner of the screen with a wide dead margin
+     beside it. Trading the column's left slack for a small fixed inset on the
+     right lands it nearer a third in, which reads as centre-left, shortens the
+     travel and closes most of that gap without crowding the headline. */
+  margin-inline: auto var(--showcase-slot-inset);
 }
 
 .showcase-cup-img {
@@ -829,8 +840,8 @@ body {
 }
 
 /* Tablet and below: the cup goes over the copy rather than beside it. The
-   flight needs no changes for this — it reads the slot's live rect, so it
-   simply lands wherever the grid puts it. */
+   flight needs no changes for this — it measures the slot's laid-out offset, so
+   it simply lands wherever the grid puts it at this width. */
 @media (max-width: 1024px) {
   /* Stacked, so the cup's height now competes with the copy for the same
      viewport. 34vh is what leaves room for four lines of editorial under it on
@@ -848,6 +859,12 @@ body {
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(1.75rem, 4vh, 3rem);
     justify-items: center;
+  }
+
+  /* One column now, so there is no gap to stop short of: the centre-left nudge
+     would just read as off-centre. */
+  .showcase-slot {
+    margin-inline: auto;
   }
 
   .showcase-copy {

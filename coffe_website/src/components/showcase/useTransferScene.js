@@ -107,7 +107,6 @@ export default function useTransferScene({
       // The wrapper, not .hero-bean-plane: see the note at the top of this
       // file and the one above FloatingBeans.jsx.
       const beanPlanes = heroTrack.querySelectorAll('.hero-bean-parallax')
-      const base = heroTrack.querySelector('.hero-base')
       if (!viewport || !cups || !probe || !creamRise) return undefined
 
       const layer = transferRefs.layer.current
@@ -115,8 +114,13 @@ export default function useTransferScene({
       const tilt = transferRefs.tilt.current
       if (!layer || !cup || !tilt || !transferRefs.crop.current) return undefined
 
+      const showcaseViewport = track.querySelector('.showcase-viewport')
+      if (!showcaseViewport) return undefined
+
       // Frozen source box, in viewport coordinates as of the last refresh.
       const src = { x: 0, y: 0, w: 0, ready: false }
+      // Frozen destination box, same coordinate space. See measure().
+      const dst = { x: 0, y: 0, w: 0, ready: false }
       const flight = { t: 0 }
       // Which .hero-cup element is currently making the trip. Mutable rather
       // than a value closed over at timeline-build time, because the swap
@@ -137,6 +141,29 @@ export default function useTransferScene({
 
       const measure = () => {
         src.ready = false
+        dst.ready = false
+
+        // Where the slot will sit once .showcase-viewport is pinned. Measured
+        // in layout coordinates for the same reason the source is: while that
+        // sticky viewport is at top: 0 its layout offsets *are* viewport
+        // coordinates, and the flight ends on the frame it pins.
+        //
+        // Deliberately not the slot's live getBoundingClientRect. Reading it
+        // live is what made the cup dive: at the start of the scene the slot is
+        // still most of a viewport *below* the fold, so lerping toward it drove
+        // the cup down past the bottom of the screen before the showcase
+        // scrolled up far enough to pull it back. The path bent through a
+        // trough, the cup spent the middle of the flight half cropped by the
+        // viewport edge, and the screen it left behind read as empty.
+        const slotImg = slotRefs.image.current
+        if (!slotImg) return
+        const dw = slotImg.offsetWidth
+        if (!dw) return
+        const to = offsetWithin(slotImg, showcaseViewport)
+        dst.x = to.x
+        dst.y = to.y
+        dst.w = dw
+        dst.ready = true
 
         // Re-resolve first, forcing past the latch: measure only ever runs at a
         // flight boundary, which is exactly where the product should be pinned
@@ -191,18 +218,15 @@ export default function useTransferScene({
         applySwap()
       }
 
+      // Both ends are frozen, so this is a straight line across the viewport
+      // and costs no layout read at all — the whole flight is one transform
+      // write per frame.
       const paint = (t) => {
-        if (!src.ready) return
-        const slotImg = slotRefs.image.current
-        if (!slotImg) return
+        if (!src.ready || !dst.ready) return
 
-        // One rect read, before any write, so the frame costs a single layout.
-        const to = slotImg.getBoundingClientRect()
-        if (!to.width) return
-
-        const x = src.x + (to.left - src.x) * t
-        const y = src.y + (to.top - src.y) * t
-        const s = (src.w + (to.width - src.w) * t) / src.w
+        const x = src.x + (dst.x - src.x) * t
+        const y = src.y + (dst.y - src.y) * t
+        const s = (src.w + (dst.w - src.w) * t) / src.w
 
         cup.style.transform =
           `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${s.toFixed(5)})`
@@ -258,9 +282,15 @@ export default function useTransferScene({
           0,
         )
       }
-      if (base) {
-        tl.fromTo(base, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25 }, 0.08)
-      }
+      // .hero-base — the cream panel carrying the intro copy, the three CTAs
+      // and the badge row — is deliberately NOT animated here. It used to fade
+      // to nothing over the first quarter of the scene, which left the copy and
+      // buttons hanging half transparent for most of the flight and read as a
+      // rendering fault rather than a transition. It now stays fully opaque and
+      // the cup simply travels over it: the overlay is a fixed layer at z-index
+      // 45, above .hero-base's 40, so the product passes in front of the panel
+      // with nothing needing to get out of its way. The panel leaves the screen
+      // only when the hero itself does, carried by the page scroll.
 
       // The swap: overlay layer appears while hero active cup disappears.
       // Left and right side cups are untouched and stay in their hero positions (z-index 20, behind CreamRise).
@@ -272,30 +302,30 @@ export default function useTransferScene({
         0.15,
       )
 
-      // The flight: active center coffee travels DOWN and LEFT into showcase.
+      // The flight: the active cup travels left and slightly up into the
+      // showcase slot. It runs all the way to the end of the scene rather than
+      // finishing early and holding, because t = 1 has to land on the exact
+      // frame .showcase-viewport pins — that is the one moment the frozen
+      // destination and the real slot's live position are the same box, and it
+      // is where the overlay hands back below.
       tl.fromTo(
         flight,
         { t: 0 },
-        { t: 1, duration: 0.75, ease: 'power2.inOut', onUpdate: () => paint(flight.t) },
+        { t: 1, duration: 0.85, ease: 'power2.inOut', onUpdate: () => paint(flight.t) },
         0.15,
       )
 
-      // Hold destination position to prevent scroll drift near seam.
-      const hold = { v: 0 }
-      tl.fromTo(
-        hold,
-        { v: 0 },
-        { v: 1, duration: 0.08, onUpdate: () => paint(1) },
-        0.9,
-      )
-      // Release crop as cup lifts clear of cream arc.
+      // Release the base crop as the cup lifts clear of the cream arc. Kept
+      // short: it only exists to match the arc's crop on the frame the overlay
+      // takes over, and the cup should read as a whole product for as much of
+      // the trip as possible.
       const cropEl = transferRefs.crop.current
       tl.fromTo(
         clip,
         { v: 1 },
         {
           v: 0,
-          duration: 0.12,
+          duration: 0.07,
           onUpdate: () => cropEl.style.setProperty('--cup-clip', clip.v.toFixed(4)),
         },
         0.15,
@@ -322,12 +352,22 @@ export default function useTransferScene({
         )
       }
 
-      // Hand back to the real image, then stand the overlay down.
+      // Hand back to the real image, then stand the overlay down — both on the
+      // last frame of the scene, not before it.
+      //
+      // The handback cannot be staggered ahead of the end any more. The overlay
+      // now flies to where the slot will be *once pinned*, so for the run-in the
+      // real slot is still below that point, sliding up to meet it. Fading the
+      // real image in early would light it up while it is still short of its
+      // resting place and put two cups on screen at different heights — the
+      // same double image the swap at the hero end is careful to avoid. At
+      // progress 1 the showcase has pinned, the two boxes are identical, and
+      // the exchange is invisible.
       if (slotRefs.image.current) {
-        tl.fromTo(slotRefs.image.current, { opacity: 0 }, { opacity: 1, duration: 0.02 }, 0.9)
+        tl.fromTo(slotRefs.image.current, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 1)
       }
       if (slotRefs.shadow.current) {
-        tl.fromTo(slotRefs.shadow.current, { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.88)
+        tl.fromTo(slotRefs.shadow.current, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 1)
       }
       // immediateRender: false so this second write to the layer does not stomp
       // the show tween's from-state while the timeline is being built.
