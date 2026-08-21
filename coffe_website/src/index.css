@@ -894,6 +894,19 @@ body {
     --showcase-fill-deep 0.6s ease;
 }
 
+.showcase-card--full-width {
+  max-width: none;
+  width: 100%;
+}
+
+/* Reversed card: dark green on left, light highlight on right behind cup */
+.showcase-card--reverse {
+  background:
+    radial-gradient(120% 90% at 80% 14%, var(--showcase-fill-light) 0%, transparent 58%),
+    linear-gradient(to top, rgb(20 8 2 / 0.22), transparent 26%),
+    linear-gradient(205deg, var(--showcase-fill-light) 0%, var(--showcase-fill) 45%, var(--showcase-fill-deep) 100%);
+}
+
 /* The prop shots around the cup — petals, fruit, ice — the way they sit in the
    reference. Positioned as a fraction of the whole card rather than of either
    grid column, so a piece can run a little way under where the cup stands
@@ -928,6 +941,16 @@ body {
   width: clamp(240px, 36vw, 480px);
 }
 
+/* Berry Cream ("Hibiscus, stone fruit and cream") garnish cutout image:
+   Make the transparent background cutout image significantly larger on the left
+   side of the section, without changing the size of the coffee cup. */
+.showcase-garnish[src*="pink"] {
+  width: clamp(440px, 64vw, 900px);
+  left: clamp(-4rem, -6vw, -1.5rem);
+  bottom: clamp(-1rem, 1vh, 1rem);
+  opacity: 0.96;
+}
+
 /* Sits in the gap between the two grid columns, roughly where the cup's own
    column gives way to the copy's — a smaller, second cluster the way the
    reference splits its props either side of the cup rather than piling them
@@ -939,12 +962,30 @@ body {
   width: clamp(130px, 14vw, 210px);
 }
 
+/* Reversed card garnish positioning */
+.showcase-card--reverse .showcase-garnish--left {
+  left: auto;
+  right: clamp(-1.5rem, -2vw, -0.5rem);
+  object-position: right bottom;
+  transform: scaleX(-1);
+}
+
+.showcase-card--reverse .showcase-garnish--right {
+  left: auto;
+  right: 43%;
+  object-position: right bottom;
+}
+
 .showcase-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
   align-items: center;
   gap: clamp(2rem, 5vw, 5rem);
   width: 100%;
+}
+
+.showcase-grid--reverse {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
 }
 
 /* Shrink-wraps the cup so the contact shadow can be sized against the product
@@ -963,6 +1004,10 @@ body {
      right lands it nearer a third in, which reads as centre-left, shortens the
      travel and closes most of that gap without crowding the headline. */
   margin-inline: auto var(--showcase-slot-inset);
+}
+
+.showcase-slot--reverse {
+  margin-inline: var(--showcase-slot-inset) auto;
 }
 
 .showcase-cup-img {
@@ -1091,7 +1136,8 @@ body {
     display: none;
   }
 
-  .showcase-grid {
+  .showcase-grid,
+  .showcase-grid--reverse {
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(1.75rem, 4vh, 3rem);
     justify-items: center;
@@ -1099,8 +1145,13 @@ body {
 
   /* One column now, so there is no gap to stop short of: the centre-left nudge
      would just read as off-centre. */
-  .showcase-slot {
+  .showcase-slot,
+  .showcase-slot--reverse {
     margin-inline: auto;
+  }
+
+  .showcase-slot--reverse {
+    order: -1;
   }
 
   .showcase-copy {

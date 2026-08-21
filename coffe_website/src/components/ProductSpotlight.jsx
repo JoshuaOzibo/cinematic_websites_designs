@@ -29,12 +29,12 @@ export default function ProductSpotlight({ product, accent }) {
   return (
     <section
       id={`spotlight-${product.id}`}
-      className="spotlight-root relative overflow-hidden bg-cream py-16 lg:py-24"
+      className="spotlight-root relative overflow-hidden bg-cream py-16 lg:py-24 w-full"
     >
-      <div className="relative mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-14">
+      <div className="relative w-full max-w-none px-4 sm:px-8 lg:px-12">
         <Reveal>
           <div
-            className="showcase-card"
+            className="showcase-card showcase-card--reverse showcase-card--full-width"
             style={{
               '--showcase-fill-light': cardFillLight,
               '--showcase-fill': cardFill,
@@ -54,19 +54,7 @@ export default function ProductSpotlight({ product, accent }) {
               />
             ))}
 
-            <div className="showcase-grid">
-              <div className="showcase-slot">
-                <span className="showcase-cup-shadow" aria-hidden="true" />
-                <img
-                  src={product.image}
-                  alt={product.alt}
-                  className="showcase-cup-img"
-                  width={product.width}
-                  height={product.height}
-                  draggable="false"
-                />
-              </div>
-
+            <div className="showcase-grid showcase-grid--reverse">
               <div className="showcase-copy">
                 <p className="showcase-eyebrow">
                   {product.name}
@@ -98,6 +86,18 @@ export default function ProductSpotlight({ product, accent }) {
                     />
                   </svg>
                 </a>
+              </div>
+
+              <div className="showcase-slot showcase-slot--reverse">
+                <span className="showcase-cup-shadow" aria-hidden="true" />
+                <img
+                  src={product.image}
+                  alt={product.alt}
+                  className="showcase-cup-img"
+                  width={product.width}
+                  height={product.height}
+                  draggable="false"
+                />
               </div>
             </div>
           </div>
