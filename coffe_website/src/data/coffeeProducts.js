@@ -87,9 +87,9 @@ export const COFFEE_PRODUCTS = [
     alt: 'Iced coffee, macadamia and cream in a clear coffeelo cup',
     width: 1122,
     height: 1402,
-    accent: { h: 22, s: 0.52, l: 0.22 },
-    lightness: 0.22,
-    cardLightness: 0.22,
+    accent: { h: 25, s: 0.52, l: 0.28 },
+    lightness: 0.28,
+    cardLightness: 0.28,
     sizeFactor: 1,
     garnish: [
       {

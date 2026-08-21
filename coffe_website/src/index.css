@@ -969,10 +969,10 @@ body {
 
 /* Brown section ("Coffee, Macadamia, and Cream") macadamia garnish cutout image */
 .showcase-garnish[src*="brown"] {
-  width: clamp(380px, 54vw, 780px);
-  left: clamp(-3rem, -4vw, -1rem);
-  bottom: clamp(-0.5rem, 1vh, 1rem);
-  opacity: 0.96;
+  width: clamp(520px, 68vw, 980px);
+  left: clamp(-4.5rem, -6.5vw, -2rem);
+  bottom: clamp(-1rem, 1vh, 1rem);
+  opacity: 0.98;
 }
 
 /* Sits in the gap between the two grid columns, roughly where the cup's own
