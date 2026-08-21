@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { COFFEE_PRODUCTS, INITIAL_INDEX, activeIndexFor } from '../data/coffeeProducts'
+import { hslString } from './hero/colorUtils'
 import TransferCup from './showcase/TransferCup'
 import useTransferScene from './showcase/useTransferScene'
 
@@ -30,8 +31,20 @@ import useTransferScene from './showcase/useTransferScene'
  *     That is a genuine refresh-ordering race, and sticky has no such coupling.
  *
  * Do not "fix" this to pin: true without re-testing the seam on a real phone.
+ *
+ * ── The card ──────────────────────────────────────────────────────────────
+ * Everything sits inside one rounded slab filled with the drink's own colour,
+ * so the product arrives into a panel that has already turned its shade rather
+ * than onto open cream. The fill is the palette App resolved from the photos,
+ * re-lit to the product's own `cardLightness` — see the note in the data file
+ * for why that lightness cannot just be a shared lift.
+ *
+ * The card changes nothing about the flight. The destination is still measured
+ * from the slot image's laid-out offset within .showcase-viewport, and
+ * offsetWithin walks the offsetParent chain, so wrapping the grid in another
+ * positioned box is invisible to it.
  */
-export default function Showcase({ motion, heroTrackRef }) {
+export default function Showcase({ motion, palette, heroTrackRef }) {
   const trackRef = useRef(null)
   const copyRef = useRef(null)
 
@@ -92,6 +105,10 @@ export default function Showcase({ motion, heroTrackRef }) {
   })
 
   const product = COFFEE_PRODUCTS[activeIndex]
+  // Hue and saturation from the photo, lightness from the product. Same
+  // division of labour extractAccent uses, for the same reason: the drink
+  // decides the colour, the design decides how dark it is allowed to be.
+  const cardFill = hslString({ ...palette[activeIndex], l: product.cardLightness })
 
   return (
     <>
@@ -104,61 +121,53 @@ export default function Showcase({ motion, heroTrackRef }) {
         style={{ height: 'calc(100svh + var(--showcase-pin))' }}
       >
         <div className="showcase-viewport">
-          {/* Same treatment as About's numeral, so the two read as a series. */}
-          <span
-            className="font-display pointer-events-none absolute -top-8 right-4 select-none text-espresso/[0.06] lg:right-16"
-            style={{ fontSize: 'clamp(11rem, 26vw, 26rem)', lineHeight: 0.8 }}
-            aria-hidden="true"
-          >
-            01
-          </span>
+          <div className="showcase-card" style={{ '--showcase-fill': cardFill }}>
+            <div className="showcase-grid">
+              <div className="showcase-slot">
+                <span className="showcase-cup-shadow" ref={slotRefs.shadow} aria-hidden="true" />
+                <img
+                  src={product.image}
+                  alt={product.alt}
+                  className="showcase-cup-img"
+                  width={product.width}
+                  height={product.height}
+                  draggable="false"
+                  ref={slotRefs.image}
+                />
+              </div>
 
-          <div className="showcase-grid">
-            <div className="showcase-slot">
-              <span className="showcase-cup-shadow" ref={slotRefs.shadow} aria-hidden="true" />
-              <img
-                src={product.image}
-                alt={product.alt}
-                className="showcase-cup-img"
-                width={product.width}
-                height={product.height}
-                draggable="false"
-                ref={slotRefs.image}
-              />
-            </div>
+              <div className="showcase-copy" ref={copyRef}>
+                <p className="showcase-eyebrow">
+                  {product.name}
+                  <span className="showcase-eyebrow-rule" aria-hidden="true" />
+                </p>
 
-            <div className="showcase-copy" ref={copyRef}>
-              <p className="text-[0.82rem] font-semibold tracking-[0.22em] text-rust uppercase">
-                {product.name}
-              </p>
+                <h2
+                  className="font-display showcase-title"
+                  style={{
+                    fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
+                    lineHeight: 0.98,
+                    letterSpacing: '-0.025em',
+                  }}
+                >
+                  {product.tagline}
+                </h2>
 
-              <h2
-                className="font-display mt-6 text-espresso"
-                style={{
-                  fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
-                  lineHeight: 0.98,
-                  letterSpacing: '-0.025em',
-                }}
-              >
-                {product.tagline}
-              </h2>
+                <p className="showcase-body">{product.description}</p>
 
-              <p className="mt-7 max-w-[38ch] text-[1.02rem] leading-relaxed text-mid">
-                {product.description}
-              </p>
-
-              <a href="#notes" className="showcase-cta">
-                Tasting notes
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
-                  <path
-                    d="M1 6h13m0 0L9.5 1.5M14 6l-4.5 4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </a>
+                <a href="#notes" className="showcase-cta">
+                  Tasting notes
+                  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
+                    <path
+                      d="M1 6h13m0 0L9.5 1.5M14 6l-4.5 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
         </div>

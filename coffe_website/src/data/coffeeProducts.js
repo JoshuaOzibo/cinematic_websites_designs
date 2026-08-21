@@ -12,6 +12,13 @@
  * always pinned to `lightness` below so no state can drift pale — the cream
  * wordmark has to stay readable on every one of them.
  *
+ * `cardLightness` is the same idea one section down: the showcase card takes the
+ * resolved hue and saturation and sets its own lightness from this. It needs to
+ * be per product rather than a shared lift off `lightness`, because HSL
+ * lightness is not perceptual — 45% of a berry pink and 45% of a matcha green
+ * are nowhere near each other to look at. These three are tuned to sit at the
+ * same visual weight, and to hold cream body copy above 4.5:1 on all of them.
+ *
  * `tagline` and `description` are the showcase's editorial copy. Whichever cup
  * is centred when the handoff begins is the one that flies into the showcase,
  * so its copy travels with it.
@@ -38,6 +45,7 @@ export const COFFEE_PRODUCTS = [
     height: 1537,
     accent: { h: 82, s: 0.5, l: 0.29 },
     lightness: 0.29,
+    cardLightness: 0.29,
     // Per-photo height trim: the cups are shot at different crops, so this is
     // what makes all three read as the same physical cup on screen.
     sizeFactor: 0.97,
@@ -55,6 +63,7 @@ export const COFFEE_PRODUCTS = [
     height: 1402,
     accent: { h: 30, s: 0.58, l: 0.3 },
     lightness: 0.3,
+    cardLightness: 0.36,
     sizeFactor: 1,
     note: 'Kiamugumo steeped eighteen hours at cellar temperature, then pressed once. Cocoa and blackcurrant, with nothing added to hide behind.',
     tagline: 'Eighteen hours in cold water, nothing else',
@@ -70,6 +79,7 @@ export const COFFEE_PRODUCTS = [
     height: 1537,
     accent: { h: 338, s: 0.5, l: 0.33 },
     lightness: 0.33,
+    cardLightness: 0.45,
     sizeFactor: 0.97,
     note: 'Washed Gesha shaken with hibiscus and white peach, then floated with lightly sweetened cream. Tart on top, round underneath.',
     tagline: 'Hibiscus, stone fruit and cream',

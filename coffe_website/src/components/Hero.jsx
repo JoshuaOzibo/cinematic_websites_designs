@@ -1,5 +1,4 @@
 import { COFFEE_PRODUCTS } from '../data/coffeeProducts'
-import useAccentPalette from './hero/useAccentPalette'
 import DynamicBackground from './hero/DynamicBackground'
 import FloatingBeans from './hero/FloatingBeans'
 import HeroWordmark from './hero/HeroWordmark'
@@ -39,9 +38,7 @@ import BottomInfo from './hero/BottomInfo'
  */
 const STEPS = COFFEE_PRODUCTS.length - 1
 
-export default function Hero({ motion, trackRef, handoffRef }) {
-  const palette = useAccentPalette(COFFEE_PRODUCTS)
-
+export default function Hero({ motion, palette, trackRef, handoffRef }) {
   return (
     <section
       id="home"

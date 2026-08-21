@@ -812,6 +812,31 @@ body {
   min-height: 100svh;
   overflow: clip;
   padding-block: 5.5rem 3rem;
+  padding-inline: clamp(0.9rem, 2.6vw, 3rem);
+}
+
+/* The slab the product lands in, filled with the drink's own colour.
+
+   --showcase-fill is written inline by Showcase.jsx from the sampled palette,
+   so it changes with whichever cup made the trip. The transition is for the
+   scroll back up, where the carousel can hand the section a different product
+   while the card is still on screen; during the flight itself the product is
+   latched and nothing here moves.
+
+   Nothing about this box is measured by the handoff. The flight aims at the
+   slot image's offset within .showcase-viewport and offsetWithin walks the
+   offsetParent chain, so an extra positioned wrapper is transparent to it. */
+.showcase-card {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  border-radius: clamp(1.5rem, 3vw, 2.75rem);
+  padding: clamp(1.5rem, 3.2vw, 3.25rem);
+  background-color: var(--showcase-fill, var(--color-espresso));
+  /* Long, low and warm: the card should look set down on the cream, not
+     floating above it. */
+  box-shadow: 0 34px 68px -38px rgb(61 31 10 / 0.45);
+  transition: background-color 0.6s ease;
 }
 
 .showcase-grid {
@@ -820,9 +845,6 @@ body {
   align-items: center;
   gap: clamp(2rem, 5vw, 5rem);
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding-inline: clamp(1.25rem, 3.5vw, 3.5rem);
 }
 
 /* Shrink-wraps the cup so the contact shadow can be sized against the product
@@ -859,7 +881,7 @@ body {
   height: 7%;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(61 31 10 / 0.22), transparent 72%);
+  background: radial-gradient(closest-side, rgb(26 10 2 / 0.3), transparent 72%);
 }
 
 /* Direct children only: the handoff staggers them in that order. */
@@ -867,6 +889,45 @@ body {
   will-change: transform, opacity;
 }
 
+/* Cream type on the card. The three fills are tuned per product so this stays
+   above 4.5:1 on all of them — see cardLightness in the data file — which is
+   also why the body copy is full-strength cream rather than the dimmed grey it
+   used when this section sat on an open cream background. */
+.showcase-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.6vw, 1.25rem);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgb(255 250 240 / 0.88);
+}
+
+/* Runs out from the product name toward the headline, so the eyebrow reads as
+   a label on the block below rather than a stray line of small caps. */
+.showcase-eyebrow-rule {
+  flex: 0 0 auto;
+  width: clamp(2rem, 5vw, 4.5rem);
+  height: 1px;
+  background-color: currentColor;
+  opacity: 0.5;
+}
+
+.showcase-title {
+  margin-top: 1.5rem;
+  color: var(--color-cream);
+}
+
+.showcase-body {
+  margin-top: 1.75rem;
+  max-width: 38ch;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--color-cream);
+}
+
+/* Light pill on the coloured card, the inverse of what it was on the cream. */
 .showcase-cta {
   display: inline-flex;
   align-items: center;
@@ -874,8 +935,8 @@ body {
   margin-top: 2.25rem;
   border-radius: 999px;
   padding: 0.85rem 1.6rem;
-  background-color: var(--color-espresso);
-  color: var(--color-cream);
+  background-color: #fffdf7;
+  color: var(--color-espresso);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -883,12 +944,14 @@ body {
   white-space: nowrap;
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.35s ease;
+    background-color 0.35s ease,
+    color 0.35s ease;
 }
 
 .showcase-cta:hover {
   transform: translateY(-2px);
-  background-color: var(--color-rust);
+  background-color: var(--color-espresso);
+  color: var(--color-cream);
 }
 
 .showcase-cta svg {
