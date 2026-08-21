@@ -39,7 +39,9 @@ export default function ProductSpotlight({ product, accent, reverse = true, lapB
   return (
     <section
       id={`spotlight-${product.id}`}
-      className="spotlight-root relative overflow-hidden bg-cream pt-0 pb-16 lg:pb-24 w-full"
+      className={`spotlight-root relative overflow-hidden bg-cream pt-0 ${
+        lapBottom ? 'pb-0' : 'pb-16 lg:pb-24'
+      } w-full`}
     >
       <div className="spotlight-container relative w-full max-w-none">
         <Reveal className="w-full">
