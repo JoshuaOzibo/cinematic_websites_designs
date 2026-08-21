@@ -35,14 +35,33 @@ import useTransferScene from './showcase/useTransferScene'
  * ── The card ──────────────────────────────────────────────────────────────
  * Everything sits inside one rounded slab filled with the drink's own colour,
  * so the product arrives into a panel that has already turned its shade rather
- * than onto open cream. The fill is the palette App resolved from the photos,
- * re-lit to the product's own `cardLightness` — see the note in the data file
- * for why that lightness cannot just be a shared lift.
+ * than onto open cream. Three lightness steps off the one resolved hue —
+ * --showcase-fill-light, --showcase-fill, --showcase-fill-deep — feed a
+ * radial highlight and a diagonal wash in CSS, so the card reads as lit rather
+ * than as a flat swatch. All three come from the same palette entry App
+ * resolved from the photos, just re-lit; see cardLightness in the data file for
+ * why the base step can't be a shared number across products.
+ *
+ * Those three custom properties are @property-registered as <color> in
+ * index.css specifically so they can transition. A plain CSS transition can't
+ * animate a gradient, but it can animate a *typed* custom property, and the
+ * gradient re-reads that property's interpolated value every frame — so the
+ * card still eases to the next product's colour on the way back up the page,
+ * the way its flat predecessor did.
  *
  * The card changes nothing about the flight. The destination is still measured
  * from the slot image's laid-out offset within .showcase-viewport, and
  * offsetWithin walks the offsetParent chain, so wrapping the grid in another
  * positioned box is invisible to it.
+ *
+ * ── The garnish ───────────────────────────────────────────────────────────
+ * An optional cutout — petals, fruit, ice — behind the cup, giving the left
+ * side of the card the same "shot on a surface" feel as the reference instead
+ * of empty fill colour. Absolutely positioned within the card, one stacking
+ * context below the grid (see .showcase-garnish in index.css for how that
+ * z-index is scoped so it can't leak into the page's global stack), so it
+ * never competes with the cup or the copy. Optional because only one product
+ * has a cutout shot so far — see garnish in the data file.
  */
 export default function Showcase({ motion, palette, heroTrackRef }) {
   const trackRef = useRef(null)
@@ -108,7 +127,16 @@ export default function Showcase({ motion, palette, heroTrackRef }) {
   // Hue and saturation from the photo, lightness from the product. Same
   // division of labour extractAccent uses, for the same reason: the drink
   // decides the colour, the design decides how dark it is allowed to be.
-  const cardFill = hslString({ ...palette[activeIndex], l: product.cardLightness })
+  //
+  // The light/deep steps are deltas off that same base colour (hslString's
+  // ds/dl args), not independent numbers, so a product whose base is already
+  // near white or near black still lightens and darkens by the same *amount*
+  // rather than blowing out or crushing. hslString clamps s and l to [0, 1]
+  // itself, so there is no danger of an invalid channel past either end.
+  const cardBase = { ...palette[activeIndex], l: product.cardLightness }
+  const cardFillLight = hslString(cardBase, 0.06, 0.16)
+  const cardFill = hslString(cardBase)
+  const cardFillDeep = hslString(cardBase, -0.02, -0.14)
 
   return (
     <>
@@ -121,7 +149,26 @@ export default function Showcase({ motion, palette, heroTrackRef }) {
         style={{ height: 'calc(100svh + var(--showcase-pin))' }}
       >
         <div className="showcase-viewport">
-          <div className="showcase-card" style={{ '--showcase-fill': cardFill }}>
+          <div
+            className="showcase-card"
+            style={{
+              '--showcase-fill-light': cardFillLight,
+              '--showcase-fill': cardFill,
+              '--showcase-fill-deep': cardFillDeep,
+            }}
+          >
+            {product.garnish && (
+              <img
+                src={product.garnish.image}
+                alt={product.garnish.alt}
+                className="showcase-garnish"
+                width={product.garnish.width}
+                height={product.garnish.height}
+                draggable="false"
+                aria-hidden="true"
+              />
+            )}
+
             <div className="showcase-grid">
               <div className="showcase-slot">
                 <span className="showcase-cup-shadow" ref={slotRefs.shadow} aria-hidden="true" />

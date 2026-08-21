@@ -815,28 +815,95 @@ body {
   padding-inline: clamp(0.9rem, 2.6vw, 3rem);
 }
 
+/* Registered so the three custom properties below can transition as colours —
+   an untyped custom property is just a string to the animation engine, and a
+   plain CSS transition cannot interpolate a gradient built from one. See the
+   note in Showcase.jsx for why the card needs that. */
+@property --showcase-fill-light {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #b07a2a;
+}
+
+@property --showcase-fill {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #3d1f0a;
+}
+
+@property --showcase-fill-deep {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #2a1305;
+}
+
 /* The slab the product lands in, filled with the drink's own colour.
 
-   --showcase-fill is written inline by Showcase.jsx from the sampled palette,
-   so it changes with whichever cup made the trip. The transition is for the
-   scroll back up, where the carousel can hand the section a different product
-   while the card is still on screen; during the flight itself the product is
-   latched and nothing here moves.
+   The three --showcase-fill-* steps are written inline by Showcase.jsx from
+   the sampled palette, so they change with whichever cup made the trip. The
+   transition is on the custom properties themselves, not on `background` —
+   see the @property block above — and is for the scroll back up, where the
+   carousel can hand the section a different product while the card is still
+   on screen; during the flight itself the product is latched and nothing here
+   moves.
+
+   isolation: isolate scopes .showcase-garnish's negative z-index to just this
+   box (see the note on that class) without this card joining the page's own
+   z-index scale the way an ordinary `position: relative` would risk.
 
    Nothing about this box is measured by the handoff. The flight aims at the
    slot image's offset within .showcase-viewport and offsetWithin walks the
    offsetParent chain, so an extra positioned wrapper is transparent to it. */
 .showcase-card {
+  position: relative;
+  isolation: isolate;
   width: 100%;
   max-width: 1440px;
   margin-inline: auto;
   border-radius: clamp(1.5rem, 3vw, 2.75rem);
   padding: clamp(1.5rem, 3.2vw, 3.25rem);
-  background-color: var(--showcase-fill, var(--color-espresso));
+  overflow: clip;
+  /* Front to back: a soft highlight where the light would fall, a dark
+     vignette to ground the bottom edge, then the diagonal wash between the
+     drink's own light and deep steps. Three layers rather than one flat fill
+     is what keeps this from reading as a plain colour swatch. */
+  background:
+    radial-gradient(120% 90% at 20% 14%, var(--showcase-fill-light) 0%, transparent 58%),
+    linear-gradient(to top, rgb(20 8 2 / 0.22), transparent 26%),
+    linear-gradient(155deg, var(--showcase-fill-light) 0%, var(--showcase-fill) 45%, var(--showcase-fill-deep) 100%);
   /* Long, low and warm: the card should look set down on the cream, not
      floating above it. */
   box-shadow: 0 34px 68px -38px rgb(61 31 10 / 0.45);
-  transition: background-color 0.6s ease;
+  transition:
+    --showcase-fill-light 0.6s ease,
+    --showcase-fill 0.6s ease,
+    --showcase-fill-deep 0.6s ease;
+}
+
+/* The prop shot behind the cup — petals, fruit, ice — bled toward the card's
+   left edge the way it sits in the reference. Sized and placed as a fraction
+   of the card rather than the left column, so it can run a little way under
+   where the cup stands without caring about the grid's own track widths.
+
+   z-index: -1 puts it behind .showcase-grid's normal-flow content. A
+   positioned element with z-index: auto would otherwise paint *above*
+   non-positioned in-flow content regardless of DOM order — the negative index
+   is what actually sends it behind, and isolation: isolate on .showcase-card
+   is what keeps that negative index from also sinking below the card's own
+   background or anything further up the page. */
+.showcase-garnish {
+  position: absolute;
+  left: clamp(-1.5rem, -2vw, -0.5rem);
+  bottom: clamp(0.5rem, 4vh, 2.5rem);
+  z-index: -1;
+  width: clamp(240px, 36vw, 480px);
+  height: auto;
+  aspect-ratio: 1471 / 720;
+  object-fit: contain;
+  object-position: left bottom;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.92;
 }
 
 .showcase-grid {
@@ -976,6 +1043,15 @@ body {
 
   .showcase-viewport {
     padding-block: 4.5rem 2rem;
+  }
+
+  /* The garnish is composed for the two-column desktop layout — bled off the
+     left edge, behind a cup that stands roughly a third of the way in. Once
+     the cup centres itself above the copy it no longer has a "left" for
+     anything to sit behind, so rather than re-place a prop shot for a layout
+     it was never composed for, it steps out. */
+  .showcase-garnish {
+    display: none;
   }
 
   .showcase-grid {

@@ -34,6 +34,12 @@
  * bearing twice over: they give the browser an aspect ratio before the WebP
  * decodes (so nothing shifts), and the handoff measures the cup's laid-out
  * width to work out its flight scale, which reads 0 on an undecoded image.
+ *
+ * `garnish` is an optional cutout — petals, fruit, ice — that sits behind the
+ * cup on the showcase card. `null` on a product that has no cutout shot yet, so
+ * the card still renders (its gradient fill is not conditional on this) just
+ * without the prop. Its own width/height are separate from the cup's for the
+ * same reason: the aspect ratios have nothing to do with each other.
  */
 export const COFFEE_PRODUCTS = [
   {
@@ -49,6 +55,7 @@ export const COFFEE_PRODUCTS = [
     // Per-photo height trim: the cups are shot at different crops, so this is
     // what makes all three read as the same physical cup on screen.
     sizeFactor: 0.97,
+    garnish: null,
     note: 'Uji leaf, stone ground the morning it ships and whisked thin over ice with oat milk. Grassy and sweet, never chalky.',
     tagline: 'Stone milled at dawn, whisked to cloud',
     description:
@@ -65,6 +72,7 @@ export const COFFEE_PRODUCTS = [
     lightness: 0.3,
     cardLightness: 0.36,
     sizeFactor: 1,
+    garnish: null,
     note: 'Kiamugumo steeped eighteen hours at cellar temperature, then pressed once. Cocoa and blackcurrant, with nothing added to hide behind.',
     tagline: 'Eighteen hours in cold water, nothing else',
     description:
@@ -81,6 +89,12 @@ export const COFFEE_PRODUCTS = [
     lightness: 0.33,
     cardLightness: 0.45,
     sizeFactor: 0.97,
+    garnish: {
+      image: '/images/showcase-garnish-pink.webp',
+      alt: '',
+      width: 1471,
+      height: 720,
+    },
     note: 'Washed Gesha shaken with hibiscus and white peach, then floated with lightly sweetened cream. Tart on top, round underneath.',
     tagline: 'Hibiscus, stone fruit and cream',
     description:
