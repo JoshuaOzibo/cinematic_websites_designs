@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import addCardCopyReveal from './cardCopyReveal'
+import createCardCopyReveal from './cardCopyReveal'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -46,9 +46,14 @@ function offsetWithin(el, ancestor) {
  * Instead the source is measured once per refresh, in layout coordinates, and
  * held. It is valid because .hero-viewport is `sticky; top: 0`, so while the
  * hero is pinned its layout offsets *are* viewport coordinates, and the swap
- * happens well inside the pin. The destination stays live, which is what lets
- * the same code land the cup on a two-column desktop grid and a stacked mobile
- * one with no breakpoint-specific maths anywhere.
+ * happens well inside the pin.
+ *
+ * The destination is the other way round twice over: frozen where the cup is
+ * far from it, live where it is closing on it. Both halves of that are there to
+ * fix a specific artefact — see the note on paint(), which is where the two are
+ * blended. Between them, the flight needs no breakpoint-specific maths: the
+ * same code lands the cup on the two-column desktop grid and the stacked mobile
+ * one because it aims at wherever the slot has laid itself out.
  *
  * ── Why the pin is CSS, not ScrollTrigger ─────────────────────────────────
  * See the note in Showcase.jsx.
@@ -221,14 +226,37 @@ export default function useTransferScene({
         applySwap()
       }
 
-      // Both ends are frozen, so this is a straight line across the viewport
-      // and costs no layout read at all — the whole flight is one transform
-      // write per frame.
+      /**
+       * ── Why the destination is frozen early and live late ────────────────
+       * A frozen destination is what stops the cup diving: at the start of the
+       * scene the slot is most of a viewport below the fold, and a cup lerped
+       * toward it goes down before it comes up (see measure()). But a
+       * destination that is frozen all the way through has its own tell at the
+       * other end. The showcase card rises at page speed right up to the frame
+       * it pins, while power2.inOut brings the cup to a near halt before then —
+       * so for the last stretch the cup hovers in place and the card slides up
+       * behind it, arriving to collect it. That is the hang.
+       *
+       * So the aim moves from the frozen box to the live one as the cup closes,
+       * on a cubic. Early on the live position barely counts, which keeps the
+       * dive away; by the end the cup is tracking the card outright, matching
+       * its speed, so the two come to rest together on the frame it pins. The
+       * two boxes are the same box at that frame, so this changes neither end of
+       * the flight — only how it gets there. The cubic keeps the middle honest
+       * too: at the halfway point it pulls the cup about six pixels off the old
+       * straight line, which is nothing, and the correction is all in the last
+       * third where it is needed.
+       */
       const paint = (t) => {
         if (!src.ready || !dst.ready) return
 
+        const slotImg = slotRefs.image.current
+        const liveY = slotImg ? slotImg.getBoundingClientRect().top : dst.y
+        const lock = t * t * t
+        const aimY = dst.y + (liveY - dst.y) * lock
+
         const x = src.x + (dst.x - src.x) * t
-        const y = src.y + (dst.y - src.y) * t
+        const y = src.y + (aimY - src.y) * t
         const s = (src.w + (dst.w - src.w) * t) / src.w
 
         cup.style.transform =
@@ -357,10 +385,13 @@ export default function useTransferScene({
         )
       }
 
-      // The showcase copy assembles on the right as the coffee arrives on the
-      // left — blocks rising, headline word by word. Shared with the two cards
-      // below so all three read the same; see cardCopyReveal.
-      addCardCopyReveal(tl, copyRef.current, 0.5)
+      // The showcase copy assembles on the right once the coffee has landed on
+      // the left — blocks rising, headline word by word, across the first half
+      // of this section's pin. Its own trigger rather than a tween in this
+      // timeline, which is load bearing for the landing as much as for the
+      // timing; see cardCopyReveal. Shared with the two cards below so all
+      // three read the same.
+      const copyReveal = createCardCopyReveal({ root: track, copy: copyRef.current })
 
       // ── There is no handback any more ────────────────────────────────────
       // This used to end by cross-cutting to the slot's real image and standing
@@ -443,6 +474,8 @@ export default function useTransferScene({
         decodePending = false
         st.kill()
         tl.kill()
+        copyReveal?.st.kill()
+        copyReveal?.tl.kill()
         // matchMedia reverts what GSAP animated; these are hand-written and so
         // are ours to undo, or a StrictMode remount leaves a cup hidden.
         cups

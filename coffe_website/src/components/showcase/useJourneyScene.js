@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import addCardCopyReveal from './cardCopyReveal'
+import createCardCopyReveal from './cardCopyReveal'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -296,10 +296,12 @@ export default function useJourneyScene({ transferRefs, legs }) {
           // a leg is now purely a move: the flight, and the copy that arrives
           // with it.
 
-          // The card's copy arrives with the cup rather than on its own
-          // observer, so the two halves of the card are one event. Same reveal
-          // the showcase card above uses — see cardCopyReveal.
-          addCardCopyReveal(tl, leg.to.copy.current, 0.46)
+          // The copy assembles once the cup has landed, over the first half of
+          // this card's pin — its own trigger, starting on the frame this leg
+          // ends. Keeping it out of the flight's timeline is what lets that
+          // timeline stay exactly one unit long, which is the whole basis of
+          // the landing; see cardCopyReveal.
+          const copyReveal = createCardCopyReveal({ root, copy: leg.to.copy.current })
 
           const st = ScrollTrigger.create({
             // The section, not the panel inside it: the panel is sticky, and
@@ -324,7 +326,7 @@ export default function useJourneyScene({ transferRefs, legs }) {
             },
           })
 
-          return { st, tl }
+          return { st, tl, copyReveal }
         })
         .filter(Boolean)
 
@@ -387,9 +389,11 @@ export default function useJourneyScene({ transferRefs, legs }) {
 
       return () => {
         exitSt?.kill()
-        built.forEach(({ st, tl }) => {
+        built.forEach(({ st, tl, copyReveal }) => {
           st.kill()
           tl.kill()
+          copyReveal?.st.kill()
+          copyReveal?.tl.kill()
         })
         // matchMedia reverts what GSAP animated; the styles paint() writes by
         // hand are ours to undo, or a StrictMode remount leaves the cup tilted
