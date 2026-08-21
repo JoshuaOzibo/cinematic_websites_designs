@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { COFFEE_PRODUCTS, INITIAL_INDEX, activeIndexFor } from '../data/coffeeProducts'
 import { hslString } from './hero/colorUtils'
+import CardTitle from './showcase/CardTitle'
 import TransferCup from './showcase/TransferCup'
 import useTransferScene from './showcase/useTransferScene'
 
@@ -133,6 +134,13 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
   const cardFillLight = hslString(cardBase, 0.06, 0.16)
   const cardFill = hslString(cardBase)
   const cardFillDeep = hslString(cardBase, -0.02, -0.14)
+  // The button's hover fill. Saturation pushed well past the card's own so the
+  // pill reads unmistakably as *this drink* — berry here, matcha on the card
+  // below — rather than as the one generic dark brown every card used to hover
+  // to. Barely darker than the card, because depth is doing nothing here: the
+  // hue has to carry it, and cream type still clears 4.5:1 at this lightness on
+  // all three products.
+  const ctaHover = hslString(cardBase, 0.3, -0.08)
 
   return (
     <>
@@ -151,6 +159,12 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
               '--showcase-fill-light': cardFillLight,
               '--showcase-fill': cardFill,
               '--showcase-fill-deep': cardFillDeep,
+              // Plain, inheriting custom property — not @property-registered
+              // like the three above, which declare inherits: false so they can
+              // animate as colours. .showcase-cta is a descendant and would
+              // read the registration's initial value off any of those; see the
+              // matching note in ProductSpotlight.jsx.
+              '--cta-hover': ctaHover,
             }}
           >
             {product.garnish?.map((piece) => (
@@ -186,16 +200,7 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
                   <span className="showcase-eyebrow-rule" aria-hidden="true" />
                 </p>
 
-                <h2
-                  className="font-display showcase-title"
-                  style={{
-                    fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
-                    lineHeight: 0.98,
-                    letterSpacing: '-0.025em',
-                  }}
-                >
-                  {product.tagline}
-                </h2>
+                <CardTitle text={product.tagline} />
 
                 <p className="showcase-body">{product.description}</p>
 

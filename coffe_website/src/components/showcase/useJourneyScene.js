@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import addCardCopyReveal from './cardCopyReveal'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -102,14 +103,22 @@ function boxOf(el) {
  * they fall out of the layout — which is why the pin lengths in index.css can
  * be changed freely and the timing follows.
  *
- * ── The empty slots ───────────────────────────────────────────────────────
- * Every card past the first stands with an empty slot. The image is still
- * there, still laid out, still measured — it is the target the leg aims at —
- * but it is held at opacity 0 for the whole page, and only the final card ever
- * gets it back (at the end of the last leg, where the cup stops). The cup the
- * viewer sees in a card between those points is always the overlay. Hiding
- * rather than removing, for the same reason the showcase does it: display: none
- * reports a zero box and would land the cup in the top left corner.
+ * ── The empty slots, and why nothing ever hands back ──────────────────────
+ * Every card stands with an empty slot, permanently. The images are still
+ * there, still laid out, still measured — they are the targets the legs aim at
+ * — but every one of them is held at opacity 0 for the life of the page, and
+ * the cup the viewer sees in any card is always the overlay. Hiding rather than
+ * removing, for the same reason the showcase does it: display: none reports a
+ * zero box and would land the cup in the top left corner.
+ *
+ * Each landing used to cross-cut from the overlay to the card's real image, on
+ * the grounds that the two boxes are identical at that instant. They are
+ * identical to about half a pixel, and half a pixel across a hard cut is a
+ * visible shudder — worse under a scrubbed playhead, which can park mid-cut and
+ * leave both cups on screen at half opacity a hair apart. Every one of those
+ * swaps is gone. The overlay arrives and simply stops, which is exactly what
+ * the middle card always did, and it was the only landing that ever looked
+ * right. See the exit below for how it leaves at the end instead.
  *
  * Under prefers-reduced-motion this whole scene is never built, so those images
  * are never hidden and all three cards simply render their own product.
@@ -126,11 +135,39 @@ export default function useJourneyScene({ transferRefs, legs }) {
       const shadowEl = transferRefs.shadow.current
       if (!layerEl || !cupEl || !tiltEl || !cropEl) return undefined
 
-      // Every stop the cup has yet to reach stands empty. gsap.set inside a
-      // matchMedia context is reverted with it, so nothing here leaks into a
-      // reduced-motion switch or a StrictMode remount.
+      // Every stop stands empty, for good. The overlay is the only cup on the
+      // page from the moment the hero hands it over until it rides off the
+      // bottom of the last card, and no slot image is ever lit — see the note
+      // about the handback in useTransferScene. gsap.set inside a matchMedia
+      // context is reverted with it, so nothing here leaks into a reduced-motion
+      // switch or a StrictMode remount.
       const resting = legs.flatMap((leg) => [leg.to.image.current, leg.to.shadow.current])
       gsap.set(resting.filter(Boolean), { opacity: 0 })
+
+      // The overlay's own laid-out size, unscaled, shared by every painter
+      // below — they all drive the one element. offsetWidth/Height see through
+      // the transforms the flight writes, and both only change with --cup-h,
+      // which is a viewport unit, so this is a refresh-time read.
+      const box = { w: 0, h: 0 }
+      const measure = () => {
+        box.w = cropEl.offsetWidth
+        box.h = cropEl.offsetHeight
+      }
+
+      /**
+       * Put the cup on a box, at the one scale that makes it that box.
+       *
+       * Every painter ends here, which is what makes the seams between them
+       * invisible: a leg finishing at t = 1 and the exit tracker picking the
+       * same slot up afterwards produce the same string, to the last decimal,
+       * so the handover between two different ScrollTriggers cannot show.
+       */
+      const place = (b) => {
+        const s = b.h / box.h
+        cupEl.style.transform =
+          `translate3d(${(b.cx - (box.w * s) / 2).toFixed(2)}px, ${b.top.toFixed(2)}px, 0) ` +
+          `scale(${s.toFixed(5)})`
+      }
 
       // One flight value per leg, all of them readable from any leg's painter.
       // The drink the cup is wearing is a property of the journey as a whole,
@@ -196,16 +233,6 @@ export default function useJourneyScene({ transferRefs, legs }) {
           const toImg = leg.to.image.current
           if (!root || !fromImg || !toImg) return null
 
-          // The overlay's own laid-out size, unscaled. offsetWidth/Height see
-          // through the transforms the flight writes, and both only change with
-          // --cup-h, which is a viewport unit — so this is a refresh-time read,
-          // not a per-frame one.
-          const box = { w: 0, h: 0 }
-          const measure = () => {
-            box.w = cropEl.offsetWidth
-            box.h = cropEl.offsetHeight
-          }
-
           const state = states[i]
 
           const paint = () => {
@@ -227,14 +254,11 @@ export default function useJourneyScene({ transferRefs, legs }) {
             // ease is applied here, to one axis only. See the note on `glide`.
             const t = state.t
 
-            const cx = a.cx + (b.cx - a.cx) * glide(t)
-            const top = a.top + (b.top - a.top) * t
-            const h = a.h + (b.h - a.h) * t
-            const s = h / box.h
-
-            cupEl.style.transform =
-              `translate3d(${(cx - (box.w * s) / 2).toFixed(2)}px, ${top.toFixed(2)}px, 0) ` +
-              `scale(${s.toFixed(5)})`
+            place({
+              cx: a.cx + (b.cx - a.cx) * glide(t),
+              top: a.top + (b.top - a.top) * t,
+              h: a.h + (b.h - a.h) * t,
+            })
 
             // Leans into the direction of travel, and sin is exactly 0 at both
             // ends, so the cup leaves and lands upright however the curve in
@@ -256,14 +280,6 @@ export default function useJourneyScene({ transferRefs, legs }) {
           // load or an image decode can land while the user is already inside a
           // leg — which would record the mid-flight state as the original and
           // make scrolling back up restore the wrong thing.
-          //
-          // immediateRender: false on everything a *neighbouring* scene also
-          // writes (the overlay layer, the slot images). Those tweens must not
-          // paint their from-state at build time, or the last timeline built
-          // would win and, say, hide a card's cup while the page is still at the
-          // top. The copy reveals are the exception: their targets belong to one
-          // leg each, and rendering their from-state immediately is what keeps
-          // the copy hidden until its card is reached.
           const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
           // The flight, spanning the whole leg. Linear here and eased inside
@@ -274,57 +290,16 @@ export default function useJourneyScene({ transferRefs, legs }) {
           // snapping to it.
           tl.fromTo(state, { t: 0 }, { t: 1, duration: 1, onUpdate: paint }, 0)
 
-          // The first leg is the one that has to take the cup back off the
-          // showcase card: that card handed over to its real image at the end
-          // of the hero flight, so the overlay has to be stood up and the real
-          // image put out again, at the same size in the same place. Every leg
-          // after it starts with the overlay already flying.
-          if (i === 0) {
-            tl.fromTo(
-              layerEl,
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.001, immediateRender: false },
-              0.002,
-            )
-            tl.fromTo(
-              [fromImg, leg.from.shadow.current].filter(Boolean),
-              { opacity: 1 },
-              { opacity: 0, duration: 0.001, immediateRender: false },
-              0.004,
-            )
-          }
+          // Nothing to stand up and nothing to put away at either end of a leg
+          // any more. The overlay was already flying when this leg started and
+          // is still flying when it finishes, and no slot image is ever lit, so
+          // a leg is now purely a move: the flight, and the copy that arrives
+          // with it.
 
           // The card's copy arrives with the cup rather than on its own
-          // observer, so the two halves of the card are one event.
-          const copyItems = leg.to.copy.current?.children
-          if (copyItems?.length) {
-            tl.fromTo(
-              copyItems,
-              { autoAlpha: 0, y: 35 },
-              { autoAlpha: 1, y: 0, duration: 0.34, ease: 'power2.out', stagger: 0.06 },
-              0.46,
-            )
-          }
-
-          // End of the line. Hand back to the real image and stand the overlay
-          // down, both on the last frame of the last leg — the frame that card
-          // pins, and the one moment the two boxes are identical. From there the
-          // cup is ordinary content in an ordinary section and scrolls away
-          // with it.
-          if (leg.final) {
-            tl.fromTo(
-              [toImg, leg.to.shadow.current].filter(Boolean),
-              { opacity: 0 },
-              { opacity: 1, duration: 0.001, immediateRender: false },
-              1,
-            )
-            tl.fromTo(
-              layerEl,
-              { autoAlpha: 1 },
-              { autoAlpha: 0, duration: 0.001, immediateRender: false },
-              1,
-            )
-          }
+          // observer, so the two halves of the card are one event. Same reveal
+          // the showcase card above uses — see cardCopyReveal.
+          addCardCopyReveal(tl, leg.to.copy.current, 0.46)
 
           const st = ScrollTrigger.create({
             // The section, not the panel inside it: the panel is sticky, and
@@ -337,24 +312,81 @@ export default function useJourneyScene({ transferRefs, legs }) {
             scrub: 0.6,
             invalidateOnRefresh: true,
             animation: tl,
-            // Re-render forced, not just re-measured. A refresh re-runs the
-            // hero leg too, and that timeline is parked at its end — where it
-            // turns the showcase's real image back on. Legs refresh in scroll
-            // order, so re-asserting this one's state afterwards is what stops
-            // a resize mid-journey from leaving a second cup behind in a card
-            // the overlay has already left.
+            // Re-render forced, not just re-measured. A resize changes --cup-h
+            // and every card's geometry at once, and a timeline parked at its
+            // end will not re-run its own onUpdate for a playhead that has not
+            // moved — so without the force, the cup keeps the transform it was
+            // given for the old layout and sits off its slot until the next
+            // scroll nudges it.
             onRefresh: () => {
               measure()
               tl.render(tl.time(), false, true)
             },
           })
 
-          measure()
           return { st, tl }
         })
         .filter(Boolean)
 
+      // ── The exit ────────────────────────────────────────────────────────
+      // The cup never becomes a real image, so it has to leave the last card
+      // the way a real one would: glued to that card as it scrolls off, then
+      // taken down once it is past the top of the screen where nobody can see
+      // it go.
+      //
+      // Deliberately not scrubbed, and deliberately not started until the last
+      // card *unpins* rather than when it pins. Not scrubbed because a scrubbed
+      // follow lags the wheel by 0.6s, and a cup that lags the card it is
+      // standing in slides around inside it. Started at the unpin because that
+      // is a pin's width of scroll after the last leg ends — far enough that the
+      // leg's own scrub has long finished catching up, so the two painters can
+      // never be writing the same element on the same frame and fighting over
+      // it. Between the two there is nothing to do: the card is pinned, so the
+      // cup is already in the right place and simply stays there.
+      const finalStop = legs[legs.length - 1].to
+      const exitRoot = finalStop.root.current
+      const exitImg = finalStop.image.current
+      let exitSt = null
+
+      if (exitRoot && exitImg) {
+        // `sure` means the caller knows the cup belongs on the last slot — it
+        // is inside the exit range, or has just scrolled back into it. Only
+        // onRefresh is unsure, because a refresh fires wherever the reader
+        // happens to be, including at the top of the page in the middle of the
+        // hero's own flight. Refreshes run in scroll order, so this is the last
+        // painter to write on one, and without the check it would stomp the
+        // hero's placement and throw the cup down the page until the next
+        // scroll event corrected it. Checking against the last leg's own
+        // progress rather than an exact 1, since an interrupted scrub can settle
+        // a rounding error short of its target.
+        const paintExit = (sure) => {
+          if (!box.w || !box.h) return
+          if (!sure && states[states.length - 1].t < 0.99) return
+          place(boxOf(exitImg))
+        }
+
+        exitSt = ScrollTrigger.create({
+          trigger: exitRoot,
+          start: 'bottom bottom',
+          end: 'bottom top',
+          onUpdate: () => paintExit(true),
+          onRefresh: () => paintExit(false),
+          // Off the moment the card is fully above the fold, back on the moment
+          // any of it returns — and placed before it is shown, so it can never
+          // appear for a frame at wherever it was last left. gsap.set rather
+          // than a tween so it is exact, and so matchMedia reverts it.
+          onLeave: () => gsap.set(layerEl, { autoAlpha: 0 }),
+          onEnterBack: () => {
+            paintExit(true)
+            gsap.set(layerEl, { autoAlpha: 1 })
+          },
+        })
+      }
+
+      measure()
+
       return () => {
+        exitSt?.kill()
         built.forEach(({ st, tl }) => {
           st.kill()
           tl.kill()

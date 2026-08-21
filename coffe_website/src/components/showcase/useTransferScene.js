@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import addCardCopyReveal from './cardCopyReveal'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -341,53 +342,47 @@ export default function useTransferScene({
         0.15,
       )
 
-      // Contact shadow fade during flight.
+      // Contact shadow: off the ground for the flight, back under the cup as it
+      // sets down. It has to come back now, because the overlay is what the
+      // viewer keeps looking at after it lands — there is no real image
+      // underneath waiting to supply its own shadow. See the handback note
+      // below for why that changed.
       if (transferRefs.shadow.current) {
         tl.fromTo(transferRefs.shadow.current, { opacity: 1 }, { opacity: 0, duration: 0.25 }, 0.15)
-      }
-
-      // The showcase copy reveals on the right as active coffee arrives on the left.
-      const copyItems = copyRef.current?.children
-      if (copyItems?.length) {
         tl.fromTo(
-          copyItems,
-          { autoAlpha: 0, y: 35 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.35,
-            ease: 'power2.out',
-            stagger: 0.06,
-          },
-          0.5,
+          transferRefs.shadow.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.22, ease: 'power2.out', immediateRender: false },
+          0.78,
         )
       }
 
-      // Hand back to the real image, then stand the overlay down — both on the
-      // last frame of the scene, not before it.
+      // The showcase copy assembles on the right as the coffee arrives on the
+      // left — blocks rising, headline word by word. Shared with the two cards
+      // below so all three read the same; see cardCopyReveal.
+      addCardCopyReveal(tl, copyRef.current, 0.5)
+
+      // ── There is no handback any more ────────────────────────────────────
+      // This used to end by cross-cutting to the slot's real image and standing
+      // the overlay down, both on the last frame. It was invisible in theory and
+      // never quite invisible in practice, and it is gone.
       //
-      // The handback cannot be staggered ahead of the end any more. The overlay
-      // now flies to where the slot will be *once pinned*, so for the run-in the
-      // real slot is still below that point, sliding up to meet it. Fading the
-      // real image in early would light it up while it is still short of its
-      // resting place and put two cups on screen at different heights — the
-      // same double image the swap at the hero end is careful to avoid. At
-      // progress 1 the showcase has pinned, the two boxes are identical, and
-      // the exchange is invisible.
-      if (slotRefs.image.current) {
-        tl.fromTo(slotRefs.image.current, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 1)
-      }
-      if (slotRefs.shadow.current) {
-        tl.fromTo(slotRefs.shadow.current, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 1)
-      }
-      // immediateRender: false so this second write to the layer does not stomp
-      // the show tween's from-state while the timeline is being built.
-      tl.fromTo(
-        layer,
-        { autoAlpha: 1 },
-        { autoAlpha: 0, duration: 0.001, immediateRender: false },
-        1,
-      )
+      // The theory said the two boxes are identical at progress 1, so the swap
+      // costs nothing. They are identical to about half a pixel: the flight's
+      // frozen destination comes from offsetLeft/offsetTop, which browsers round
+      // to whole pixels, while the real image sits wherever a fractional grid
+      // column puts it. Half a pixel of disagreement across a hard cut is a
+      // visible shudder, and with a scrubbed playhead the cut is not always one
+      // frame — park the wheel mid-swap and both cups sit there at half opacity,
+      // a hair apart, which is the doubled cup that kept showing up.
+      //
+      // So the overlay simply stays. It is the cup for the whole journey now:
+      // this flight, both flights below it in useJourneyScene, and the ride off
+      // the bottom of the last card. Nothing is ever exchanged for anything, so
+      // there is nothing left to misalign. What used to be the destination
+      // image is held at opacity 0 from here on — still laid out, because the
+      // flight and the legs below still measure it to know where to aim.
+      gsap.set([slotRefs.image.current, slotRefs.shadow.current].filter(Boolean), { opacity: 0 })
 
       // Latch the active product for the whole flight and everything past it.
       // Without this, a trackpad overshoot at the seam flips the rounded

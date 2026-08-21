@@ -1137,6 +1137,16 @@ body {
   color: var(--color-cream);
 }
 
+/* One per word — see CardTitle.jsx. inline-block because the reveal moves them
+   on transform, and transforms do not apply to a plain inline box. No overflow
+   mask on these deliberately: the headline runs at line-height 0.98, so a clip
+   box tight enough to hide a word would also shave the caps and descenders of
+   the ones already in place. */
+.showcase-word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
 .showcase-body {
   margin-top: 1.75rem;
   max-width: 38ch;
@@ -1166,9 +1176,14 @@ body {
     color 0.35s ease;
 }
 
+/* Hovers to a saturated step of *this card's own* drink colour, not one fixed
+   brown — green on the matcha card, berry on the pink one. Set as --cta-hover
+   on each card from the same palette the card was filled with, so the two can
+   never disagree; the fallback keeps the old behaviour if some future caller of
+   .showcase-cta sits outside a card and never sets it. */
 .showcase-cta:hover {
   transform: translateY(-2px);
-  background-color: var(--color-espresso);
+  background-color: var(--cta-hover, var(--color-espresso));
   color: var(--color-cream);
 }
 

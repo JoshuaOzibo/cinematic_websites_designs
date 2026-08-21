@@ -1,4 +1,5 @@
 import { hslString } from './hero/colorUtils'
+import CardTitle from './showcase/CardTitle'
 
 /**
  * A card the travelling cup lands in, and rests in.
@@ -50,6 +51,13 @@ export default function ProductSpotlight({
   const cardFillLight = hslString(cardBase, 0.06, 0.16)
   const cardFill = hslString(cardBase)
   const cardFillDeep = hslString(cardBase, -0.02, -0.14)
+  // The button's hover fill. Saturation pushed well past the card's own so the
+  // pill reads unmistakably as *this drink* — green on the matcha card, berry
+  // on the pink one — rather than as the generic dark brown it used to hover
+  // to. Only slightly darker than the card, because the depth is doing nothing
+  // here: it is the hue that has to carry it, and cream type still clears 4.5:1
+  // on all three at this lightness.
+  const ctaHover = hslString(cardBase, 0.3, -0.08)
 
   const cardClasses = [
     'showcase-card',
@@ -83,16 +91,7 @@ export default function ProductSpotlight({
         <span className="showcase-eyebrow-rule" aria-hidden="true" />
       </p>
 
-      <h2
-        className="font-display showcase-title"
-        style={{
-          fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
-          lineHeight: 0.98,
-          letterSpacing: '-0.025em',
-        }}
-      >
-        {product.tagline}
-      </h2>
+      <CardTitle text={product.tagline} />
 
       <p className="showcase-body">{product.description}</p>
 
@@ -129,6 +128,13 @@ export default function ProductSpotlight({
             '--showcase-fill-light': cardFillLight,
             '--showcase-fill': cardFill,
             '--showcase-fill-deep': cardFillDeep,
+            // Ordinary custom property, deliberately not registered with
+            // @property the way the three fills above are. Those declare
+            // inherits: false so they can animate as colours, which also means
+            // a descendant reading one back gets the registration's initial
+            // value rather than this card's. .showcase-cta is a descendant, so
+            // its hover colour has to travel on a plain, inheriting property.
+            '--cta-hover': ctaHover,
           }}
         >
           {product.garnish?.map((piece) => (
