@@ -42,6 +42,7 @@ export default function App() {
   // index, so reordering COFFEE_PRODUCTS can't silently point this at the
   // wrong drink.
   const greenIndex = COFFEE_PRODUCTS.findIndex((p) => p.id === 'green')
+  const brownIndex = COFFEE_PRODUCTS.findIndex((p) => p.id === 'brown')
 
   return (
     <>
@@ -54,7 +55,8 @@ export default function App() {
           handoffRef={heroHandoffRef}
         />
         <Showcase motion={motion} palette={palette} heroTrackRef={heroTrackRef} />
-        <ProductSpotlight product={COFFEE_PRODUCTS[greenIndex]} accent={palette[greenIndex]} />
+        <ProductSpotlight product={COFFEE_PRODUCTS[greenIndex]} accent={palette[greenIndex]} reverse={true} lapBottom={true} />
+        <ProductSpotlight product={COFFEE_PRODUCTS[brownIndex]} accent={palette[brownIndex]} reverse={false} />
         <About />
         <Collections />
         <Highlight />
