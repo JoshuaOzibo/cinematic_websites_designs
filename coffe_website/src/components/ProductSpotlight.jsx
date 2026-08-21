@@ -1,26 +1,51 @@
-import Reveal from './Reveal'
 import { hslString } from './hero/colorUtils'
 
 /**
- * A second, static instance of the showcase card — for a product that never
- * gets to fly in from the hero.
+ * A card the travelling cup lands in, and rests in.
  *
- * Showcase.jsx's card only ever shows one product: the hero's carousel always
- * finishes turning on the last entry in COFFEE_PRODUCTS right as the handoff
- * begins, so every other product's tagline, description and garnish, however
- * complete, is otherwise unreachable by scrolling the page normally. Rather
- * than rebuild that card, this reuses its markup and CSS — .showcase-card,
- * .showcase-grid, .showcase-eyebrow, .showcase-garnish, and so on all carry no
- * dependency on the scroll-pin machinery, so they drop straight into an
- * ordinary section with none of it: no ScrollTrigger, no cup-transfer overlay,
- * just Reveal's fade-in, the same one every other section on the page uses.
+ * Structurally this is the showcase over again: a track one viewport tall plus
+ * a pin, a sticky panel inside it, and the same .showcase-card and friends
+ * filling that panel. Two of these follow the showcase, and together the three
+ * are one continuous run of colour down the page — see the lap-top / lap-bottom
+ * modifiers, and the note in useJourneyScene about why their seams are load
+ * bearing rather than decorative.
+ *
+ * The pin is what gives the cup somewhere to stand. It arrives on the frame
+ * this panel sticks, then this card holds the viewport for --spotlight-pin of
+ * scroll with the cup motionless in it, and only when the panel releases does
+ * the next leg begin. Sticky rather than ScrollTrigger's own pin, for the
+ * reasons set out in Showcase.jsx: the panels either side of this one are
+ * sticky too, and pinned viewports that meet mid-scene have to rasterise the
+ * same way.
+ *
+ * ── The slot is empty on purpose ──────────────────────────────────────────
+ * The cup in this card is not this card's image. It is the same overlay cup
+ * that flew out of the hero, carried on down by useJourneyScene, changing drink
+ * on the way. The image below is still rendered and still laid out, because it
+ * is the box the flight aims at, but the scene holds it at opacity 0 — every
+ * card except the last one, where the cup stops and the real image takes over
+ * for good. `refs` is how the scene reaches all of that: the card it triggers
+ * on, the slot image it aims at, the shadow that appears with it, and the copy
+ * it reveals as the cup arrives.
+ *
+ * Which is also why there is no Reveal wrapper here, unlike every other section
+ * on the page. Two reasons, and the second is the hard one: the copy's entrance
+ * is the cup's arrival now, scrubbed by the same scroll rather than fired by a
+ * separate observer; and Reveal animates a transform on the wrapper, which
+ * getBoundingClientRect would fold into the slot's position and hand the flight
+ * a destination that is 28px off and drifting.
  *
  * `accent` is that product's entry from the palette App resolved from the
- * photos — the same one Showcase.jsx reads for its own card, kept as one
- * source so this card and the real one never disagree about the drink's
- * colour.
+ * photos — the same one Showcase.jsx reads for its own card, kept as one source
+ * so this card and the real one never disagree about the drink's colour.
  */
-export default function ProductSpotlight({ product, accent, reverse = true, lapBottom = false }) {
+export default function ProductSpotlight({
+  product,
+  accent,
+  refs,
+  reverse = true,
+  lapBottom = false,
+}) {
   const cardBase = { ...accent, l: product.cardLightness }
   const cardFillLight = hslString(cardBase, 0.06, 0.16)
   const cardFill = hslString(cardBase)
@@ -36,135 +61,103 @@ export default function ProductSpotlight({ product, accent, reverse = true, lapB
     .filter(Boolean)
     .join(' ')
 
+  const slot = (
+    <div className={`showcase-slot${reverse ? ' showcase-slot--reverse' : ''}`}>
+      <span className="showcase-cup-shadow" ref={refs.shadow} aria-hidden="true" />
+      <img
+        src={product.image}
+        alt={product.alt}
+        className="showcase-cup-img"
+        width={product.width}
+        height={product.height}
+        draggable="false"
+        ref={refs.image}
+      />
+    </div>
+  )
+
+  const copy = (
+    <div className="showcase-copy" ref={refs.copy}>
+      <p className="showcase-eyebrow">
+        {product.name}
+        <span className="showcase-eyebrow-rule" aria-hidden="true" />
+      </p>
+
+      <h2
+        className="font-display showcase-title"
+        style={{
+          fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
+          lineHeight: 0.98,
+          letterSpacing: '-0.025em',
+        }}
+      >
+        {product.tagline}
+      </h2>
+
+      <p className="showcase-body">{product.description}</p>
+
+      <a href="#notes" className="showcase-cta">
+        Tasting notes
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
+          <path
+            d="M1 6h13m0 0L9.5 1.5M14 6l-4.5 4.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </a>
+    </div>
+  )
+
   return (
     <section
       id={`spotlight-${product.id}`}
-      className={`spotlight-root relative overflow-hidden bg-cream pt-0 ${
-        lapBottom ? 'pb-0' : 'pb-16 lg:pb-24'
-      } w-full`}
+      ref={refs.root}
+      className={`spotlight-root w-full ${lapBottom ? '' : 'mb-16 lg:mb-24'}`}
+      // A track, exactly like the showcase's: one viewport for the panel plus
+      // the pin it rests through. Margin and never padding for the breathing
+      // room under the last card — padding sits inside the sticky panel's
+      // containing block and would read as extra pin instead of as cream.
+      style={{ height: 'calc(100svh + var(--spotlight-pin))' }}
     >
-      <div className="spotlight-container relative w-full max-w-none">
-        <Reveal className="w-full">
-          <div
-            className={cardClasses}
-            style={{
-              '--showcase-fill-light': cardFillLight,
-              '--showcase-fill': cardFill,
-              '--showcase-fill-deep': cardFillDeep,
-            }}
-          >
-            {product.garnish?.map((piece) => (
-              <img
-                key={piece.image}
-                src={piece.image}
-                alt={piece.alt}
-                className={`showcase-garnish showcase-garnish--${piece.placement}`}
-                width={piece.width}
-                height={piece.height}
-                draggable="false"
-                aria-hidden="true"
-              />
-            ))}
+      <div className="spotlight-container w-full max-w-none">
+        <div
+          className={cardClasses}
+          style={{
+            '--showcase-fill-light': cardFillLight,
+            '--showcase-fill': cardFill,
+            '--showcase-fill-deep': cardFillDeep,
+          }}
+        >
+          {product.garnish?.map((piece) => (
+            <img
+              key={piece.image}
+              src={piece.image}
+              alt={piece.alt}
+              className={`showcase-garnish showcase-garnish--${piece.placement}`}
+              width={piece.width}
+              height={piece.height}
+              draggable="false"
+              aria-hidden="true"
+            />
+          ))}
 
-            <div className={`showcase-grid ${reverse ? 'showcase-grid--reverse' : ''}`}>
-              {reverse ? (
-                <>
-                  <div className="showcase-copy">
-                    <p className="showcase-eyebrow">
-                      {product.name}
-                      <span className="showcase-eyebrow-rule" aria-hidden="true" />
-                    </p>
-
-                    <h2
-                      className="font-display showcase-title"
-                      style={{
-                        fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
-                        lineHeight: 0.98,
-                        letterSpacing: '-0.025em',
-                      }}
-                    >
-                      {product.tagline}
-                    </h2>
-
-                    <p className="showcase-body">{product.description}</p>
-
-                    <a href="#notes" className="showcase-cta">
-                      Tasting notes
-                      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
-                        <path
-                          d="M1 6h13m0 0L9.5 1.5M14 6l-4.5 4.5"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </a>
-                  </div>
-
-                  <div className="showcase-slot showcase-slot--reverse">
-                    <span className="showcase-cup-shadow" aria-hidden="true" />
-                    <img
-                      src={product.image}
-                      alt={product.alt}
-                      className="showcase-cup-img"
-                      width={product.width}
-                      height={product.height}
-                      draggable="false"
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="showcase-slot">
-                    <span className="showcase-cup-shadow" aria-hidden="true" />
-                    <img
-                      src={product.image}
-                      alt={product.alt}
-                      className="showcase-cup-img"
-                      width={product.width}
-                      height={product.height}
-                      draggable="false"
-                    />
-                  </div>
-
-                  <div className="showcase-copy">
-                    <p className="showcase-eyebrow">
-                      {product.name}
-                      <span className="showcase-eyebrow-rule" aria-hidden="true" />
-                    </p>
-
-                    <h2
-                      className="font-display showcase-title"
-                      style={{
-                        fontSize: 'clamp(2rem, 4.4vw, 3.9rem)',
-                        lineHeight: 0.98,
-                        letterSpacing: '-0.025em',
-                      }}
-                    >
-                      {product.tagline}
-                    </h2>
-
-                    <p className="showcase-body">{product.description}</p>
-
-                    <a href="#notes" className="showcase-cta">
-                      Tasting notes
-                      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
-                        <path
-                          d="M1 6h13m0 0L9.5 1.5M14 6l-4.5 4.5"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </a>
-                  </div>
-                </>
-              )}
-            </div>
+          <div className={`showcase-grid${reverse ? ' showcase-grid--reverse' : ''}`}>
+            {reverse ? (
+              <>
+                {copy}
+                {slot}
+              </>
+            ) : (
+              <>
+                {slot}
+                {copy}
+              </>
+            )}
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   )

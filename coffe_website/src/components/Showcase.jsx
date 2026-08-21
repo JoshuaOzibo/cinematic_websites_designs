@@ -5,7 +5,7 @@ import TransferCup from './showcase/TransferCup'
 import useTransferScene from './showcase/useTransferScene'
 
 /**
- * Where the hero's cup lands.
+ * Where the hero's cup lands — and, one card later, leaves again.
  *
  * This section is the second half of one continuous scene. Its left slot is the
  * flight's destination: the image sitting in it is invisible until the very end
@@ -14,6 +14,12 @@ import useTransferScene from './showcase/useTransferScene'
  * because the flight reads its rect live every frame to know where it is
  * aiming. That is also why it is opacity and never display: none, which would
  * report a zero box and land the cup in the top left corner.
+ *
+ * It is not the end of the journey, though. The moment this card starts to
+ * scroll away, useJourneyScene takes the same cup back off it and carries it
+ * down into the two spotlight cards below. That is why both the overlay's refs
+ * and this slot's refs are owned by App rather than created here: three
+ * sections hand the one cup between them, so one place has to hold the handles.
  *
  * ── Pinning deviates from CLAUDE.md on purpose ────────────────────────────
  * The workspace rule is GSAP sticky-stacks use `pin: true`. This one uses CSS
@@ -67,23 +73,9 @@ import useTransferScene from './showcase/useTransferScene'
  * images rather than one. Optional per product because not every one has a
  * cutout shot yet — see garnish in the data file.
  */
-export default function Showcase({ motion, palette, heroTrackRef }) {
+export default function Showcase({ motion, palette, heroTrackRef, transferRefs, slotRefs }) {
   const trackRef = useRef(null)
-  const copyRef = useRef(null)
-
-  const transferRefs = useRef({
-    layer: { current: null },
-    cup: { current: null },
-    tilt: { current: null },
-    crop: { current: null },
-    shadow: { current: null },
-    image: { current: null },
-  }).current
-
-  const slotRefs = useRef({
-    image: { current: null },
-    shadow: { current: null },
-  }).current
+  const copyRef = slotRefs.copy
 
   // Which cup makes the journey.
   //
@@ -144,7 +136,7 @@ export default function Showcase({ motion, palette, heroTrackRef }) {
 
   return (
     <>
-      <TransferCup product={product} refs={transferRefs} />
+      <TransferCup product={product} products={COFFEE_PRODUCTS} refs={transferRefs} />
 
       <section
         id="showcase"

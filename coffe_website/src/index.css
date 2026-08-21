@@ -772,6 +772,28 @@ body {
   user-select: none;
 }
 
+/* The drinks the cup has not become yet.
+
+   Absolute, so they stay out of the crop box's measurement — that box is sized
+   by the one photo in normal flow, and the flight's scale is derived from it,
+   so a second in-flow image would size the box to the taller of the two and
+   throw the whole handoff off by a few percent of cup height. See the note in
+   TransferCup.jsx.
+
+   Height from the box rather than from --cup-h, and centred on its axis rather
+   than aligned to its left edge: the three photos have different aspect ratios,
+   and the slot images down the page all render at one shared height with their
+   width following the photo. Matching that here is what makes the last morph
+   line up with the real image it hands back to. */
+.transfer-cup-img--morph {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 100%;
+  transform: translateX(-50%);
+  opacity: 0;
+}
+
 .transfer-cup-shadow {
   position: absolute;
   left: 50%;
@@ -801,18 +823,27 @@ body {
   background-color: var(--color-cream);
 }
 
-/* A static, non-pinned section that reuses the card content classes below
-   (.showcase-card, .showcase-grid, .showcase-slot, .showcase-garnish, …) —
-   see ProductSpotlight.jsx for why a product needs this instead of the real
-   .showcase-root. Those classes are plain and portable except for two: the
-   cup image reads --showcase-cup-h and the slot reads --showcase-slot-inset,
-   both declared as custom properties scoped to .showcase-root, which this
-   section is not a descendant of. Redeclared here with the same values —
-   keep the two in sync if either changes. --showcase-pin is deliberately not
-   repeated: nothing here pins, so it would do nothing but invite confusion. */
+/* The two cards below the showcase, which are the same thing again: a track,
+   a sticky panel, a pin the cup rests through. They reuse the card content
+   classes below (.showcase-card, .showcase-grid, .showcase-slot,
+   .showcase-garnish, …), which are plain and portable except for two — the cup
+   image reads --showcase-cup-h and the slot reads --showcase-slot-inset, both
+   scoped to .showcase-root, which this section is not a descendant of.
+   Redeclared here with the same values; keep the two in sync if either changes.
+
+   The track's own height is set inline by ProductSpotlight from
+   --spotlight-pin, the way .showcase-root's is, so the pin is one number per
+   breakpoint and the flight timing follows it. */
 .spotlight-root {
+  --spotlight-pin: 90svh;
   --showcase-cup-h: clamp(300px, min(62vh, 34vw), 640px);
   --showcase-slot-inset: clamp(0.5rem, 2vw, 2.5rem);
+
+  position: relative;
+  /* clip, not hidden: `hidden` would make this a scroll container and the
+     sticky panel below would silently stop sticking. */
+  overflow-x: clip;
+  background-color: var(--color-cream);
 }
 
 /* svh, not dvh: the track above is measured in svh, and a viewport that can
@@ -823,7 +854,8 @@ body {
   padding-inline: clamp(1rem, 2.5vw, 2.5rem);
 }
 
-.showcase-viewport {
+.showcase-viewport,
+.spotlight-container {
   position: sticky;
   top: 0;
   display: flex;
@@ -832,7 +864,24 @@ body {
   align-items: center;
   min-height: 100svh;
   overflow: clip;
+}
+
+.showcase-viewport {
   padding-block: 4.5rem 0rem;
+}
+
+/* No cream above these two, unlike the showcase: their cards have to meet the
+   card above at a seam, so the panel is the card and the card is the panel.
+   The content stays bottom-aligned inside it rather than centring, which is
+   what keeps the cup at exactly the height it sits at in the showcase — the
+   flight between them is then a level traverse — and what keeps the garnish,
+   which hangs off the card's own bottom edge, in the same relationship to the
+   cup that it was composed in. */
+.spotlight-container>.showcase-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100svh;
 }
 
 /* Registered so the three custom properties below can transition as colours —
@@ -1144,6 +1193,7 @@ body {
   }
 
   .spotlight-root {
+    --spotlight-pin: 80svh;
     --showcase-cup-h: clamp(180px, min(34vh, 44vw), 380px);
   }
 
@@ -1190,6 +1240,7 @@ body {
   }
 
   .spotlight-root {
+    --spotlight-pin: 70svh;
     --showcase-cup-h: clamp(160px, min(30vh, 58vw), 300px);
   }
 
@@ -1252,6 +1303,14 @@ body {
 
   .showcase-root {
     --showcase-pin: 0px;
+  }
+
+  /* Same for the two cards below it: no journey, so no pin to rest through.
+     Each collapses to its own sticky panel and simply scrolls past, with its
+     own product in its own slot — useJourneyScene never builds under this
+     query, so it never hides them. */
+  .spotlight-root {
+    --spotlight-pin: 0px;
   }
 
   .transfer-layer {
