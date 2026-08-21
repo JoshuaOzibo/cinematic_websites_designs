@@ -818,15 +818,21 @@ body {
 /* svh, not dvh: the track above is measured in svh, and a viewport that can
    grow taller than the track it sticks inside eats its own pin distance. The
    composition is sized off vh below so it always fits inside this box. */
+.showcase-viewport,
+.spotlight-container {
+  padding-inline: clamp(1rem, 2.5vw, 2.5rem);
+}
+
 .showcase-viewport {
   position: sticky;
   top: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   min-height: 100svh;
   overflow: clip;
-  padding-block: 5.5rem 3rem;
-  padding-inline: clamp(0.9rem, 2.6vw, 3rem);
+  padding-block: 4.5rem 0rem;
 }
 
 /* Registered so the three custom properties below can transition as colours —
@@ -872,10 +878,10 @@ body {
   position: relative;
   isolation: isolate;
   width: 100%;
-  max-width: 1440px;
+  max-width: none;
   margin-inline: auto;
   border-radius: clamp(1.5rem, 3vw, 2.75rem);
-  padding: clamp(1.5rem, 3.2vw, 3.25rem);
+  padding: clamp(2rem, 4.2vw, 4rem);
   overflow: clip;
   /* Front to back: a soft highlight where the light would fall, a dark
      vignette to ground the bottom edge, then the diagonal wash between the
@@ -897,6 +903,16 @@ body {
 .showcase-card--full-width {
   max-width: none;
   width: 100%;
+}
+
+.showcase-card--lap-top {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.showcase-card--lap-bottom {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
 /* Reversed card: dark green on left, light highlight on right behind cup */

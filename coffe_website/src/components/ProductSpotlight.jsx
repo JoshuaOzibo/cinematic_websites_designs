@@ -29,12 +29,12 @@ export default function ProductSpotlight({ product, accent }) {
   return (
     <section
       id={`spotlight-${product.id}`}
-      className="spotlight-root relative overflow-hidden bg-cream py-16 lg:py-24 w-full"
+      className="spotlight-root relative overflow-hidden bg-cream pt-0 pb-16 lg:pb-24 w-full"
     >
-      <div className="relative w-full max-w-none px-4 sm:px-8 lg:px-12">
-        <Reveal>
+      <div className="spotlight-container relative w-full max-w-none">
+        <Reveal className="w-full">
           <div
-            className="showcase-card showcase-card--reverse showcase-card--full-width"
+            className="showcase-card showcase-card--reverse showcase-card--full-width showcase-card--lap-top"
             style={{
               '--showcase-fill-light': cardFillLight,
               '--showcase-fill': cardFill,

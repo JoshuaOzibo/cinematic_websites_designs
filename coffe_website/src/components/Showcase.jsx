@@ -154,7 +154,7 @@ export default function Showcase({ motion, palette, heroTrackRef }) {
       >
         <div className="showcase-viewport">
           <div
-            className="showcase-card"
+            className="showcase-card showcase-card--full-width showcase-card--lap-bottom"
             style={{
               '--showcase-fill-light': cardFillLight,
               '--showcase-fill': cardFill,
