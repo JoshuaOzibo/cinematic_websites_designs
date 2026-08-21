@@ -35,16 +35,20 @@
  * decodes (so nothing shifts), and the handoff measures the cup's laid-out
  * width to work out its flight scale, which reads 0 on an undecoded image.
  *
- * `garnish` is an optional cutout — petals, fruit, ice — that sits behind the
- * cup on the showcase card. `null` on a product that has no cutout shot yet, so
- * the card still renders (its gradient fill is not conditional on this) just
- * without the prop. Its own width/height are separate from the cup's for the
- * same reason: the aspect ratios have nothing to do with each other.
+ * `garnish` is an optional list of cutouts — petals, fruit, ice — that sit
+ * behind the cup on the showcase card. `null` on a product with no cutout shot
+ * yet, so the card still renders (its gradient fill is not conditional on this)
+ * just without the props. A list rather than one image because a product can
+ * be shot as more than one cluster at different spots around the cup: each
+ * entry's `placement` names which one — see the `.showcase-garnish--*`
+ * modifiers in index.css for what each placement actually does. Every entry's
+ * own width/height are separate from the cup's and from each other, since
+ * their aspect ratios have nothing to do with either.
  */
 export const COFFEE_PRODUCTS = [
   {
     id: 'green',
-    name: 'Matcha Cloud',
+    name: 'Green Tea Cream',
     image: '/images/coffee_green.webp',
     alt: 'Iced matcha latte in a clear coffeelo cup',
     width: 1023,
@@ -55,11 +59,26 @@ export const COFFEE_PRODUCTS = [
     // Per-photo height trim: the cups are shot at different crops, so this is
     // what makes all three read as the same physical cup on screen.
     sizeFactor: 0.97,
-    garnish: null,
-    note: 'Uji leaf, stone ground the morning it ships and whisked thin over ice with oat milk. Grassy and sweet, never chalky.',
-    tagline: 'Stone milled at dawn, whisked to cloud',
+    garnish: [
+      {
+        image: '/images/showcase-garnish-green-leaf.webp',
+        alt: '',
+        width: 412,
+        height: 499,
+        placement: 'left',
+      },
+      {
+        image: '/images/showcase-garnish-green-kiwi.webp',
+        alt: '',
+        width: 259,
+        height: 354,
+        placement: 'right',
+      },
+    ],
+    note: 'Premium matcha shaken with green tea and ripe kiwi, floated with lightly sweetened cream. Earthy and sweet, smooth underneath.',
+    tagline: 'Green Tea, Kiwi and Cream',
     description:
-      'Ceremonial grade leaf from Uji, ground on granite the morning it ships. Whisked thin over ice with oat milk, so it stays grassy and sweet instead of turning chalky.',
+      'A premium Matcha shaken with green tea and ripe kiwi, then floated with lightly sweetened cream. Earthy and sweet, smooth underneath, and green the whole way down.',
   },
   {
     id: 'brown',
@@ -89,12 +108,15 @@ export const COFFEE_PRODUCTS = [
     lightness: 0.33,
     cardLightness: 0.45,
     sizeFactor: 0.97,
-    garnish: {
-      image: '/images/showcase-garnish-pink.webp',
-      alt: '',
-      width: 1471,
-      height: 720,
-    },
+    garnish: [
+      {
+        image: '/images/showcase-garnish-pink.webp',
+        alt: '',
+        width: 1471,
+        height: 720,
+        placement: 'left',
+      },
+    ],
     note: 'Washed Gesha shaken with hibiscus and white peach, then floated with lightly sweetened cream. Tart on top, round underneath.',
     tagline: 'Hibiscus, stone fruit and cream',
     description:

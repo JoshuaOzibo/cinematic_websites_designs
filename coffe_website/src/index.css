@@ -801,6 +801,20 @@ body {
   background-color: var(--color-cream);
 }
 
+/* A static, non-pinned section that reuses the card content classes below
+   (.showcase-card, .showcase-grid, .showcase-slot, .showcase-garnish, …) —
+   see ProductSpotlight.jsx for why a product needs this instead of the real
+   .showcase-root. Those classes are plain and portable except for two: the
+   cup image reads --showcase-cup-h and the slot reads --showcase-slot-inset,
+   both declared as custom properties scoped to .showcase-root, which this
+   section is not a descendant of. Redeclared here with the same values —
+   keep the two in sync if either changes. --showcase-pin is deliberately not
+   repeated: nothing here pins, so it would do nothing but invite confusion. */
+.spotlight-root {
+  --showcase-cup-h: clamp(300px, min(62vh, 34vw), 640px);
+  --showcase-slot-inset: clamp(0.5rem, 2vw, 2.5rem);
+}
+
 /* svh, not dvh: the track above is measured in svh, and a viewport that can
    grow taller than the track it sticks inside eats its own pin distance. The
    composition is sized off vh below so it always fits inside this box. */
@@ -880,12 +894,17 @@ body {
     --showcase-fill-deep 0.6s ease;
 }
 
-/* The prop shot behind the cup — petals, fruit, ice — bled toward the card's
-   left edge the way it sits in the reference. Sized and placed as a fraction
-   of the card rather than the left column, so it can run a little way under
-   where the cup stands without caring about the grid's own track widths.
+/* The prop shots around the cup — petals, fruit, ice — the way they sit in the
+   reference. Positioned as a fraction of the whole card rather than of either
+   grid column, so a piece can run a little way under where the cup stands
+   without caring about the grid's own track widths.
 
-   z-index: -1 puts it behind .showcase-grid's normal-flow content. A
+   No aspect-ratio here: each piece keeps its own, from the width/height
+   attributes Showcase.jsx sets from that entry's own image dimensions, and
+   `height: auto` on the shared class lets the browser derive it from those
+   rather than this rule having to know it.
+
+   z-index: -1 puts every piece behind .showcase-grid's normal-flow content. A
    positioned element with z-index: auto would otherwise paint *above*
    non-positioned in-flow content regardless of DOM order — the negative index
    is what actually sends it behind, and isolation: isolate on .showcase-card
@@ -893,17 +912,31 @@ body {
    background or anything further up the page. */
 .showcase-garnish {
   position: absolute;
-  left: clamp(-1.5rem, -2vw, -0.5rem);
   bottom: clamp(0.5rem, 4vh, 2.5rem);
   z-index: -1;
-  width: clamp(240px, 36vw, 480px);
   height: auto;
-  aspect-ratio: 1471 / 720;
   object-fit: contain;
   object-position: left bottom;
   pointer-events: none;
   user-select: none;
   opacity: 0.92;
+}
+
+/* Bled toward the card's left edge, behind and to the side of the cup. */
+.showcase-garnish--left {
+  left: clamp(-1.5rem, -2vw, -0.5rem);
+  width: clamp(240px, 36vw, 480px);
+}
+
+/* Sits in the gap between the two grid columns, roughly where the cup's own
+   column gives way to the copy's — a smaller, second cluster the way the
+   reference splits its props either side of the cup rather than piling them
+   all on one side. 43% is tuned against .showcase-grid's own 0.85fr/1fr split
+   plus its gap, not an exact boundary read off the grid — retune together if
+   either changes. */
+.showcase-garnish--right {
+  left: 43%;
+  width: clamp(130px, 14vw, 210px);
 }
 
 .showcase-grid {
@@ -1041,6 +1074,10 @@ body {
     --showcase-cup-h: clamp(180px, min(34vh, 44vw), 380px);
   }
 
+  .spotlight-root {
+    --showcase-cup-h: clamp(180px, min(34vh, 44vw), 380px);
+  }
+
   .showcase-viewport {
     padding-block: 4.5rem 2rem;
   }
@@ -1074,6 +1111,10 @@ body {
 @media (max-width: 640px) {
   .showcase-root {
     --showcase-pin: 70svh;
+    --showcase-cup-h: clamp(160px, min(30vh, 58vw), 300px);
+  }
+
+  .spotlight-root {
     --showcase-cup-h: clamp(160px, min(30vh, 58vw), 300px);
   }
 

@@ -55,13 +55,17 @@ import useTransferScene from './showcase/useTransferScene'
  * positioned box is invisible to it.
  *
  * ── The garnish ───────────────────────────────────────────────────────────
- * An optional cutout — petals, fruit, ice — behind the cup, giving the left
- * side of the card the same "shot on a surface" feel as the reference instead
- * of empty fill colour. Absolutely positioned within the card, one stacking
- * context below the grid (see .showcase-garnish in index.css for how that
- * z-index is scoped so it can't leak into the page's global stack), so it
- * never competes with the cup or the copy. Optional because only one product
- * has a cutout shot so far — see garnish in the data file.
+ * An optional list of cutouts — petals, fruit, ice — around the cup, giving the
+ * card the same "shot on a surface" feel as the reference instead of empty fill
+ * colour. Each is absolutely positioned within the card, one stacking context
+ * below the grid (see .showcase-garnish in index.css for how that negative
+ * z-index is scoped so it can't leak into the page's global stack), so none of
+ * them ever compete with the cup or the copy. `placement` on each entry picks
+ * which `.showcase-garnish--*` modifier positions it — a product can be shot as
+ * more than one cluster sitting at different spots around the cup, the way the
+ * green product's leaf-and-orchid group and its kiwi slice are two separate
+ * images rather than one. Optional per product because not every one has a
+ * cutout shot yet — see garnish in the data file.
  */
 export default function Showcase({ motion, palette, heroTrackRef }) {
   const trackRef = useRef(null)
@@ -157,17 +161,18 @@ export default function Showcase({ motion, palette, heroTrackRef }) {
               '--showcase-fill-deep': cardFillDeep,
             }}
           >
-            {product.garnish && (
+            {product.garnish?.map((piece) => (
               <img
-                src={product.garnish.image}
-                alt={product.garnish.alt}
-                className="showcase-garnish"
-                width={product.garnish.width}
-                height={product.garnish.height}
+                key={piece.image}
+                src={piece.image}
+                alt={piece.alt}
+                className={`showcase-garnish showcase-garnish--${piece.placement}`}
+                width={piece.width}
+                height={piece.height}
                 draggable="false"
                 aria-hidden="true"
               />
-            )}
+            ))}
 
             <div className="showcase-grid">
               <div className="showcase-slot">

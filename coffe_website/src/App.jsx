@@ -5,6 +5,7 @@ import useHeroMotion from './components/hero/useHeroMotion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Showcase from './components/Showcase'
+import ProductSpotlight from './components/ProductSpotlight'
 import About from './components/About'
 import Collections from './components/Collections'
 import Highlight from './components/Highlight'
@@ -35,6 +36,12 @@ export default function App() {
     handoffRef: heroHandoffRef,
   })
   const palette = useAccentPalette(COFFEE_PRODUCTS)
+  // The showcase above only ever flies in the last product in the array (see
+  // ProductSpotlight's own doc comment) — the rest get a static section of
+  // their own instead of going unseen. Looked up by id, not hardcoded to an
+  // index, so reordering COFFEE_PRODUCTS can't silently point this at the
+  // wrong drink.
+  const greenIndex = COFFEE_PRODUCTS.findIndex((p) => p.id === 'green')
 
   return (
     <>
@@ -47,6 +54,7 @@ export default function App() {
           handoffRef={heroHandoffRef}
         />
         <Showcase motion={motion} palette={palette} heroTrackRef={heroTrackRef} />
+        <ProductSpotlight product={COFFEE_PRODUCTS[greenIndex]} accent={palette[greenIndex]} />
         <About />
         <Collections />
         <Highlight />
