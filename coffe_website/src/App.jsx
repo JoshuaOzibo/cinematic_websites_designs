@@ -33,9 +33,13 @@ export default function App() {
 
      `unveiled`  the counter has landed and nothing is moving. Drop .site-veiled
                  here so the hero takes its first paint during the one still
-                 beat in the sequence, under a panel that is still opaque.
-     `revealing` the panel starts travelling. Start the navbar and hero
-                 entrances, so the page assembles as it is uncovered.
+                 beat in the sequence, under a panel that is still opaque. This
+                 is also what *arms* the navbar and hero entrances: they build
+                 their timelines paused, which is what puts every element into
+                 its from-state while nobody can see it happen.
+     `revealing` the panel has travelled far enough to uncover the navbar's
+                 strip. Play those timelines. See revealTiming.js for the order
+                 the page then arrives in.
      `introDone` the panel has gone. Unmount it and re-measure. */
   const [unveiled, setUnveiled] = useState(false)
   const [revealing, setRevealing] = useState(false)
@@ -95,13 +99,14 @@ export default function App() {
       {!introDone && (
         <Intro onUnveil={unveilSite} onReveal={startReveal} onDone={finishIntro} />
       )}
-      <Navbar ready={revealing} />
+      <Navbar armed={unveiled} ready={revealing} />
       <main className={unveiled ? undefined : 'site-veiled'}>
         <Hero
           motion={motion}
           palette={palette}
           trackRef={heroTrackRef}
           handoffRef={heroHandoffRef}
+          armed={unveiled}
           ready={revealing}
         />
         <Showcase

@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { REVEAL } from '../revealTiming'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -10,10 +11,11 @@ const LINKS = [
   { label: 'About', href: '#about' },
 ]
 
-export default function Navbar({ ready }) {
+export default function Navbar({ armed, ready }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const headerRef = useRef(null)
+  const tlRef = useRef(null)
 
   useLayoutEffect(() => {
     const target = document.getElementById('showcase')
@@ -30,53 +32,58 @@ export default function Navbar({ ready }) {
     return () => st.kill()
   }, [])
 
-  /* Cued by Intro on the frame its curtain starts travelling. The bar is the
-     last strip of the page the black uncovers, so it drops in a beat behind
-     the hero rather than alongside it.
+  /* The bar arrives first, and everything in it comes down from above: the
+     logo, then the labels out of their clip boxes, then the actions. It is the
+     last strip of the page the rising curtain uncovers, which is exactly why
+     it leads — the eye is already at the top when the black clears it.
 
-     No resting state in CSS: until `ready` the navbar is simply itself, sitting
-     unseen behind an opaque panel. Hiding it in the stylesheet instead would
-     mean a failed intro leaves the site with no navigation at all.
+     Built at `armed` and played at `ready`, for the same reason the hero's
+     entrance is. See the note in useHeroEntrance.js.
+
+     No resting state in CSS. Until the intro arms this, the navbar is simply
+     itself, sitting unseen behind an opaque panel; hiding it in the stylesheet
+     instead would mean a failed intro leaves the site with no navigation.
 
      clearProps is named rather than 'all' so the tween cannot strip the
      background/backdrop utilities the scrolled state transitions between. */
   useLayoutEffect(() => {
-    if (!ready || !headerRef.current) return undefined
+    if (!armed || !headerRef.current) return undefined
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
 
     const ctx = gsap.context(() => {
       const clear = 'transform,opacity,visibility'
-      gsap
-        .timeline({ defaults: { force3D: true, ease: 'power3.out' } })
-        .fromTo(
-          headerRef.current,
-          { y: -22, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.9, clearProps: clear },
-          0,
-        )
+      tlRef.current = gsap
+        .timeline({ paused: true, defaults: { force3D: true, ease: 'power3.out' } })
         .fromTo(
           '#nav-logo',
-          { autoAlpha: 0, scale: 0.72 },
-          { autoAlpha: 1, scale: 1, duration: 0.75, ease: 'back.out(1.6)', clearProps: clear },
-          0.18,
+          { autoAlpha: 0, y: -26 },
+          { autoAlpha: 1, y: 0, duration: 0.7, clearProps: clear },
+          REVEAL.navbar,
         )
-        /* Out of the clip boxes on the list items, so the labels rise into the
-           bar the way the intro's headline rose into the frame. */
+        /* Down into the clip boxes on the anchors, not up out of them: the
+           whole bar is arriving from off the top edge. */
         .fromTo(
           '.nav-label',
-          { yPercent: 120, y: 0 },
-          { yPercent: 0, duration: 0.85, ease: 'expo.out', stagger: 0.08, clearProps: clear },
-          0.26,
+          { yPercent: -120, y: 0 },
+          { yPercent: 0, duration: 0.8, ease: 'expo.out', stagger: 0.07, clearProps: clear },
+          REVEAL.navbar + 0.08,
         )
         .fromTo(
           '.nav-action',
-          { autoAlpha: 0, y: 14 },
-          { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.09, clearProps: clear },
-          0.42,
+          { autoAlpha: 0, y: -22 },
+          { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.08, clearProps: clear },
+          REVEAL.navbar + 0.2,
         )
     }, headerRef)
 
-    return () => ctx.revert()
+    return () => {
+      tlRef.current = null
+      ctx.revert()
+    }
+  }, [armed])
+
+  useLayoutEffect(() => {
+    if (ready) tlRef.current?.play()
   }, [ready])
 
   return (
@@ -107,9 +114,10 @@ export default function Navbar({ ready }) {
             <li key={link.label}>
               {/* The clip box lives on the anchor and the travelling element is
                   the span inside it, not the other way round: .link-underline
-                  paints its rule on the anchor's own background box, and an
-                  overflow: hidden fitted to these all-caps labels would shave
-                  it off at the exact pixel it sits on. */}
+                  paints its rule on the anchor's own background box, and
+                  overflow clips descendants, never the element's own
+                  background — so the underline survives a box fitted tight to
+                  these all-caps labels. */}
               <a
                 href={link.href}
                 className="link-underline block overflow-hidden text-[0.74rem] font-semibold uppercase tracking-[0.14em] text-cream/85 transition-colors hover:text-cream"

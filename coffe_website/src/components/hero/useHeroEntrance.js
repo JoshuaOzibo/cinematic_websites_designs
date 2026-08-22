@@ -1,10 +1,23 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
+import { REVEAL } from '../../revealTiming'
 
 /* ── The hero's arrival ────────────────────────────────────────────────────
-   Runs once, cued by Intro the frame its curtain starts travelling, so the
-   hero is assembling itself as it is uncovered rather than snapping into place
-   after the black has gone.
+   Beans fall in from above, COFFEE rises out of its clip box, then the cups
+   pop up off the cream. Order and offsets live in revealTiming.js.
+
+   ── Armed, then played ────────────────────────────────────────────────────
+   Two effects, deliberately. The curtain uncovers the page from the bottom, so
+   the cups and beans are on screen well before the navbar's strip is — and the
+   chain does not start until it is. Building the timeline at reveal time meant
+   those elements sat there fully visible for a few hundred milliseconds and
+   then snapped to their from-state to animate in, which is a visible flinch.
+
+   So the timeline is *built* at `armed` (Intro's unveil cue, while the panel is
+   still opaque) and only *played* at `ready`. Every tween here is a fromTo, and
+   fromTo applies its from-values the moment it is created regardless of where
+   it sits in the timeline, so arming is also what hides everything — behind a
+   curtain, where no one can see it happen.
 
    ── What this is allowed to touch, and why the list is so specific ─────────
    Almost everything in the hero already has an owner that writes to it on
@@ -17,13 +30,15 @@ import gsap from 'gsap'
      .hero-wordmark       useTransferScene owns yPercent + autoAlpha
      .hero-panel-inner    useTransferScene owns y
      .hero-cream-rise     useTransferScene owns yPercent
+     .hero-bean-parallax  useTransferScene owns y
      .hero-bean-plane     FloatingBeans writes transform every pointer frame
+     .animate-float-bean  the idle drift keyframes own that transform
      .hero-panel-copy     BottomInfo writes opacity/visibility/transform
 
-   So this reaches one level in from each of them instead. The inner <svg>
-   rather than the wordmark box, the <img> rather than the cup, opacity on the
-   bean *parallax* wrapper (useTransferScene only ever writes y there, never
-   opacity). Every one of those is unowned, and the composition reads the same.
+   So this reaches one level in from each of them instead: the inner <svg>
+   rather than the wordmark box, the <img> rather than the cup, and
+   .hero-bean-fall, which exists for no other reason than to give the drop an
+   element nothing else writes to.
 
    ── Why clearProps is named rather than 'all' ─────────────────────────────
    .hero-cup-img carries an inline height from React — `calc(var(--cup-h) * …)`
@@ -31,70 +46,92 @@ import gsap from 'gsap'
    also matters for a second reason: a leftover `transform` on the image would
    promote it into the positioned-paint layer and flip it in front of
    .hero-cup-shadow, which is a positioned sibling *earlier* in the DOM. The
-   contact shadow currently paints over the cup's base, and it has to keep
-   doing so. Clearing the transform puts the image back in normal flow. */
-export default function useHeroEntrance(rootRef, ready) {
+   contact shadow currently paints over the cup's base and has to keep doing so
+   — .hero-cup-shadow carries a z-index to hold that order steady while these
+   tweens run, and clearing the transform puts the image back in normal flow. */
+export default function useHeroEntrance(rootRef, { armed, ready }) {
+  const tlRef = useRef(null)
+
   useLayoutEffect(() => {
-    if (!ready || !rootRef.current) return undefined
+    if (!armed || !rootRef.current) return undefined
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'expo.out', force3D: true } })
-
-      tl.fromTo(
-        '.hero-bean-parallax',
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 1.5,
-          ease: 'sine.out',
-          stagger: 0.14,
-          clearProps: 'opacity,visibility',
-        },
-        0,
-      )
-        /* Centre out: the focused cup leads and the two side cups follow it up,
-           which is the same order the carousel reads them in. */
+      tlRef.current = gsap
+        .timeline({ paused: true, defaults: { force3D: true } })
+        /* Each bean drops in from above its own slot, scattered rather than in
+           rows. The distance is scaled by the plane's own parallax depth — the
+           near plane travels the furthest — so the shower has the same sense of
+           depth at rest that it has once the beans are drifting. */
         .fromTo(
-          '.hero-cup-img',
-          { yPercent: 18, autoAlpha: 0 },
+          '.hero-bean-fall',
+          {
+            autoAlpha: 0,
+            y: (_i, target) =>
+              -260 * parseFloat(target.closest('.hero-bean-parallax')?.dataset.depth || '1'),
+          },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 1.05,
+            ease: 'power2.out',
+            stagger: { each: 0.035, from: 'random' },
+            clearProps: 'transform,opacity,visibility',
+          },
+          REVEAL.beans,
+        )
+        /* Out of .hero-wordmark's overflow: hidden, from fully below it. 100%
+           of the svg's own height is exactly the height of the clip box, so it
+           starts completely hidden and no letterform is ever half-cut. */
+        .fromTo(
+          '.hero-wordmark-svg',
+          { yPercent: 100, y: 0 },
           {
             yPercent: 0,
+            duration: 1.15,
+            ease: 'expo.out',
+            clearProps: 'transform,opacity,visibility',
+          },
+          REVEAL.wordmark,
+        )
+        /* The pop. Scaled from the base rather than the middle so the cup grows
+           up out of the cream instead of inflating in place, and centre-out so
+           the focused cup leads the two beside it. */
+        .fromTo(
+          '.hero-cup-img',
+          { yPercent: 34, scale: 0.9, autoAlpha: 0, transformOrigin: '50% 100%' },
+          {
+            yPercent: 0,
+            scale: 1,
             autoAlpha: 1,
-            duration: 1.4,
+            duration: 1.1,
+            ease: 'expo.out',
             stagger: { each: 0.11, from: 'center' },
             clearProps: 'transform,opacity,visibility',
           },
-          0.05,
+          REVEAL.cups,
         )
         .fromTo(
           '.hero-cup-shadow',
           { autoAlpha: 0 },
           {
             autoAlpha: 1,
-            duration: 1,
+            duration: 0.8,
             ease: 'sine.out',
             stagger: { each: 0.11, from: 'center' },
             clearProps: 'opacity,visibility',
           },
-          0.35,
-        )
-        /* Last, and from furthest down. It sits at the top of the frame, which
-           is the last strip the curtain uncovers, so it arrives into a view the
-           eye has already settled on. */
-        .fromTo(
-          '.hero-wordmark-svg',
-          { yPercent: 26, autoAlpha: 0 },
-          {
-            yPercent: 0,
-            autoAlpha: 1,
-            duration: 1.35,
-            clearProps: 'transform,opacity,visibility',
-          },
-          0.3,
+          REVEAL.cups + 0.3,
         )
     }, rootRef)
 
-    return () => ctx.revert()
-  }, [rootRef, ready])
+    return () => {
+      tlRef.current = null
+      ctx.revert()
+    }
+  }, [rootRef, armed])
+
+  useLayoutEffect(() => {
+    if (ready) tlRef.current?.play()
+  }, [ready])
 }

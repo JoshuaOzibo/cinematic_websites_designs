@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { clamp } from './colorUtils'
 
 function computeTarget(track, handoffPx, steps) {
@@ -85,5 +85,20 @@ export default function useHeroMotion(trackRef, { steps = 2, damping = 0.085, ha
     }
   }, [trackRef, steps, damping, handoffRef])
 
-  return { subscribe, getTarget }
+  /* Memoised, and it matters more than it looks. Every consumer of this hook
+     lists `motion` in its effect deps — CoffeeCarousel, DynamicBackground,
+     FloatingBeans and BottomInfo all do — so returning a fresh object literal
+     meant that any re-render of App tore down and rebuilt every one of those
+     subscriptions.
+
+     Mostly that was invisible waste. It stopped being invisible with the intro:
+     BottomInfo's cleanup runs `clearProps: 'all'` over the pills and badges,
+     and App re-renders three times while the curtain is leaving (unveiled,
+     revealing, introDone). The reveal armed those elements into their hidden
+     from-state and the next re-render wiped it, so the whole panel appeared at
+     full opacity the instant the chain started instead of on its own beat.
+
+     Both members are already useCallback-stable, so this never changes
+     identity after mount. */
+  return useMemo(() => ({ subscribe, getTarget }), [subscribe, getTarget])
 }

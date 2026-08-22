@@ -8,8 +8,8 @@ import BottomInfo from './hero/BottomInfo'
 import useHeroEntrance from './hero/useHeroEntrance'
 const STEPS = COFFEE_PRODUCTS.length - 1
 
-export default function Hero({ motion, palette, trackRef, handoffRef, ready }) {
-  useHeroEntrance(trackRef, ready)
+export default function Hero({ motion, palette, trackRef, handoffRef, armed, ready }) {
+  useHeroEntrance(trackRef, { armed, ready })
 
   return (
     <section
@@ -35,7 +35,7 @@ export default function Hero({ motion, palette, trackRef, handoffRef, ready }) {
           <CoffeeCarousel motion={motion} products={COFFEE_PRODUCTS} />
         </div>
 
-        <BottomInfo motion={motion} ready={ready} />
+        <BottomInfo motion={motion} armed={armed} ready={ready} />
       </div>
       <span className="hero-handoff-probe" ref={handoffRef} aria-hidden="true" />
     </section>

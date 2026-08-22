@@ -361,7 +361,35 @@ body {
   will-change: transform;
 }
 
+/* A third box in the bean stack, and it exists only so the entrance has
+   somewhere of its own to write. Going outward from the image: this element is
+   the hero entrance's drop, its parent runs the idle float keyframes, that
+   parent's parent is the handoff's parallax, and the plane above that is where
+   FloatingBeans writes the pointer offset. Four writers, four elements, none of
+   them ever touching another's transform.
+
+   Note that it, like the float span above it, carries no filter. The blur and
+   drop-shadow live on the <img> — see the note in FloatingBeans.jsx.
+
+   And no will-change either, unlike the two boxes above, which animate for the
+   whole life of the page. This one animates once. Twenty permanently promoted
+   layers is a real cost to carry for a second and a half of drop, and the
+   entrance already gets the promotion it needs from GSAP's force3D and gives it
+   back through clearProps. */
+.hero-bean-fall {
+  display: block;
+}
+
 /* ── Giant COFFEE wordmark ────────────────────────────────────────────────*/
+/* overflow: hidden is the clip box COFFEE rises out of on the hero's entrance.
+   It costs nothing at rest: the <svg> inside is exactly 100% x 100% of this box
+   and an SVG already clips to its own viewport, so nothing was ever painting
+   outside these bounds. The box is also what useTransferScene slides away on
+   the handoff, and the clip travels with it, which is correct — the wordmark
+   should leave as one object.
+
+   The travelling element is the <svg>, never this. See the note in
+   useHeroEntrance.js about who owns what in the hero. */
 .hero-wordmark {
   position: absolute;
   top: var(--word-top);
@@ -369,6 +397,7 @@ body {
   z-index: 10;
   width: var(--word-w);
   height: var(--word-h);
+  overflow: hidden;
   transform: translateX(-50%);
   color: rgb(250 243 225 / 0.95);
   pointer-events: none;
@@ -1358,6 +1387,10 @@ body {
 
    z-index 100 clears everything on the page: the navbar at 50 and the
    travelling cup's fixed layer at 45. */
+/* Pure #000, and nothing painted over it. This carried a warm ember wash at the
+   floor of the frame and a cooler one top-left; both are gone deliberately, so
+   the only colour in the frame is the nuts, the cream type and the one line of
+   clay in the meter. Do not reintroduce a background tint here. */
 .intro-root {
   position: fixed;
   inset: 0;
@@ -1366,22 +1399,8 @@ body {
   grid-template-rows: 1fr auto;
   padding: clamp(1.5rem, 5vw, 5rem);
   overflow: hidden;
-  background-color: #050403;
+  background-color: #000;
   will-change: transform;
-}
-
-/* Ember light on the floor of the frame, with a second cooler wash top-left so
-   the field is lit rather than flat. Fades up over the first beat and a half —
-   the black warms as the curtain arrives instead of starting warm. */
-.intro-glow {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  will-change: opacity;
-  background:
-    radial-gradient(72% 56% at 50% 108%, rgb(176 122 42 / 0.30), transparent 70%),
-    radial-gradient(52% 42% at 16% 6%, rgb(188 108 37 / 0.11), transparent 74%);
 }
 
 .intro-nuts {
@@ -1649,7 +1668,6 @@ html.intro-lock {
     transform: none;
   }
 
-  .intro-glow,
   .intro-rule {
     opacity: 1;
   }

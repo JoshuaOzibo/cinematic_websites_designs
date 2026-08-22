@@ -3,14 +3,16 @@ import gsap from 'gsap'
 import { COFFEE_PRODUCTS } from '../../data/coffeeProducts'
 import { ARC_PATH, ARC_VIEWBOX } from './arcPath'
 import { noteOpacityFor, slotFor } from './slotMath'
+import { REVEAL } from '../../revealTiming'
 const NOTE_TRAVEL = 32
 
 const BADGE_TRAVEL = 130
 
-export default function BottomInfo({ motion, ready }) {
+export default function BottomInfo({ motion, armed, ready }) {
   const noteRefs = useRef([])
   const actionsRef = useRef(null)
   const badgeRefs = useRef([])
+  const entranceRef = useRef(null)
   useLayoutEffect(() => {
     const count = COFFEE_PRODUCTS.length
 
@@ -102,22 +104,67 @@ export default function BottomInfo({ motion, ready }) {
      out where nobody could see it and the panel was simply *there* the moment
      the black lifted.
 
-     Deliberately a separate effect from the step-change subscription above: it
-     depends on `ready`, and folding it in would tear that subscription down and
-     rebuild it the moment the curtain moves.
+     Deliberately separate from the step-change subscription above: this depends
+     on the reveal cues, and folding it in would tear that subscription down and
+     rebuild it every time one of them fires.
+
+     Built at `armed` and played at `ready` — see the note in useHeroEntrance.js
+     for why those are two different moments. The panel sits under the arc, so
+     the rising curtain uncovers it first of anything on the page, and it would
+     otherwise be visible in its finished state for the best part of a second
+     before being asked to animate in.
 
      The badges rise out of .hero-badge's existing overflow: hidden — the same
      clip box the carousel already swaps them through — so this reveal and the
      one that runs on every product change are the same move. */
   useLayoutEffect(() => {
-    if (!ready) return undefined
+    if (!armed) return undefined
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
 
     const actionsEl = actionsRef.current
     const badgeEls = badgeRefs.current.filter(Boolean)
+    const notesEl = actionsEl?.parentElement?.querySelector('.hero-panel-notes')
+    const badgeList = badgeEls[0]?.closest('.hero-badges')
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { force3D: true } })
+      const tl = gsap.timeline({ paused: true, defaults: { force3D: true } })
+      entranceRef.current = tl
+
+      /* The note stack, not the notes themselves. Each .hero-panel-copy has its
+         opacity rewritten on every scroll frame by the subscription above, so
+         the only free handle is their shared grid cell — and multiplying a
+         parent's opacity by theirs is not a conflict. */
+      if (notesEl) {
+        tl.fromTo(
+          notesEl,
+          { autoAlpha: 0, y: 16 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.75,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity,visibility',
+          },
+          REVEAL.panel,
+        )
+      }
+
+      /* The bordered frame arrives just ahead of what rises inside it. Without
+         this the three outlines sat there empty for a beat, which read as
+         something failing to load rather than as a reveal. */
+      if (badgeList) {
+        tl.fromTo(
+          badgeList,
+          { autoAlpha: 0 },
+          {
+            autoAlpha: 1,
+            duration: 0.5,
+            ease: 'sine.out',
+            clearProps: 'opacity,visibility',
+          },
+          REVEAL.panel + 0.06,
+        )
+      }
 
       if (actionsEl) {
         tl.fromTo(
@@ -131,7 +178,7 @@ export default function BottomInfo({ motion, ready }) {
             stagger: 0.09,
             clearProps: 'transform,opacity,visibility',
           },
-          0,
+          REVEAL.panel,
         )
       }
 
@@ -147,12 +194,19 @@ export default function BottomInfo({ motion, ready }) {
             stagger: 0.08,
             clearProps: 'transform,opacity,visibility',
           },
-          0.12,
+          REVEAL.panel + 0.14,
         )
       }
     })
 
-    return () => ctx.revert()
+    return () => {
+      entranceRef.current = null
+      ctx.revert()
+    }
+  }, [armed])
+
+  useLayoutEffect(() => {
+    if (ready) entranceRef.current?.play()
   }, [ready])
 
   return (

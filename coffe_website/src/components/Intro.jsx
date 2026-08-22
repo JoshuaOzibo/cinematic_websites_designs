@@ -38,6 +38,22 @@ const FILL_MS = 1700
    black panel, so past this the counter finishes regardless. */
 const BAIL_MS = 8000
 
+/* ── The lift, and when the page behind is allowed to start ───────────────
+   The curtain travels up, so it uncovers the page from the bottom and the
+   navbar's strip last. TOP_CLEAR is the fraction of the lift at which the top
+   of the screen is actually visible, and it is where `onReveal` fires: any
+   earlier and the navbar performs its entrance underneath a panel that is
+   still covering it.
+
+   0.78 is power3.inOut's own curve, not a guess. For the back half that ease is
+   p = 1 - 4(1 - t)^3, so it has already travelled 95% of the way at t = 0.768
+   and 96% at t = 0.785 — enough to have cleared a navbar occupying the top ~5%
+   of any viewport this runs on. Change LIFT_EASE and this number is wrong. */
+const LIFT_AT = 0.45
+const LIFT_DUR = 1.05
+const LIFT_EASE = 'power3.inOut'
+const TOP_CLEAR = 0.78
+
 /* Placed around the type rather than over it. The block runs from the left
    padding to roughly 55% at desktop and from the eyebrow down to the sub, so
    only small, blurred, dim nuts are allowed to cross it — a sharp 80px one
@@ -153,7 +169,6 @@ export default function Intro({ onUnveil, onReveal, onDone }) {
       const lines = self.selector('.intro-line')
       const nuts = self.selector('.intro-nut')
       const rule = self.selector('.intro-rule')
-      const glow = self.selector('.intro-glow')
 
       let startedAt = 0
       const shown = { value: 0 }
@@ -202,27 +217,33 @@ export default function Intro({ onUnveil, onReveal, onDone }) {
         out
           .to(lines, {
             yPercent: -135,
-            duration: 0.8,
+            duration: 0.7,
             ease: 'power3.in',
-            stagger: 0.06,
+            stagger: 0.05,
             force3D: true,
           })
-          .to(rule, { autoAlpha: 0, duration: 0.45, ease: 'power2.in' }, 0.15)
+          .to(rule, { autoAlpha: 0, duration: 0.4, ease: 'power2.in' }, 0.1)
           .to(
             nuts,
             {
               autoAlpha: 0,
-              yPercent: -55,
-              scale: 0.8,
-              duration: 0.75,
+              yPercent: -50,
+              scale: 0.82,
+              duration: 0.65,
               ease: 'power2.in',
-              stagger: { each: 0.04, from: 'random' },
+              stagger: { each: 0.03, from: 'random' },
               force3D: true,
             },
             0.05,
           )
-          .call(reveal, null, 0.55)
-          .to(root, { yPercent: -100, duration: 1.25, ease: 'power4.inOut', force3D: true }, 0.55)
+          .to(
+            root,
+            { yPercent: -100, duration: LIFT_DUR, ease: LIFT_EASE, force3D: true },
+            LIFT_AT,
+          )
+          /* Not at LIFT_AT: the navbar is the last thing this panel uncovers,
+             and it has to be on screen before it is asked to perform. */
+          .call(reveal, null, LIFT_AT + LIFT_DUR * TOP_CLEAR)
       }
 
       /* dt-corrected, the way useHeroMotion eases its own scroll position: a
@@ -271,14 +292,13 @@ export default function Intro({ onUnveil, onReveal, onDone }) {
            which is information rather than motion. */
         gsap.set(lines, { yPercent: 0, y: 0 })
         gsap.set(nuts, { autoAlpha: 1, yPercent: 0, y: 0, scale: 1 })
-        gsap.set([...rule, ...glow], { autoAlpha: 1 })
+        gsap.set(rule, { autoAlpha: 1 })
       } else {
         tl = gsap
           .timeline({ paused: true, defaults: { ease: 'power3.out', force3D: true } })
           /* The nuts get the screen to themselves for a beat and a half. Long
              durations and a wide stagger are the whole reason this reads as
              drifting rather than arriving. */
-          .to(glow, { autoAlpha: 1, duration: 1.5, ease: 'sine.out' }, 0)
           .fromTo(
             nuts,
             { autoAlpha: 0, yPercent: 55, y: 0, scale: 0.72 },
@@ -348,8 +368,6 @@ export default function Intro({ onUnveil, onReveal, onDone }) {
 
   return (
     <div ref={rootRef} className="intro-root" role="status" aria-label="Loading coffeelo">
-      <div className="intro-glow" aria-hidden="true" />
-
       <div className="intro-nuts" aria-hidden="true">
         {NUTS.map((nut, i) => (
           <span key={`nut-${i}`} className="intro-nut" style={{ top: nut.top, left: nut.left }}>
