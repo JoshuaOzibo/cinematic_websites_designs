@@ -1,8 +1,11 @@
-import { useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { COFFEE_PRODUCTS } from './data/coffeeProducts'
 import useAccentPalette from './components/hero/useAccentPalette'
 import useHeroMotion from './components/hero/useHeroMotion'
 import useJourneyScene from './components/showcase/useJourneyScene'
+import Intro from './components/Intro'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Showcase from './components/Showcase'
@@ -11,6 +14,8 @@ import About from './components/About'
 import Highlight from './components/Highlight'
 import TastingNotes from './components/TastingNotes'
 import Footer from './components/Footer'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const HERO_STEPS = COFFEE_PRODUCTS.length - 1
 
@@ -23,6 +28,7 @@ const stopRefs = () => ({
 })
 
 export default function App() {
+  const [introDone, setIntroDone] = useState(false)
   const heroTrackRef = useRef(null)
   const heroHandoffRef = useRef(null)
   const motion = useHeroMotion(heroTrackRef, {
@@ -57,8 +63,23 @@ export default function App() {
 
   useJourneyScene({ transferRefs, legs: journeyLegs })
 
+  /* Stable across renders so Intro's effect is not torn down and rebuilt (which
+     would restart the whole curtain) every time anything above re-renders. */
+  const finishIntro = useCallback(() => setIntroDone(true), [])
+
+  useEffect(() => {
+    if (!introDone) return
+    /* Everything below measured itself while the curtain held the scrollbar
+       hidden and the page pinned at the top. Both are true again now, so give
+       ScrollTrigger and useHeroMotion — which listens on resize — a chance to
+       re-read the layout before the visitor's first scroll. */
+    ScrollTrigger.refresh()
+    window.dispatchEvent(new Event('resize'))
+  }, [introDone])
+
   return (
     <>
+      {!introDone && <Intro onDone={finishIntro} />}
       <Navbar />
       <main>
         <Hero

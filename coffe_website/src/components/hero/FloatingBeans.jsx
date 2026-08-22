@@ -1,13 +1,7 @@
 import { useEffect, useRef } from 'react'
 import Bean from './Bean'
+import { NUT_IMAGES } from '../../data/coffeeProducts'
 
-const NUT_IMAGES = [
-  '/nut_image/coffee_nut.webp',
-  '/nut_image/coffee_nut_2.webp',
-  '/nut_image/nut_3.webp',
-  '/nut_image/nut_4.webp',
-  '/nut_image/nut_6.webp',
-]
 const PLANES = [
   {
     id: 'far',

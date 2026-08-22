@@ -1332,6 +1332,232 @@ body {
   }
 }
 
+/* ── Intro curtain ─────────────────────────────────────────────────────────
+   The black panel that plays before the hero. Driven by components/Intro.jsx,
+   which is unmounted the moment the exit finishes, so none of this is on the
+   page after the first few seconds.
+
+   Every animated element's *resting* state is declared here rather than in a
+   gsap.set(). That is deliberate: the markup renders on React's first commit
+   and the timeline is not built until the effect runs, so a line that starts
+   visible in CSS would flash in place before it ever rose.
+
+   The percentage translations below are duplicated in Intro.jsx's fromTo calls,
+   which is not redundancy — GSAP reads these back off the computed matrix,
+   where the browser has already resolved them to pixels, so it cannot tween
+   them as percentages unless the from half restates them. Read the note beside
+   those calls before changing a number here.
+
+   z-index 100 clears everything on the page: the navbar at 50 and the
+   travelling cup's fixed layer at 45. */
+.intro-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: clamp(1.5rem, 5vw, 5rem);
+  overflow: hidden;
+  background-color: #050403;
+  will-change: transform;
+}
+
+/* Ember light on the floor of the frame, with a second cooler wash top-left so
+   the field is lit rather than flat. Fades up over the first beat and a half —
+   the black warms as the curtain arrives instead of starting warm. */
+.intro-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(72% 56% at 50% 108%, rgb(176 122 42 / 0.30), transparent 70%),
+    radial-gradient(52% 42% at 16% 6%, rgb(188 108 37 / 0.11), transparent 74%);
+}
+
+.intro-nuts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The GSAP half of each nut: entrance and exit only. translateY here is what
+   the timeline reads as yPercent 55 on its first frame. */
+.intro-nut {
+  position: absolute;
+  transform: translateY(55%) scale(0.72);
+  will-change: transform, opacity;
+}
+
+/* And the CSS half: the idle drift, borrowed wholesale from the hero's beans.
+   Its own opacity is the nut's depth, multiplied by the wrapper's animated
+   opacity above, so the two never fight over one property. */
+.intro-nut-drift {
+  display: block;
+}
+
+/* ── The type block ───────────────────────────────────────────────────────
+   Left-aligned on the same margin as the meter below it and centred in the row
+   the grid gives it, so the two blocks read as one column of content rather
+   than a centred stack floating over a bar. */
+/* No ch units here, however tempting a measure looks. This box's own font-size
+   is the 16px body face, while the thing that has to fit inside it is a 104px
+   headline — so a 20ch cap reads as ~180px, and .intro-mask's overflow: hidden
+   turns that into "Slow roast" with the rest sliced off rather than a wrap.
+   Anything that constrains a line's measure belongs on the line itself, where
+   ch means what it says; see .intro-sub. */
+.intro-type {
+  align-self: center;
+  justify-self: start;
+  position: relative;
+  z-index: 2;
+  max-width: min(92vw, 62rem);
+}
+
+/* The curtain a line rises out of.
+   The padding/margin pair is what saves the glyphs: overflow: hidden clips to
+   this box, and the headline runs at line-height 1, so a clip fitted exactly to
+   the line box would shave the p in "poured" underneath and the ascenders on
+   top. The box is extended past both edges and the same amount pulled back off
+   the layout, so the visual rhythm is unchanged.
+
+   Only the bottom edge is a reveal edge — the line rises from below it — so the
+   0.12em on top costs nothing. The travel below is what has to stay ahead of
+   that: 130% of a line box clears the deepest of these three line-heights with
+   room to spare, and the exit's -135% clears the top the same way. Retune the
+   three together if any of them moves. */
+.intro-mask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.12em 0.16em;
+  margin-block: -0.12em -0.16em;
+}
+
+.intro-line {
+  display: block;
+  transform: translateY(130%);
+  will-change: transform;
+}
+
+.intro-eyebrow {
+  font-size: clamp(0.62rem, 0.9vw, 0.74rem);
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-tan);
+}
+
+.intro-headline {
+  margin: clamp(0.9rem, 2vh, 1.6rem) 0 0;
+  font-size: clamp(2.6rem, 8.5vw, 6.5rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--color-cream);
+}
+
+.intro-sub {
+  margin-top: clamp(1rem, 2.2vh, 1.75rem);
+  max-width: 34ch;
+  font-size: clamp(0.82rem, 1.1vw, 0.98rem);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: rgb(245 237 214 / 0.52);
+}
+
+/* ── The meter ────────────────────────────────────────────────────────────*/
+.intro-meter {
+  position: relative;
+  z-index: 2;
+  align-self: end;
+}
+
+/* flex-end, deliberately not baseline. Each side is wrapped in an
+   overflow: hidden mask, and a block box with overflow other than visible does
+   not expose its text baseline to its parent — it offers its bottom margin edge
+   instead, so `baseline` here would silently resolve to this anyway. Asking for
+   what actually happens: both masks sit flush on the hairline below, which is
+   the floor the whole row should read against. */
+.intro-meter-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.intro-meter-label {
+  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgb(245 237 214 / 0.45);
+}
+
+.intro-count-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.12em;
+  color: var(--color-cream);
+}
+
+/* Fixed width and right-aligned. The digits change on every frame, and Fraunces
+   is proportional, so without this the % beside it would shuffle sideways at 10
+   and again at 100. */
+.intro-count {
+  min-width: 2.7ch;
+  text-align: right;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.intro-count-pct {
+  font-size: clamp(0.8rem, 1.4vw, 1.1rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-tan);
+}
+
+/* Hairline track spanning the full frame. The fill is a separate element so the
+   only thing written per frame is one scaleX — no width, no layout. */
+.intro-rule {
+  position: relative;
+  height: 1px;
+  margin-top: clamp(0.9rem, 2vh, 1.4rem);
+  opacity: 0;
+  background-color: rgb(245 237 214 / 0.14);
+  overflow: hidden;
+}
+
+.intro-rule-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(to right, var(--color-clay), var(--color-tan));
+}
+
+/* ── The scroll lock ──────────────────────────────────────────────────────
+   Set on <html> for as long as the curtain is up. scrollbar-gutter keeps the
+   gutter reserved while overflow is hidden, so the page underneath does not
+   silently reflow 15px wider and invalidate every measurement the hero and the
+   handoff have already taken. scroll-behavior overrides the `scroll-smooth`
+   class on <html> so Intro's scrollTo(0, 0) is instant rather than animated. */
+html.intro-lock {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  scroll-behavior: auto;
+}
+
+@media (max-width: 640px) {
+  .intro-type {
+    max-width: 100%;
+  }
+
+  .intro-meter-row {
+    gap: 1rem;
+  }
+}
+
 /* ── Utilities ─────────────────────────────────────────────────────────────*/
 
 .link-underline {
@@ -1373,6 +1599,24 @@ body {
   .animate-splash,
   .animate-marquee {
     animation: none !important;
+  }
+
+  /* The intro plays as a still card: the counter fills, then the whole panel
+     fades. Intro.jsx sets the same resting values on its own, but these are
+     what hold between React's first commit and the effect running, which is
+     exactly the window a rise-from-below would otherwise be visible in. */
+  .intro-line {
+    transform: none;
+  }
+
+  .intro-nut {
+    opacity: 1;
+    transform: none;
+  }
+
+  .intro-glow,
+  .intro-rule {
+    opacity: 1;
   }
 
   html {

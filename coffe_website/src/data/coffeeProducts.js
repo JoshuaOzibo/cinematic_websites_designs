@@ -1,4 +1,15 @@
 
+/* The loose nut/bean cutouts. Read by the hero's FloatingBeans and again by the
+   intro curtain, which also preloads them — one list so the two can never drift
+   apart and the loader can never report progress for a file nobody renders. */
+export const NUT_IMAGES = [
+  '/nut_image/coffee_nut.webp',
+  '/nut_image/coffee_nut_2.webp',
+  '/nut_image/nut_3.webp',
+  '/nut_image/nut_4.webp',
+  '/nut_image/nut_6.webp',
+]
+
 export const COFFEE_PRODUCTS = [
   {
     id: 'green',
