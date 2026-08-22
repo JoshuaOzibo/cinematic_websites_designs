@@ -385,14 +385,6 @@ export default function useTransferScene({
         )
       }
 
-      // The showcase copy assembles on the right once the coffee has landed on
-      // the left — blocks rising, headline word by word, across the first half
-      // of this section's pin. Its own trigger rather than a tween in this
-      // timeline, which is load bearing for the landing as much as for the
-      // timing; see cardCopyReveal. Shared with the two cards below so all
-      // three read the same.
-      const copyReveal = createCardCopyReveal({ root: track, copy: copyRef.current })
-
       // ── There is no handback any more ────────────────────────────────────
       // This used to end by cross-cutting to the slot's real image and standing
       // the overlay down, both on the last frame. It was invisible in theory and
@@ -428,10 +420,29 @@ export default function useTransferScene({
       // swap tween at it. Doing it here rather than on every index change is
       // enough, because the latch above means the product cannot change again
       // once we are past this point.
+      //
+      // The copy reveal is (re)bound here too, for the same reason and one more
+      // that is specific to it. CardTitle keys each word span by its own text,
+      // so every carousel step before this rebuilds the showcase headline's
+      // spans from scratch — the product cycles brown → green → pink as the
+      // hero spins, well before any of it is visible. A reveal built once at
+      // mount would have grabbed whichever spans existed for the very first
+      // product rendered, which is stale the moment the carousel moves on: the
+      // real, final spans it should be animating were never hidden in the first
+      // place, so the headline would just sit there fully visible with nothing
+      // to reveal. Binding here instead of at mount means it always targets the
+      // spans for whichever product actually settled — rebuilt on every arm()
+      // rather than once, because scrolling back to the hero and choosing a
+      // different product before returning is exactly the case that needs a
+      // fresh set of elements.
+      let copyReveal = null
       const arm = (self) => {
         setLock(self)
         measure()
         paint(flight.t)
+        copyReveal?.st.kill()
+        copyReveal?.tl.kill()
+        copyReveal = createCardCopyReveal({ root: track, copy: copyRef.current })
       }
 
       const st = ScrollTrigger.create({
