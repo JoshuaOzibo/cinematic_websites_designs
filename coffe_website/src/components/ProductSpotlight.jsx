@@ -81,6 +81,8 @@ export default function ProductSpotlight({
             '--cta-hover': ctaHover,
           }}
         >
+          {/* See the note in Showcase.jsx: decorative, below the fold, measured
+              by nothing, so they stay off the intro's main thread. */}
           {product.garnish?.map((piece) => (
             <img
               key={piece.image}
@@ -91,6 +93,9 @@ export default function ProductSpotlight({
               height={piece.height}
               draggable="false"
               aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
             />
           ))}
 

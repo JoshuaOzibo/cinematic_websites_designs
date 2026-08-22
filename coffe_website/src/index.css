@@ -428,10 +428,18 @@ body {
   user-select: none;
 }
 
+/* z-index: 1 is not decoration, it is what keeps the paint order from flipping
+   mid-animation. This ellipse is positioned and .hero-cup-img is not, so the
+   shadow normally paints over the cup's base — which is the look. But the
+   hero's entrance transforms the image, and a transformed element is painted as
+   though it were positioned, in DOM order, which puts it *after* this sibling
+   and hides the shadow for exactly as long as that tween runs. Pinning the
+   shadow one level up makes the order the same before, during and after. */
 .hero-cup-shadow {
   position: absolute;
   left: 50%;
   bottom: 2%;
+  z-index: 1;
   width: 78%;
   height: 9%;
   transform: translateX(-50%);
@@ -1370,6 +1378,7 @@ body {
   inset: 0;
   opacity: 0;
   pointer-events: none;
+  will-change: opacity;
   background:
     radial-gradient(72% 56% at 50% 108%, rgb(176 122 42 / 0.30), transparent 70%),
     radial-gradient(52% 42% at 16% 6%, rgb(188 108 37 / 0.11), transparent 74%);
@@ -1391,7 +1400,13 @@ body {
 
 /* And the CSS half: the idle drift, borrowed wholesale from the hero's beans.
    Its own opacity is the nut's depth, multiplied by the wrapper's animated
-   opacity above, so the two never fight over one property. */
+   opacity above, so the two never fight over one property.
+
+   Note what is deliberately absent from both this and .intro-nut: any filter.
+   The depth blur is set on the <img> inside, because a filter on an element
+   that is being transformed every frame is re-rasterised every frame — ten of
+   those at once is what turned this reveal choppy. On the image it rasterises
+   once and both transforms above simply composite the result. */
 .intro-nut-drift {
   display: block;
 }
@@ -1533,7 +1548,27 @@ body {
   inset: 0;
   transform: scaleX(0);
   transform-origin: left center;
+  will-change: transform;
   background: linear-gradient(to right, var(--color-clay), var(--color-tan));
+}
+
+/* ── The page behind the curtain ──────────────────────────────────────────
+   Held on <main> for as long as the intro is opaque, and dropped on the frame
+   the curtain starts travelling, which is also the frame the hero begins its
+   own entrance.
+
+   visibility, deliberately, and not display: none. The hero mounts and measures
+   itself under here — useHeroMotion reads offsetHeight and getBoundingClientRect
+   on its track, useTransferScene reads offsetWidth on the cup and slot images —
+   and all of that is still true of a hidden box but none of it is true of one
+   that was never laid out.
+
+   What it buys is paint. The hero runs twenty bean keyframes, a masked dot
+   grid and two full-viewport gradients, continuously, and every frame of that
+   was being composited underneath an opaque black panel where nobody could see
+   any of it. It was the single largest thing making the intro stutter. */
+.site-veiled {
+  visibility: hidden;
 }
 
 /* ── The scroll lock ──────────────────────────────────────────────────────

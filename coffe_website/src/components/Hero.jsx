@@ -5,9 +5,12 @@ import HeroWordmark from './hero/HeroWordmark'
 import CoffeeCarousel from './hero/CoffeeCarousel'
 import CreamRise from './hero/CreamRise'
 import BottomInfo from './hero/BottomInfo'
+import useHeroEntrance from './hero/useHeroEntrance'
 const STEPS = COFFEE_PRODUCTS.length - 1
 
-export default function Hero({ motion, palette, trackRef, handoffRef }) {
+export default function Hero({ motion, palette, trackRef, handoffRef, ready }) {
+  useHeroEntrance(trackRef, ready)
+
   return (
     <section
       id="home"
@@ -32,7 +35,7 @@ export default function Hero({ motion, palette, trackRef, handoffRef }) {
           <CoffeeCarousel motion={motion} products={COFFEE_PRODUCTS} />
         </div>
 
-        <BottomInfo motion={motion} />
+        <BottomInfo motion={motion} ready={ready} />
       </div>
       <span className="hero-handoff-probe" ref={handoffRef} aria-hidden="true" />
     </section>

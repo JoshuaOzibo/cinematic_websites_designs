@@ -65,6 +65,13 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
               '--cta-hover': ctaHover,
             }}
           >
+            {/* Lazy and low, unlike the cup beside them. These are the largest
+                files on the site, they are decorative, they sit a screen and a
+                half down, and .showcase-garnish hides them outright below
+                1024px — yet they were being fetched and decoded during the
+                intro, on the same main thread the curtain was animating on.
+                Nothing measures them, so deferring them is free. The cup image
+                below must stay eager: the handoff reads its offsetWidth. */}
             {product.garnish?.map((piece) => (
               <img
                 key={piece.image}
@@ -75,6 +82,9 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
                 height={piece.height}
                 draggable="false"
                 aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
               />
             ))}
 

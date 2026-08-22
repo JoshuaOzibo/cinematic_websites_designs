@@ -28,6 +28,17 @@ const stopRefs = () => ({
 })
 
 export default function App() {
+  /* Three signals, because the curtain has three distinct moments and folding
+     any two of them together costs frames:
+
+     `unveiled`  the counter has landed and nothing is moving. Drop .site-veiled
+                 here so the hero takes its first paint during the one still
+                 beat in the sequence, under a panel that is still opaque.
+     `revealing` the panel starts travelling. Start the navbar and hero
+                 entrances, so the page assembles as it is uncovered.
+     `introDone` the panel has gone. Unmount it and re-measure. */
+  const [unveiled, setUnveiled] = useState(false)
+  const [revealing, setRevealing] = useState(false)
   const [introDone, setIntroDone] = useState(false)
   const heroTrackRef = useRef(null)
   const heroHandoffRef = useRef(null)
@@ -65,6 +76,8 @@ export default function App() {
 
   /* Stable across renders so Intro's effect is not torn down and rebuilt (which
      would restart the whole curtain) every time anything above re-renders. */
+  const unveilSite = useCallback(() => setUnveiled(true), [])
+  const startReveal = useCallback(() => setRevealing(true), [])
   const finishIntro = useCallback(() => setIntroDone(true), [])
 
   useEffect(() => {
@@ -79,14 +92,17 @@ export default function App() {
 
   return (
     <>
-      {!introDone && <Intro onDone={finishIntro} />}
-      <Navbar />
-      <main>
+      {!introDone && (
+        <Intro onUnveil={unveilSite} onReveal={startReveal} onDone={finishIntro} />
+      )}
+      <Navbar ready={revealing} />
+      <main className={unveiled ? undefined : 'site-veiled'}>
         <Hero
           motion={motion}
           palette={palette}
           trackRef={heroTrackRef}
           handoffRef={heroHandoffRef}
+          ready={revealing}
         />
         <Showcase
           motion={motion}

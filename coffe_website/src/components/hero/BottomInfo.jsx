@@ -7,7 +7,7 @@ const NOTE_TRAVEL = 32
 
 const BADGE_TRAVEL = 130
 
-export default function BottomInfo({ motion }) {
+export default function BottomInfo({ motion, ready }) {
   const noteRefs = useRef([])
   const actionsRef = useRef(null)
   const badgeRefs = useRef([])
@@ -45,16 +45,6 @@ export default function BottomInfo({ motion }) {
     }
 
     mm.add('(prefers-reduced-motion: no-preference)', () => {
-      if (actionsEl) {
-        track(
-          gsap.fromTo(
-            actionsEl.children,
-            { autoAlpha: 0, y: 22 },
-            { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.08, delay: 0.15 },
-          ),
-        )
-      }
-
       let lastStep = null
       unsubscribe = motion.subscribe((pos) => {
         const step = Math.round(pos)
@@ -106,6 +96,64 @@ export default function BottomInfo({ motion }) {
       mm.revert()
     }
   }, [motion])
+
+  /* The panel's own arrival, cued by Intro rather than by mount — the hero is
+     built behind an opaque curtain, so an entrance that fired on mount played
+     out where nobody could see it and the panel was simply *there* the moment
+     the black lifted.
+
+     Deliberately a separate effect from the step-change subscription above: it
+     depends on `ready`, and folding it in would tear that subscription down and
+     rebuild it the moment the curtain moves.
+
+     The badges rise out of .hero-badge's existing overflow: hidden — the same
+     clip box the carousel already swaps them through — so this reveal and the
+     one that runs on every product change are the same move. */
+  useLayoutEffect(() => {
+    if (!ready) return undefined
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    const actionsEl = actionsRef.current
+    const badgeEls = badgeRefs.current.filter(Boolean)
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { force3D: true } })
+
+      if (actionsEl) {
+        tl.fromTo(
+          actionsEl.children,
+          { autoAlpha: 0, y: 22 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.75,
+            ease: 'power3.out',
+            stagger: 0.09,
+            clearProps: 'transform,opacity,visibility',
+          },
+          0,
+        )
+      }
+
+      if (badgeEls.length) {
+        tl.fromTo(
+          badgeEls,
+          { yPercent: 120, y: 0, autoAlpha: 0 },
+          {
+            yPercent: 0,
+            autoAlpha: 1,
+            duration: 0.85,
+            ease: 'expo.out',
+            stagger: 0.08,
+            clearProps: 'transform,opacity,visibility',
+          },
+          0.12,
+        )
+      }
+    })
+
+    return () => ctx.revert()
+  }, [ready])
 
   return (
     <div className="hero-base">

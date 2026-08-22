@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -10,9 +10,10 @@ const LINKS = [
   { label: 'About', href: '#about' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ ready }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const headerRef = useRef(null)
 
   useLayoutEffect(() => {
     const target = document.getElementById('showcase')
@@ -29,8 +30,58 @@ export default function Navbar() {
     return () => st.kill()
   }, [])
 
+  /* Cued by Intro on the frame its curtain starts travelling. The bar is the
+     last strip of the page the black uncovers, so it drops in a beat behind
+     the hero rather than alongside it.
+
+     No resting state in CSS: until `ready` the navbar is simply itself, sitting
+     unseen behind an opaque panel. Hiding it in the stylesheet instead would
+     mean a failed intro leaves the site with no navigation at all.
+
+     clearProps is named rather than 'all' so the tween cannot strip the
+     background/backdrop utilities the scrolled state transitions between. */
+  useLayoutEffect(() => {
+    if (!ready || !headerRef.current) return undefined
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    const ctx = gsap.context(() => {
+      const clear = 'transform,opacity,visibility'
+      gsap
+        .timeline({ defaults: { force3D: true, ease: 'power3.out' } })
+        .fromTo(
+          headerRef.current,
+          { y: -22, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.9, clearProps: clear },
+          0,
+        )
+        .fromTo(
+          '#nav-logo',
+          { autoAlpha: 0, scale: 0.72 },
+          { autoAlpha: 1, scale: 1, duration: 0.75, ease: 'back.out(1.6)', clearProps: clear },
+          0.18,
+        )
+        /* Out of the clip boxes on the list items, so the labels rise into the
+           bar the way the intro's headline rose into the frame. */
+        .fromTo(
+          '.nav-label',
+          { yPercent: 120, y: 0 },
+          { yPercent: 0, duration: 0.85, ease: 'expo.out', stagger: 0.08, clearProps: clear },
+          0.26,
+        )
+        .fromTo(
+          '.nav-action',
+          { autoAlpha: 0, y: 14 },
+          { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.09, clearProps: clear },
+          0.42,
+        )
+    }, headerRef)
+
+    return () => ctx.revert()
+  }, [ready])
+
   return (
     <header
+      ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ${
         scrolled
           ? 'bg-espresso/90 shadow-[0_1px_0_rgba(0,0,0,0.2)] backdrop-blur-md'
@@ -54,11 +105,16 @@ export default function Navbar() {
         <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 whitespace-nowrap lg:flex lg:gap-9">
           {LINKS.map((link) => (
             <li key={link.label}>
+              {/* The clip box lives on the anchor and the travelling element is
+                  the span inside it, not the other way round: .link-underline
+                  paints its rule on the anchor's own background box, and an
+                  overflow: hidden fitted to these all-caps labels would shave
+                  it off at the exact pixel it sits on. */}
               <a
                 href={link.href}
-                className="link-underline text-[0.74rem] font-semibold uppercase tracking-[0.14em] text-cream/85 transition-colors hover:text-cream"
+                className="link-underline block overflow-hidden text-[0.74rem] font-semibold uppercase tracking-[0.14em] text-cream/85 transition-colors hover:text-cream"
               >
-                {link.label}
+                <span className="nav-label block">{link.label}</span>
               </a>
             </li>
           ))}
@@ -69,7 +125,7 @@ export default function Navbar() {
             type="button"
             id="nav-cart"
             aria-label="Shopping cart"
-            className="hidden h-9 w-9 items-center justify-center rounded-full text-cream/85 transition-colors hover:text-cream lg:flex"
+            className="nav-action hidden h-9 w-9 items-center justify-center rounded-full text-cream/85 transition-colors hover:text-cream lg:flex"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
@@ -81,7 +137,7 @@ export default function Navbar() {
           <a
             href="#showcase"
             id="nav-order-now"
-            className="rounded-full bg-cream px-5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-espresso transition-transform duration-300 hover:-translate-y-0.5"
+            className="nav-action rounded-full bg-cream px-5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-espresso transition-transform duration-300 hover:-translate-y-0.5"
           >
             Order Now
           </a>
@@ -92,7 +148,7 @@ export default function Navbar() {
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-cream/30 text-cream lg:hidden"
+            className="nav-action flex h-9 w-9 items-center justify-center rounded-full border border-cream/30 text-cream lg:hidden"
           >
             <svg width="16" height="12" viewBox="0 0 18 12" fill="none" aria-hidden="true">
               {menuOpen ? (

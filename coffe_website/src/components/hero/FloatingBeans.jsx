@@ -117,10 +117,22 @@ export default function FloatingBeans({ motion }) {
                   '--bean-delay': bean.delay,
                   '--bean-y': bean.y,
                   '--bean-x': bean.x,
-                  filter: `blur(${plane.blur}) drop-shadow(0 6px 12px rgba(24, 10, 2, 0.32))`,
                 }}
               >
-                <Bean size={bean.size} image={NUT_IMAGES[(i * 2 + j) % NUT_IMAGES.length]} />
+                {/* The filter belongs on the image, never on the span above it.
+                    That span runs an infinite transform keyframe, and a filtered
+                    element that is being transformed has to be re-rasterised on
+                    every frame of it — twenty of those between the two planes
+                    was enough to hold the whole page under 20fps on a modest
+                    machine. On the image it is rasterised once and the span just
+                    composites the result. */}
+                <Bean
+                  size={bean.size}
+                  image={NUT_IMAGES[(i * 2 + j) % NUT_IMAGES.length]}
+                  style={{
+                    filter: `blur(${plane.blur}) drop-shadow(0 6px 12px rgba(24, 10, 2, 0.32))`,
+                  }}
+                />
               </span>
             ))}
           </div>
