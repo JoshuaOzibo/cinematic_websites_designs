@@ -8,10 +8,8 @@ import Hero from './components/Hero'
 import Showcase from './components/Showcase'
 import ProductSpotlight from './components/ProductSpotlight'
 import About from './components/About'
-import Collections from './components/Collections'
 import Highlight from './components/Highlight'
 import TastingNotes from './components/TastingNotes'
-import Locations from './components/Locations'
 import Footer from './components/Footer'
 
 const HERO_STEPS = COFFEE_PRODUCTS.length - 1
@@ -137,10 +135,8 @@ export default function App() {
           reverse={false}
         />
         <About />
-        <Collections />
         <Highlight />
         <TastingNotes />
-        <Locations />
       </main>
       <Footer />
     </>

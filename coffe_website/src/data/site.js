@@ -2,72 +2,7 @@
 
 export const NAV_LINKS = [
   { label: 'About', href: '#about' },
-  { label: 'Collections', href: '#collections' },
   { label: 'Notes', href: '#notes' },
-  { label: 'Locations', href: '#locations' },
-]
-
-export const COLLECTIONS = [
-  {
-    id: 'kiamugumo',
-    index: '01',
-    name: 'Kiamugumo',
-    origin: 'Kirinyaga, Kenya',
-    notes: 'Blackcurrant, brown sugar, a long tomato-leaf finish.',
-    flavorChips: ['Blackcurrant', 'Brown Sugar', 'Tomato Leaf'],
-    roast: 'Medium',
-    roastLevel: 3,
-    altitude: '1,800m',
-    process: 'Washed',
-    price: '$24',
-    bgTint: 'bg-[#f0e4cc]',
-    badgeColor: 'text-[#c04e1f]',
-  },
-  {
-    id: 'finca-la-ilusion',
-    index: '02',
-    name: 'La Ilusión',
-    origin: 'Huila, Colombia',
-    notes: 'Cacao nib, red apple, panela sweetness.',
-    flavorChips: ['Cacao Nib', 'Red Apple', 'Panela'],
-    roast: 'Medium-dark',
-    roastLevel: 4,
-    altitude: '1,650m',
-    process: 'Honey',
-    price: '$22',
-    bgTint: 'bg-[#ede0c8]',
-    badgeColor: 'text-[#bc6c25]',
-  },
-  {
-    id: 'gesha-village',
-    index: '03',
-    name: 'Gesha Village',
-    origin: 'Bench Maji, Ethiopia',
-    notes: 'Jasmine, bergamot, white peach, tea-like body.',
-    flavorChips: ['Jasmine', 'Bergamot', 'White Peach'],
-    roast: 'Light',
-    roastLevel: 1,
-    altitude: '2,000m',
-    process: 'Natural',
-    price: '$38',
-    bgTint: 'bg-[#f7ece0]',
-    badgeColor: 'text-[#7a5a40]',
-  },
-  {
-    id: 'nightshift',
-    index: '04',
-    name: 'Nightshift',
-    origin: 'House blend',
-    notes: 'Dark chocolate, toasted pecan, raw honey.',
-    flavorChips: ['Dark Chocolate', 'Toasted Pecan', 'Raw Honey'],
-    roast: 'Dark',
-    roastLevel: 5,
-    altitude: 'Blend',
-    process: 'Washed / Natural',
-    price: '$19',
-    bgTint: 'bg-[#e8dcb8]',
-    badgeColor: 'text-[#3d1f0a]',
-  },
 ]
 
 export const MARQUEE_PHRASES = [
@@ -108,30 +43,6 @@ export const ARTICLES = [
     title: 'Why we rest every batch for 10 days',
     excerpt:
       'Fresh off the drum is not the same as ready. Degassing changes what your palate reads as acidity — and the difference between day three and day ten is not subtle.',
-  },
-]
-
-export const LOCATIONS = [
-  {
-    id: 'lagos',
-    city: 'Lagos',
-    address: '14 Akin Adesola Street, Victoria Island',
-    hours: 'Mon–Sat · 7am – 8pm',
-    phone: '+234 812 004 0110',
-  },
-  {
-    id: 'lisbon',
-    city: 'Lisbon',
-    address: 'Rua da Boavista 62, Cais do Sodré',
-    hours: 'Daily · 8am – 7pm',
-    phone: '+351 21 340 8890',
-  },
-  {
-    id: 'brooklyn',
-    city: 'Brooklyn',
-    address: '211 Wythe Avenue, Williamsburg',
-    hours: 'Mon–Sun · 7am – 6pm',
-    phone: '+1 718 555 0142',
   },
 ]
 

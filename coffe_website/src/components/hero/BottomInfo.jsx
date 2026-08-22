@@ -221,10 +221,10 @@ export default function BottomInfo({ motion }) {
           </div>
 
           <div className="hero-panel-actions" ref={actionsRef}>
-            <a href="#collections" id="hero-cta-flavors" className="hero-pill hero-pill-solid">
+            <a href="#showcase" id="hero-cta-flavors" className="hero-pill hero-pill-solid">
               Flavors
             </a>
-            <a href="#collections" id="hero-cta-order" className="hero-pill hero-pill-light">
+            <a href="#showcase" id="hero-cta-order" className="hero-pill hero-pill-light">
               Order Now
             </a>
             <a href="#about" id="hero-cta-about" className="hero-pill hero-pill-solid">

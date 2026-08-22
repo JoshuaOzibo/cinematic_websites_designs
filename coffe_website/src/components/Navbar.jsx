@@ -6,10 +6,8 @@ gsap.registerPlugin(ScrollTrigger)
 
 const LINKS = [
   { label: 'Home', href: '#home' },
-  { label: 'Flavors', href: '#collections' },
   { label: 'Our Product', href: '#showcase' },
   { label: 'About', href: '#about' },
-  { label: 'Contact', href: '#locations' },
 ]
 
 export default function Navbar() {
@@ -98,7 +96,7 @@ export default function Navbar() {
 
           {/* ORDER NOW CTA */}
           <a
-            href="#collections"
+            href="#showcase"
             id="nav-order-now"
             className="rounded-full bg-cream px-5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-espresso transition-transform duration-300 hover:-translate-y-0.5"
           >
