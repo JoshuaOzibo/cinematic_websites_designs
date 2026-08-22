@@ -27,12 +27,26 @@ export default function Highlight() {
           <p className="text-[0.82rem] font-semibold tracking-[0.22em] text-tan uppercase">
             The Difference
           </p>
-          <h2
-            className="font-display mx-auto mt-6 max-w-[16ch] text-parchment"
-            style={{ fontSize: 'clamp(2.4rem, 6.5vw, 5.5rem)', lineHeight: 0.92, letterSpacing: '-0.03em' }}
-          >
-            Taste the Difference
-          </h2>
+          {/* mx-auto here rather than on the h2 itself: overflow-hidden on an
+              inline-flow width would clip the mask to the wrapper's own box,
+              and centring has to happen on that outer box for the heading to
+              land in the same place it did before the wrapper existed.
+
+              No max-width: the old 16ch cap forced "Taste the Difference"
+              onto two cramped lines at every viewport, reading as shrunk
+              rather than as a deliberate stack. Left to size off its own
+              clamp()'d font instead, it runs close to one line at desktop
+              widths and wraps only where the section's own padding actually
+              requires it — which is what "responsive" means here, rather
+              than an arbitrary character count. */}
+          <div className="mx-auto mt-6 overflow-hidden">
+            <h2
+              className="font-display mask-title text-parchment"
+              style={{ fontSize: 'clamp(2.4rem, 6.5vw, 5.5rem)', lineHeight: 0.92, letterSpacing: '-0.03em' }}
+            >
+              Taste the Difference
+            </h2>
+          </div>
           <p className="mx-auto mt-7 max-w-[38rem] text-[1.02rem] leading-relaxed text-parchment/70">
             Slow-roasted profiles built over dozens of test batches, then locked. The same cup,
             every bag, every season — until the harvest tells us otherwise.

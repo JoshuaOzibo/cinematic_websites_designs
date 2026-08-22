@@ -31,8 +31,17 @@ export default function Footer() {
         </svg>
       </div>
 
-      <div className="bg-dark">
-        <div className="mx-auto w-full max-w-[1440px] px-5 pb-20 pt-10 sm:px-8 lg:px-14">
+      <div className="relative overflow-hidden bg-dark">
+        {/* Same texture the other dark sections carry (Highlight's stats
+            band, for one) — this was the one dark stretch of the page
+            without it. The content wrapper below needs its own `relative`
+            for the same reason those sections give theirs one: an absolutely
+            positioned element paints above static in-flow content regardless
+            of DOM order, so without it the dots would sit on top of the
+            footer's text instead of behind it. */}
+        <div className="dot-grid-dark pointer-events-none absolute inset-0" aria-hidden="true" />
+
+        <div className="relative mx-auto w-full max-w-[1440px] px-5 pb-20 pt-10 sm:px-8 lg:px-14">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <p className="text-[1.6rem] font-semibold tracking-[-0.03em]">coffeelo</p>

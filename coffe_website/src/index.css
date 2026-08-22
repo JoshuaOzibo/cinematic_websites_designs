@@ -133,25 +133,29 @@ body {
   transform: none;
 }
 
-/* ── About: header mask reveal ────────────────────────────────────────────
-   The curtain the heading rises out of. Sized to the heading's own layout box
-   regardless of its transform — overflow: hidden establishes that, since
-   transforms are paint-time only and never affect the size a box lays out at
-   — so the clip fits exactly whichever of the two lines the viewport wraps
-   the headline onto, with no fixed height to keep in sync with the copy.
+/* ── Headline mask reveal ─────────────────────────────────────────────────
+   The curtain a headline rises out of. Wrap it in a plain overflow-hidden
+   div and give the heading itself this class — see About.jsx and
+   Highlight.jsx for the two current callers.
 
-   Reads .reveal-in off the *same* toggle Reveal.jsx already puts on this
-   block's wrapper — see About.jsx — rather than a second IntersectionObserver
-   for one element. That also means the parent's own fade-and-rise and this
-   slide happen on the same beat: the eyebrow fades up while the headline
-   rises out of its mask, together, not staggered against each other. */
-.about-title {
+   The wrapper is sized to the heading's own layout box regardless of the
+   heading's transform: overflow: hidden establishes that, since transforms
+   are paint-time only and never affect the size a box lays out at — so the
+   clip fits exactly whichever line count the viewport wraps the headline
+   onto, with no fixed height to keep in sync with the copy.
+
+   Reads .reveal-in off whatever Reveal wrapper already contains it, rather
+   than a second IntersectionObserver for one element. That also means the
+   rest of that block's own fade-and-rise and this slide happen on the same
+   beat — the eyebrow above it fades up while the headline rises out of its
+   mask, together, not staggered against each other. */
+.mask-title {
   transform: translateY(115%);
   transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
 
-.reveal-in .about-title {
+.reveal-in .mask-title {
   transform: translateY(0);
 }
 
@@ -1358,7 +1362,7 @@ body {
   /* Reveal.jsx's own observer still toggles .reveal-in under this query — it
      has no reduced-motion check of its own — so these two need their own
      neutralising rule rather than inheriting the one above. */
-  .about-title,
+  .mask-title,
   .about-stat-pop {
     opacity: 1;
     transform: none;

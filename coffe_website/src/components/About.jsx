@@ -46,7 +46,7 @@ export default function About() {
                 whichever of the two lines the viewport wraps it onto. */}
             <div className="mt-4 overflow-hidden">
               <h2
-                className="font-display text-espresso about-title"
+                className="font-display text-espresso mask-title"
                 style={{
                   fontSize: 'clamp(2.2rem, 4.8vw, 4rem)',
                   lineHeight: 1.02,
