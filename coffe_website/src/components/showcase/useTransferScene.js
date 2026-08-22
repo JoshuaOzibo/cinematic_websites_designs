@@ -147,6 +147,29 @@ export default function useTransferScene({
       const applySwap = () =>
         activeCupElRef.current?.style.setProperty('--cup-swap', swap.v.toFixed(4))
 
+      // The overlay's own visibility — never driven by scroll progress alone.
+      // `cue` is what the scrub controls: 0 before local progress 0.12, 1 from
+      // there on. Whether the layer actually shows also asks src.ready &&
+      // dst.ready, and that second condition is load bearing.
+      //
+      // paint() already refuses to draw the overlay without both boxes ready —
+      // it can only be called at all from arm() or from the flight tween, and
+      // the flight tween's own onUpdate does not start firing until local
+      // progress 0.15. So on a fast scroll into this scene before the cup
+      // photos have decoded, the *only* thing that has run by local progress
+      // 0.12 is arm()'s one paint() call, which measure() left unable to draw
+      // because the boxes were not ready — the overlay's transform is
+      // whatever it last held, which on a first pass is nothing at all. If
+      // `cue` alone controlled visibility, the layer would still show right on
+      // schedule at 0.12: an unpositioned cup, sitting at the top-left corner
+      // of the fixed layer, on top of the real one, which is exactly the blink
+      // reported. Gating on readiness here is what keeps the two conditions —
+      // "have we scrolled far enough" and "do we have something correct to
+      // show" — from being treated as one.
+      const cue = { v: 0 }
+      const applyLayerVisibility = () =>
+        gsap.set(layer, { autoAlpha: cue.v > 0.5 && src.ready && dst.ready ? 1 : 0 })
+
       const measure = () => {
         src.ready = false
         dst.ready = false
@@ -224,6 +247,14 @@ export default function useTransferScene({
         // opacity underneath the travelling overlay, and the product renders in
         // two places until the timeline next crosses 0.15.
         applySwap()
+
+        // And the other half of the same fix: if this measure() is the one
+        // that just turned readiness on — the images finally decoded, say —
+        // the layer's own cue may already be past 0.12 from scroll that
+        // happened while we were unready. Re-checking now, rather than waiting
+        // for the next scroll tick, is what makes the overlay appear the
+        // instant it has something correct to show instead of a frame late.
+        applyLayerVisibility()
       }
 
       /**
@@ -348,8 +379,12 @@ export default function useTransferScene({
       }
 
       // The swap: overlay layer appears while hero active cup disappears.
-      // Left and right side cups are untouched and stay in their hero positions (z-index 20, behind CreamRise).
-      tl.fromTo(layer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001 }, 0.12)
+      // Left and right side cups are untouched and stay in their hero positions
+      // (z-index 20, behind CreamRise). The layer's own visibility goes through
+      // `cue` and applyLayerVisibility rather than a plain autoAlpha tween, so
+      // scroll progress alone is never enough to reveal it — see the note on
+      // `cue` above for what that guards against.
+      tl.fromTo(cue, { v: 0 }, { v: 1, duration: 0.001, onUpdate: applyLayerVisibility }, 0.12)
       tl.fromTo(
         swap,
         { v: 1 },
@@ -438,6 +473,23 @@ export default function useTransferScene({
       let copyReveal = null
       const arm = (self) => {
         setLock(self)
+
+        // Force this timeline to re-render at wherever it actually is before
+        // measure() reads swap.v. onRefresh can land at any point in the
+        // flight — the fonts.ready and img.decode refreshes below both fire
+        // within moments of page load, with no regard for where the user has
+        // scrolled to by then — and if that refresh reaches this callback
+        // before GSAP's own scrub has caught swap.v up to the (possibly
+        // just-recalculated) progress, measure()'s reset-and-republish below
+        // would broadcast a stale value: the hero cup popping back to full
+        // opacity, visible again at rest, right beside the overlay that is
+        // already mid-flight and correctly positioned. That double image is
+        // the blink. Forcing the render first is what guarantees swap.v is
+        // never behind reality when a refresh lands mid-flight — the same
+        // defence useJourneyScene takes in its own onRefresh, for the same
+        // reason.
+        tl.render(tl.time(), false, true)
+
         measure()
         paint(flight.t)
         copyReveal?.st.kill()
@@ -489,11 +541,16 @@ export default function useTransferScene({
         copyReveal?.tl.kill()
         // matchMedia reverts what GSAP animated; these are hand-written and so
         // are ours to undo, or a StrictMode remount leaves a cup hidden.
+        // applyLayerVisibility's gsap.set calls are the same case as
+        // --cup-swap below: they land on `layer`, not on the tween's own
+        // target (`cue`), so matchMedia's auto-revert never sees them either.
         cups
           .querySelectorAll('.hero-cup')
           .forEach((el) => el.style.removeProperty('--cup-swap'))
         cup.style.removeProperty('transform')
         tilt.style.removeProperty('transform')
+        layer.style.removeProperty('opacity')
+        layer.style.removeProperty('visibility')
       }
     })
 

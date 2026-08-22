@@ -518,6 +518,7 @@ body {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   white-space: nowrap;
+  will-change: transform, opacity;
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.35s ease,
@@ -558,12 +559,17 @@ body {
   justify-self: end;
 }
 
+/* The clip box. overflow: hidden is what turns the inner wrapper's vertical
+   travel into a swap instead of a visible slide past the badge's own edges —
+   see .hero-badge-inner and the replay in BottomInfo.jsx. position: relative
+   because the inner wrapper's exit/enter is a translate, not a reflow, so it
+   needs this as its containing block. */
 .hero-badge {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  overflow: hidden;
   min-width: 6.5rem;
   padding: 0.6rem 0.9rem;
   text-align: center;
@@ -575,6 +581,17 @@ body {
 
 .hero-badge+.hero-badge {
   border-left: 1px solid rgb(61 31 10 / 0.12);
+}
+
+/* The icon and its label, moving as one unit — see the note in BottomInfo.jsx
+   about why they are never animated separately. */
+.hero-badge-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  will-change: transform, opacity;
 }
 
 .hero-badge-figure {
