@@ -40,16 +40,22 @@ export default function About() {
               </p>
             </div>
 
-            <h2
-              className="font-display text-espresso mt-4"
-              style={{
-                fontSize: 'clamp(2.2rem, 4.8vw, 4rem)',
-                lineHeight: 1.02,
-                letterSpacing: '-0.025em',
-              }}
-            >
-              We source the world&rsquo;s finest single-origin beans
-            </h2>
+            {/* The mask: sized to the heading's own layout box regardless of
+                its transform (overflow: hidden establishes that, transforms
+                never affect layout size), so it clips exactly to the text
+                whichever of the two lines the viewport wraps it onto. */}
+            <div className="mt-4 overflow-hidden">
+              <h2
+                className="font-display text-espresso about-title"
+                style={{
+                  fontSize: 'clamp(2.2rem, 4.8vw, 4rem)',
+                  lineHeight: 1.02,
+                  letterSpacing: '-0.025em',
+                }}
+              >
+                We source the world&rsquo;s finest single-origin beans
+              </h2>
+            </div>
           </div>
         </Reveal>
 
@@ -84,9 +90,12 @@ export default function About() {
           <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {pillars.map((pillar, idx) => (
               <Reveal key={pillar.label} delay={120 + idx * 60}>
-                <div className="h-full p-6 rounded-2xl bg-white/70 border border-espresso/10 hover:border-rust/30 transition-colors duration-300 shadow-sm flex flex-col justify-between group">
+                <div className="h-full p-6 rounded-2xl bg-white/70 border border-espresso/10 shadow-sm flex flex-col justify-between">
                   <div>
-                    <span className="font-display text-3xl sm:text-4xl text-espresso group-hover:text-rust transition-colors duration-300">
+                    {/* Pops in a beat after the card's own fade-up, reading
+                        `.reveal-in` off the same Reveal wrapper rather than a
+                        second observer — see the rule in index.css. */}
+                    <span className="about-stat-pop font-display text-3xl sm:text-4xl text-espresso">
                       {pillar.stat}
                     </span>
                     <h3 className="mt-2 text-[0.92rem] font-bold tracking-wider text-espresso uppercase">

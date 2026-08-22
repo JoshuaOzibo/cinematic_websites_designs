@@ -133,6 +133,47 @@ body {
   transform: none;
 }
 
+/* ── About: header mask reveal ────────────────────────────────────────────
+   The curtain the heading rises out of. Sized to the heading's own layout box
+   regardless of its transform — overflow: hidden establishes that, since
+   transforms are paint-time only and never affect the size a box lays out at
+   — so the clip fits exactly whichever of the two lines the viewport wraps
+   the headline onto, with no fixed height to keep in sync with the copy.
+
+   Reads .reveal-in off the *same* toggle Reveal.jsx already puts on this
+   block's wrapper — see About.jsx — rather than a second IntersectionObserver
+   for one element. That also means the parent's own fade-and-rise and this
+   slide happen on the same beat: the eyebrow fades up while the headline
+   rises out of its mask, together, not staggered against each other. */
+.about-title {
+  transform: translateY(115%);
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.reveal-in .about-title {
+  transform: translateY(0);
+}
+
+/* ── About: pillar stat pop ───────────────────────────────────────────────
+   The number is the one thing on each card worth a second beat of its own —
+   see the note in About.jsx for why this reads .reveal-in rather than adding
+   a second Reveal. transition-delay stacks it a moment after the card's own
+   fade-up finishes arriving, so the two don't compete for the eye at once. */
+.about-stat-pop {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s;
+}
+
+.reveal-in .about-stat-pop {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* ── Animations ────────────────────────────────────────────────────────────*/
 
 /* Floating hero beans — duration/delay are set per-bean inline so they drift
@@ -1309,6 +1350,16 @@ body {
 /* ── Reduced motion ────────────────────────────────────────────────────────*/
 @media (prefers-reduced-motion: reduce) {
   .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Reveal.jsx's own observer still toggles .reveal-in under this query — it
+     has no reduced-motion check of its own — so these two need their own
+     neutralising rule rather than inheriting the one above. */
+  .about-title,
+  .about-stat-pop {
     opacity: 1;
     transform: none;
     transition: none;
