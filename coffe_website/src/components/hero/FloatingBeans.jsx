@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react'
 import Bean from './Bean'
 
-// The five cutout bean photos we scatter across the hero. Cycled per-bean
-// (offset per plane) rather than assigned 1:1 so no two beans that land near
-// each other repeat the same shot.
 const NUT_IMAGES = [
   '/nut_image/coffee_nut.webp',
   '/nut_image/coffee_nut_2.webp',
@@ -11,28 +8,6 @@ const NUT_IMAGES = [
   '/nut_image/nut_4.webp',
   '/nut_image/nut_6.webp',
 ]
-
-/**
- * Two parallax planes of coffee beans.
- *
- * `far` beans are small, blurred and sit behind the wordmark; `near` beans are
- * larger, sharp, and sit in front of it but behind the cups. Each plane gets
- * its own drift factor, so pointer movement and scroll separate them in depth.
- *
- * Positions deliberately avoid the middle band where the cups stand — the beans
- * are atmosphere around the composition, not confetti over it.
- *
- * Each plane is wrapped in an extra .hero-bean-parallax div that this
- * component never writes to. That is deliberate: the paint() below already
- * writes `transform` on the inner .hero-bean-plane on every pointer move and
- * every scroll event (via motion.subscribe), so it is not safe ground for
- * anything else to animate. The showcase handoff drives its own upward
- * parallax on the wrapper instead, one layer out, where the two writers can
- * never collide. z-index moves to the wrapper for the same reason: once GSAP
- * puts a transform on it, it becomes the stacking context, and the plane's
- * z5/z15 position relative to the wordmark (10) and cups (30) has to live on
- * whichever element actually holds that context.
- */
 const PLANES = [
   {
     id: 'far',
@@ -92,8 +67,6 @@ export default function FloatingBeans({ motion }) {
       })
     }
 
-    // Beans lift gently as the carousel advances — a second depth cue on top
-    // of their idle float.
     const unsubscribe = motion.subscribe((pos) => {
       scrollDrift = -pos * 26
       paint()
@@ -103,7 +76,6 @@ export default function FloatingBeans({ motion }) {
 
     let frame = 0
     const onPointerMove = (event) => {
-      // −1 … 1 from the centre of the viewport.
       pointer.x = (event.clientX / window.innerWidth) * 2 - 1
       pointer.y = (event.clientY / window.innerHeight) * 2 - 1
       if (!frame) {
@@ -151,13 +123,9 @@ export default function FloatingBeans({ motion }) {
                   '--bean-delay': bean.delay,
                   '--bean-y': bean.y,
                   '--bean-x': bean.x,
-                  // Kept per-bean rather than on the plane so the plane's own
-                  // transform stays compositor-only while you move the pointer.
                   filter: `blur(${plane.blur}) drop-shadow(0 6px 12px rgba(24, 10, 2, 0.32))`,
                 }}
               >
-                {/* Rotation lives on the wrapper so the float keyframes can add
-                    a little rotational drift to it. */}
                 <Bean size={bean.size} image={NUT_IMAGES[(i * 2 + j) % NUT_IMAGES.length]} />
               </span>
             ))}

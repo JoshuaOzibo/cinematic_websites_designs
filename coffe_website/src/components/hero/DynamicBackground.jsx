@@ -2,23 +2,6 @@ import { useLayoutEffect } from 'react'
 import { hslString, mixHsl, smoothstep } from './colorUtils'
 import { slotFor } from './slotMath'
 
-/**
- * The hero's colour environment.
- *
- * Rather than switching between three preset backgrounds, the colour is a live
- * weighted blend of every product's accent, weighted by how close that product
- * is to the centre slot. Two consequences, both wanted:
- *
- *   - the background is *always* derived from whatever is centred, and
- *   - halfway through a scroll step you get a true 50/50 of the two drinks,
- *     so the environment changes with the cups rather than after them.
- *
- * The damped position from useHeroMotion does the rest: a fast scroll still
- * takes ~1s to settle on the new colour.
- *
- * Writes CSS custom properties on the hero root instead of React state — the
- * bottom panel's buttons read the same variables, so they re-tint for free.
- */
 export default function DynamicBackground({ motion, products, palette, rootRef }) {
   useLayoutEffect(() => {
     const root = rootRef.current

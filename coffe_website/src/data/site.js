@@ -1,4 +1,4 @@
-/** All the site copy in one place, so sections stay layout-only. */
+
 
 export const NAV_LINKS = [
   { label: 'About', href: '#about' },

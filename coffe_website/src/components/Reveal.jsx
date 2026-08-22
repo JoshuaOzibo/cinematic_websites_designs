@@ -1,13 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 
-/**
- * One-shot scroll reveal. Every section on the page uses this so the entrance
- * timing is identical everywhere. Once an element has been seen it is
- * unobserved — scrolling back up must not replay the animation.
- *
- * `delay` staggers siblings (cards in a grid); `as` lets the wrapper emit the
- * right semantic element instead of always being a div.
- */
 export default function Reveal({
   children,
   as: Tag = 'div',
@@ -22,7 +14,6 @@ export default function Reveal({
     const node = ref.current
     if (!node) return
 
-    // No IntersectionObserver (or a very old browser): show everything.
     if (typeof IntersectionObserver === 'undefined') {
       setShown(true)
       return

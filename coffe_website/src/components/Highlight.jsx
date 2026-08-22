@@ -1,7 +1,6 @@
 import Reveal from './Reveal'
 import { MARQUEE_PHRASES, STATS } from '../data/site'
 
-/** One pass of the marquee text; the track renders it twice so -50% loops seamlessly. */
 function MarqueeRun() {
   return (
     <span className="flex shrink-0 items-center">
@@ -27,18 +26,6 @@ export default function Highlight() {
           <p className="text-[0.82rem] font-semibold tracking-[0.22em] text-tan uppercase">
             The Difference
           </p>
-          {/* mx-auto here rather than on the h2 itself: overflow-hidden on an
-              inline-flow width would clip the mask to the wrapper's own box,
-              and centring has to happen on that outer box for the heading to
-              land in the same place it did before the wrapper existed.
-
-              No max-width: the old 16ch cap forced "Taste the Difference"
-              onto two cramped lines at every viewport, reading as shrunk
-              rather than as a deliberate stack. Left to size off its own
-              clamp()'d font instead, it runs close to one line at desktop
-              widths and wraps only where the section's own padding actually
-              requires it — which is what "responsive" means here, rather
-              than an arbitrary character count. */}
           <div className="mx-auto mt-6 overflow-hidden">
             <h2
               className="font-display mask-title text-parchment"
@@ -54,7 +41,6 @@ export default function Highlight() {
         </Reveal>
       </div>
 
-      {/* Marquee */}
       <div className="relative mt-16 flex overflow-hidden border-y border-tan/25 py-6">
         <div className="animate-marquee flex w-max">
           <MarqueeRun />
@@ -70,15 +56,6 @@ export default function Highlight() {
             <Reveal key={stat.label} delay={i * 100} className="text-center">
               <dt className="sr-only">{stat.label}</dt>
               <dd>
-                {/* No width cap here either — same reasoning as the headline
-                    above: the wrapper sizes to the value's own clamp()'d font,
-                    so it stays correct at every breakpoint rather than being
-                    pinned to a number tuned for one. transitionDelay matches
-                    this stat's own stagger, so the value rises out of its mask
-                    on the same beat its card fades up on, not a beat behind
-                    every other stat's mask (mask-title carries no delay of its
-                    own in index.css, since the other two callers are singular
-                    headlines with nothing to stagger against). */}
                 <div className="overflow-hidden">
                   <span
                     className="font-display mask-title block text-tan"

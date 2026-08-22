@@ -5,91 +5,9 @@ import CardTitle from './showcase/CardTitle'
 import TransferCup from './showcase/TransferCup'
 import useTransferScene from './showcase/useTransferScene'
 
-/**
- * Where the hero's cup lands — and, one card later, leaves again.
- *
- * This section is the second half of one continuous scene. Its left slot is the
- * flight's destination: the image sitting in it is invisible until the very end
- * of the handoff, when the travelling overlay hands back to it at exactly the
- * same size and position. The slot still occupies its full box the whole time,
- * because the flight reads its rect live every frame to know where it is
- * aiming. That is also why it is opacity and never display: none, which would
- * report a zero box and land the cup in the top left corner.
- *
- * It is not the end of the journey, though. The moment this card starts to
- * scroll away, useJourneyScene takes the same cup back off it and carries it
- * down into the two spotlight cards below. That is why both the overlay's refs
- * and this slot's refs are owned by App rather than created here: three
- * sections hand the one cup between them, so one place has to hold the handles.
- *
- * ── Pinning deviates from CLAUDE.md on purpose ────────────────────────────
- * The workspace rule is GSAP sticky-stacks use `pin: true`. This one uses CSS
- * `position: sticky` and lets GSAP drive scrub only. Three reasons, all
- * specific to this seam:
- *
- *   · `pin: true` injects a pin-spacer element immediately after the hero,
- *     which is the one point on the page where a pixel of rounding shows, and
- *     where the cream has to meet the cream exactly.
- *   · The hero above already pins with `position: sticky`. Two pinned
- *     viewports meeting mid-scene need to rasterise the same way, or the
- *     handover flickers on iOS.
- *   · A pin-spacer resizes on refresh, which changes the hero track's
- *     offsetHeight, which is the number useHeroMotion measures itself against.
- *     That is a genuine refresh-ordering race, and sticky has no such coupling.
- *
- * Do not "fix" this to pin: true without re-testing the seam on a real phone.
- *
- * ── The card ──────────────────────────────────────────────────────────────
- * Everything sits inside one rounded slab filled with the drink's own colour,
- * so the product arrives into a panel that has already turned its shade rather
- * than onto open cream. Three lightness steps off the one resolved hue —
- * --showcase-fill-light, --showcase-fill, --showcase-fill-deep — feed a
- * radial highlight and a diagonal wash in CSS, so the card reads as lit rather
- * than as a flat swatch. All three come from the same palette entry App
- * resolved from the photos, just re-lit; see cardLightness in the data file for
- * why the base step can't be a shared number across products.
- *
- * Those three custom properties are @property-registered as <color> in
- * index.css specifically so they can transition. A plain CSS transition can't
- * animate a gradient, but it can animate a *typed* custom property, and the
- * gradient re-reads that property's interpolated value every frame — so the
- * card still eases to the next product's colour on the way back up the page,
- * the way its flat predecessor did.
- *
- * The card changes nothing about the flight. The destination is still measured
- * from the slot image's laid-out offset within .showcase-viewport, and
- * offsetWithin walks the offsetParent chain, so wrapping the grid in another
- * positioned box is invisible to it.
- *
- * ── The garnish ───────────────────────────────────────────────────────────
- * An optional list of cutouts — petals, fruit, ice — around the cup, giving the
- * card the same "shot on a surface" feel as the reference instead of empty fill
- * colour. Each is absolutely positioned within the card, one stacking context
- * below the grid (see .showcase-garnish in index.css for how that negative
- * z-index is scoped so it can't leak into the page's global stack), so none of
- * them ever compete with the cup or the copy. `placement` on each entry picks
- * which `.showcase-garnish--*` modifier positions it — a product can be shot as
- * more than one cluster sitting at different spots around the cup, the way the
- * green product's leaf-and-orchid group and its kiwi slice are two separate
- * images rather than one. Optional per product because not every one has a
- * cutout shot yet — see garnish in the data file.
- */
 export default function Showcase({ motion, palette, heroTrackRef, transferRefs, slotRefs }) {
   const trackRef = useRef(null)
   const copyRef = slotRefs.copy
-
-  // Which cup makes the journey.
-  //
-  // Read off the carousel's *target* rather than its damped position. The
-  // damper takes most of a second to settle, so a restored scroll position or
-  // an anchor jump that lands straight on the handoff would otherwise latch
-  // whichever product the glide happened to be passing through, and the wrong
-  // cup would fly. The target is correct the instant the scroll commits.
-  //
-  // The identity guard turns a per-frame subscription into two or three
-  // renders across the whole page, and the latch freezes it once the flight is
-  // under way so a trackpad overshoot at the seam cannot swap the product out
-  // from under the user mid-air.
   const [activeIndex, setActiveIndex] = useState(INITIAL_INDEX)
   const activeIndexRef = useRef(INITIAL_INDEX)
   const lockedRef = useRef(false)
@@ -121,25 +39,10 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
   })
 
   const product = COFFEE_PRODUCTS[activeIndex]
-  // Hue and saturation from the photo, lightness from the product. Same
-  // division of labour extractAccent uses, for the same reason: the drink
-  // decides the colour, the design decides how dark it is allowed to be.
-  //
-  // The light/deep steps are deltas off that same base colour (hslString's
-  // ds/dl args), not independent numbers, so a product whose base is already
-  // near white or near black still lightens and darkens by the same *amount*
-  // rather than blowing out or crushing. hslString clamps s and l to [0, 1]
-  // itself, so there is no danger of an invalid channel past either end.
   const cardBase = { ...palette[activeIndex], l: product.cardLightness }
   const cardFillLight = hslString(cardBase, 0.06, 0.16)
   const cardFill = hslString(cardBase)
   const cardFillDeep = hslString(cardBase, -0.02, -0.14)
-  // The button's hover fill. Saturation pushed well past the card's own so the
-  // pill reads unmistakably as *this drink* — berry here, matcha on the card
-  // below — rather than as the one generic dark brown every card used to hover
-  // to. Barely darker than the card, because depth is doing nothing here: the
-  // hue has to carry it, and cream type still clears 4.5:1 at this lightness on
-  // all three products.
   const ctaHover = hslString(cardBase, 0.3, -0.08)
 
   return (
@@ -159,11 +62,6 @@ export default function Showcase({ motion, palette, heroTrackRef, transferRefs, 
               '--showcase-fill-light': cardFillLight,
               '--showcase-fill': cardFill,
               '--showcase-fill-deep': cardFillDeep,
-              // Plain, inheriting custom property — not @property-registered
-              // like the three above, which declare inherits: false so they can
-              // animate as colours. .showcase-cta is a descendant and would
-              // read the registration's initial value off any of those; see the
-              // matching note in ProductSpotlight.jsx.
               '--cta-hover': ctaHover,
             }}
           >

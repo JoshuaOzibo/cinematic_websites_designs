@@ -15,16 +15,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   useLayoutEffect(() => {
-    // The bar is cream-on-transparent, which only works over the hero's amber.
-    // The handoff floods the hero with cream partway through, and every section
-    // below it is cream or dark, so the bar has to have taken its solid plate
-    // before that flood lands.
-    //
-    // Anchored to the showcase rather than to a scroll offset: the hero's track
-    // height changes with the breakpoint, and a measured number went stale the
-    // moment the handoff was added to it. `bottom+=20%` puts the switch a fifth
-    // of a viewport before the showcase appears, which is about a quarter of
-    // the way through the flight and comfortably ahead of the cream.
     const target = document.getElementById('showcase')
     if (!target) return undefined
 
@@ -51,7 +41,6 @@ export default function Navbar() {
         aria-label="Primary"
         className="relative mx-auto flex w-full max-w-[1440px] items-center justify-between px-5 py-3.5 sm:px-8 lg:px-12"
       >
-        {/* Logo */}
         <a
           href="#home"
           id="nav-logo"
@@ -62,9 +51,6 @@ export default function Navbar() {
             COFFEE<br />&amp;CO.
           </span>
         </a>
-
-        {/* Desktop nav links — optically centred in the bar, independent of how
-            wide the logo and the right-hand cluster happen to be. */}
         <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 whitespace-nowrap lg:flex lg:gap-9">
           {LINKS.map((link) => (
             <li key={link.label}>
@@ -78,9 +64,7 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Right: cart + CTA */}
         <div className="flex items-center gap-3">
-          {/* Cart icon */}
           <button
             type="button"
             id="nav-cart"
@@ -94,7 +78,6 @@ export default function Navbar() {
             </svg>
           </button>
 
-          {/* ORDER NOW CTA */}
           <a
             href="#showcase"
             id="nav-order-now"
@@ -103,7 +86,6 @@ export default function Navbar() {
             Order Now
           </a>
 
-          {/* Mobile hamburger */}
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
@@ -130,7 +112,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <ul
           id="mobile-nav"

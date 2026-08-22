@@ -26,11 +26,9 @@ export default function About() {
 
   return (
     <section id="about" className="relative overflow-hidden bg-cream py-20 lg:py-32">
-      {/* Background subtle ambient dot grid */}
       <div className="dot-grid absolute inset-0 opacity-40 pointer-events-none" aria-hidden="true" />
 
       <div className="relative mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-14">
-        {/* Top Section Header */}
         <Reveal>
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-3">
@@ -40,10 +38,6 @@ export default function About() {
               </p>
             </div>
 
-            {/* The mask: sized to the heading's own layout box regardless of
-                its transform (overflow: hidden establishes that, transforms
-                never affect layout size), so it clips exactly to the text
-                whichever of the two lines the viewport wraps it onto. */}
             <div className="mt-4 overflow-hidden">
               <h2
                 className="font-display text-espresso mask-title"
@@ -59,9 +53,7 @@ export default function About() {
           </div>
         </Reveal>
 
-        {/* Main Content Grid */}
         <div className="mt-12 grid gap-12 lg:grid-cols-12 lg:gap-16 items-start">
-          {/* Left Narrative Column */}
           <div className="lg:col-span-6 space-y-6">
             <Reveal delay={100}>
               <div className="p-8 sm:p-10 rounded-3xl bg-[#efe5cd]/80 border border-espresso/10 backdrop-blur-sm shadow-sm">
@@ -74,7 +66,6 @@ export default function About() {
               </div>
             </Reveal>
 
-            {/* Subtle Brand Tagline Strip */}
             <Reveal delay={150}>
               <div className="flex items-center gap-4 px-2">
                 <span className="h-px flex-1 bg-espresso/15" />
@@ -86,15 +77,11 @@ export default function About() {
             </Reveal>
           </div>
 
-          {/* Right Cards Grid */}
           <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {pillars.map((pillar, idx) => (
               <Reveal key={pillar.label} delay={120 + idx * 60}>
                 <div className="h-full p-6 rounded-2xl bg-white/70 border border-espresso/10 shadow-sm flex flex-col justify-between">
                   <div>
-                    {/* Pops in a beat after the card's own fade-up, reading
-                        `.reveal-in` off the same Reveal wrapper rather than a
-                        second observer — see the rule in index.css. */}
                     <span className="about-stat-pop font-display text-3xl sm:text-4xl text-espresso">
                       {pillar.stat}
                     </span>

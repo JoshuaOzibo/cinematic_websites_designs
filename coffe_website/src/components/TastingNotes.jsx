@@ -99,21 +99,8 @@ export default function TastingNotes() {
       const items = itemRefs.current
       if (items.some((item) => !item.icon || !item.card)) return undefined
 
-      // Every card starts hidden, including the first — there used to be a
-      // fromTo living inside the scrubbed timeline for that one too, which is
-      // exactly what is being removed here. A tween inside a scrubbed
-      // timeline ties its whole span proportionally to scroll position, so
-      // parking the wheel mid-transition parks the card mid-fade right along
-      // with it. Below, each card's reveal runs as its own tween instead, on
-      // its own clock: once it starts, it plays to completion regardless of
-      // what the scrollbar does next. Only the bar stays genuinely scrubbed.
       gsap.set(items.flatMap((item) => [item.icon, item.card]), { autoAlpha: 0, y: 36 })
 
-      // Where along the bar's own fill each card's step begins, read against
-      // the bar's progress rather than the ScrollTrigger's raw one. Scrub
-      // easing means those two lag each other slightly, and the bar's fill is
-      // what the eye is actually tracking — keying the cards off anything
-      // else would let one arrive slightly ahead of the bar reaching its node.
       const THRESHOLDS = [0, 0.42, 0.82]
       let activeStep = -1
       const stepTweens = items.map(() => null)
@@ -121,17 +108,11 @@ export default function TastingNotes() {
       const setStep = (i, entering) => {
         stepTweens[i]?.kill()
         const targets = [items[i].icon, items[i].card]
-        // .to, not .fromTo: a card reversed mid-reveal by scrolling back
-        // needs to continue smoothly from wherever it actually is, not snap
-        // to a hardcoded start first.
         stepTweens[i] = entering
           ? gsap.to(targets, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.08 })
           : gsap.to(targets, { autoAlpha: 0, y: 36, duration: 0.32, ease: 'power2.in', stagger: 0.04 })
       }
 
-      // Steps the whole way to wherever `step` is, one at a time, so a fast
-      // scroll that jumps straight from step 0 to step 2 still plays step 1's
-      // reveal rather than skipping straight past it.
       const applyStep = (step) => {
         if (step === activeStep) return
         if (step > activeStep) {
@@ -144,7 +125,6 @@ export default function TastingNotes() {
 
       const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
-      // The bar: the only thing actually scrubbed here.
       tl.fromTo(fill, { width: '0%' }, { width: '100%', duration: 1 }, 0)
 
       tl.eventCallback('onUpdate', () => {
@@ -220,14 +200,14 @@ export default function TastingNotes() {
               <div ref={progressFillRef} className="h-full w-0 bg-clay" />
             </div>
 
-            <div className="relative grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-8">
+            <div className="relative mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-8">
               {ARTICLES.map((article, i) => (
                 <div key={article.id} className="relative">
                   <div
                     ref={(el) => {
                       itemRefs.current[i].icon = el
                     }}
-                    className="relative z-10 mx-auto -mb-8 hidden h-16 w-16 items-center justify-center rounded-full border-4 border-[#fdfbf4] bg-clay text-cream shadow-[0_10px_24px_-8px_rgb(188_108_37_/_0.45)] lg:flex"
+                    className="relative z-10 mx-auto mt-1 -mb-8 hidden h-16 w-16 items-center justify-center rounded-full border-4 border-[#fdfbf4] bg-clay text-cream shadow-[0_10px_24px_-8px_rgb(188_108_37_/_0.45)] lg:flex"
                   >
                     {ICONS[i]}
                   </div>
