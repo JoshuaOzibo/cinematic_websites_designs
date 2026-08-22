@@ -15,7 +15,25 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative text-parchment">
+    <footer className="relative overflow-hidden text-parchment">
+      {/* One dot field for the whole footer, curve included, rather than one
+          per zone — a second copy would tile from its own box's top-left and
+          seam visibly against this one wherever the two boxes met.
+
+          It shows through the curve for free: this div is positioned
+          (absolute) and the arc's SVG wrapper below is not, and a positioned
+          element always paints above a non-positioned sibling in the same
+          stacking context regardless of which comes first in the DOM — so the
+          dots sit above the arc's solid fill without the SVG needing to know
+          anything about them. The content further down stays legible for the
+          same rule in reverse: its wrapper carries its own `relative`, and
+          between two positioned siblings the later one in DOM order wins, so
+          it paints above this dot field rather than under it.
+
+          overflow-hidden on the footer itself is what keeps the tiled
+          pattern from spilling past the curve's rounded top corners. */}
+      <div className="dot-grid-dark pointer-events-none absolute inset-0" aria-hidden="true" />
+
       {/* The hero's arc, inverted: same path, same --arc-h, filled dark. Using
           .hero-arc rather than an inline height is what lets the mobile
           override reach it, so the two curves stay the same depth. */}
@@ -31,16 +49,7 @@ export default function Footer() {
         </svg>
       </div>
 
-      <div className="relative overflow-hidden bg-dark">
-        {/* Same texture the other dark sections carry (Highlight's stats
-            band, for one) — this was the one dark stretch of the page
-            without it. The content wrapper below needs its own `relative`
-            for the same reason those sections give theirs one: an absolutely
-            positioned element paints above static in-flow content regardless
-            of DOM order, so without it the dots would sit on top of the
-            footer's text instead of behind it. */}
-        <div className="dot-grid-dark pointer-events-none absolute inset-0" aria-hidden="true" />
-
+      <div className="bg-dark">
         <div className="relative mx-auto w-full max-w-[1440px] px-5 pb-20 pt-10 sm:px-8 lg:px-14">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>

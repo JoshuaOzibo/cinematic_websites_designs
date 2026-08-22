@@ -70,12 +70,27 @@ export default function Highlight() {
             <Reveal key={stat.label} delay={i * 100} className="text-center">
               <dt className="sr-only">{stat.label}</dt>
               <dd>
-                <span
-                  className="font-display block text-tan"
-                  style={{ fontSize: 'clamp(2.6rem, 5vw, 4rem)', lineHeight: 1 }}
-                >
-                  {stat.value}
-                </span>
+                {/* No width cap here either — same reasoning as the headline
+                    above: the wrapper sizes to the value's own clamp()'d font,
+                    so it stays correct at every breakpoint rather than being
+                    pinned to a number tuned for one. transitionDelay matches
+                    this stat's own stagger, so the value rises out of its mask
+                    on the same beat its card fades up on, not a beat behind
+                    every other stat's mask (mask-title carries no delay of its
+                    own in index.css, since the other two callers are singular
+                    headlines with nothing to stagger against). */}
+                <div className="overflow-hidden">
+                  <span
+                    className="font-display mask-title block text-tan"
+                    style={{
+                      fontSize: 'clamp(2.6rem, 5vw, 4rem)',
+                      lineHeight: 1,
+                      transitionDelay: `${i * 100}ms`,
+                    }}
+                  >
+                    {stat.value}
+                  </span>
+                </div>
                 <span className="mt-3 block text-[0.88rem] tracking-[0.18em] text-parchment/75 uppercase">
                   {stat.label}
                 </span>
